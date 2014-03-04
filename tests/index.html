@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>CEF Test</title>
+
+<link rel="stylesheet" type="text/css" href="css/style.css">
+
+<script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript" src="../js/osgearth.js"></script>
+
+<script language="javascript" type="text/javascript">
+
+var myMap;
+var listenerId = -1;
+
+function resizeMap(mapId, divId) {
+    var $map = $("#" + divId);
+    if ($map && $map.width()) {
+        var y = $(window).height() - ($map.position().top + $map.height());
+        osgearth.setMap(mapId, $map.position().left, y, $map.width(), $map.height());
+    }
+}
+
+function setLayers(div_id, value) {
+    $('#' + div_id).html("");
+
+    var response = JSON.parse(value);
+    $.each(response.layers, function(index, value) {
+        $('#' + div_id).append('<div class="layer-name">' + value.name +'</div>');
+    });
+}
+
+function onMapEvent(args) {
+    if (args) {
+        //    alert("Map event: " + args);
+
+        var arguments = JSON.parse(args);
+        if (arguments.eventName == "imagelayeradded") {
+            myMap.getImageLayers({ onSuccess: function(value) { setLayers("image_layers", value);} });
+        }
+        else if (arguments.eventName == "elevationlayeradded") {
+            myMap.getElevationLayers({ onSuccess: function(value) { setLayers("elevation_layers", value);} });
+        }
+        else if (arguments.eventName == "modellalyeradded") {
+            myMap.getModelLayers({ onSuccess: function(value) { setLayers("model_layers", value);} });
+        }
+    }
+}
+
+function onHomeClick() {
+    if (myMap) {
+        myMap.home();
+    }
+}
+
+function addTestLayer() {
+    osgearth.execute("addTestLayer", { id: "map1" });
+    $('#addLayerButton').prop('disabled', true);
+}
+
+function onSelectChange() {
+    alert("You selected: " + $('#testSelect').val());
+}
+
+$(function() {
+    // Testing custom execute calls
+    $('#customExecuteButton').click(function() {
+
+        osgearth.execute("says", 
+                         { animal: "cow", sound: "moo" },
+                         { onSuccess: function(response) { alert(response); } });
+
+    });
+    
+    // Listen to window resizes to resize map
+    $( window ).resize(function() {
+        resizeMap("map1", "map_1");
+    });
+    
+    // Setup map1
+    var $map1 = $('#map_1');
+    if ($map1 && $map1.width()) {
+        var y = $(window).height() - ($map1.position().top + $map1.height());
+        var that = this;
+        myMap = new Map("map1",
+                        $map1.position().left,
+                        y,
+                        $map1.width(),
+                        $map1.height(),
+                        "readymap.earth",
+                        { onSuccess: function(v) {
+                            myMap.getImageLayers({ onSuccess: function(value) { setLayers("image_layers", value);} });
+                            myMap.getElevationLayers({ onSuccess: function(value) { setLayers("elevation_layers", value);} });
+                            myMap.getModelLayers({ onSuccess: function(value) { setLayers("model_layers", value);} });
+                            listenerId = myMap.addModelListener(onMapEvent);
+                        } });
+    }
+
+});
+
+
+</script>
+
+</head>
+
+<body>
+
+    <div id="top_bar">
+        <img src="img/logo2.png" style="margin-top: 4px;" />
+    </div>
+    <div id="left_bar">
+    <div style="text-align: center;"><input type="button" class="cool-button" value="Home" onClick="onHomeClick()"/></div>
+    <hr />
+    <h2>Elevation Layers</h2>
+    <div id="elevation_layers" class="layer-box"></div>
+    <h2>Image Layers</h2>
+    <div id="image_layers" class="layer-box"></div>
+    <h2>Model Layers</h2>
+    <div id="model_layers" class="layer-box"></div>
+    </div>
+    <div id="map_1"></div>
+    
+    <div id="right_bar">
+        <div id="test_controls">
+            <input type="button" id="addLayerButton" value="Add Test Layer" onClick="addTestLayer()"/>
+            <input type="button" id="customExecuteButton" value="Moo"/>
+            <select id="testSelect" onchange="onSelectChange()">
+                <option value="" disabled="disabled" selected="selected">Please select a name</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+            <input type="text" name="mytext" />
+        </div>
+    </div>
+    <div id="bottom_bar">osgEarth CEF demo</div>
+
+    <div id="hover_div">
+        <img src="img/cube.gif" style="width: 50px;"/>
+        <p title="A tool tip!">This cube is spinning!</p>
+    </div>
+    
+</body>
+
+</html>

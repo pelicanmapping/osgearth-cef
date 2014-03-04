@@ -1,0 +1,135 @@
+#ifndef OSGEARTH_CEF_BrowserClient_H
+#define OSGEARTH_CEF_BrowserClient_H
+
+#include "include/cef_client.h"
+#include "include/cef_render_handler.h"
+#include "include/wrapper/cef_message_router.h"
+
+#include "ExecuteCallback.h"
+
+#include <osgViewer/CompositeViewer>
+#include <osgViewer/View>
+#include <osgEarth/MapNode>
+
+namespace osgEarth { namespace Cef
+{
+
+// forward declarations
+class MapExecuteCallback;
+
+
+// for manual render handler
+class BrowserClient : public CefClient, public CefRenderHandler, public CefRequestHandler, public CefLifeSpanHandler, public CefMessageRouterBrowserSide::Handler
+{
+public:
+    BrowserClient(osgViewer::CompositeViewer* viewer, const std::string& url, int width, int height);
+
+    osgViewer::View* getMapView(const std::string& name);
+    osgEarth::MapNode* getMapNode(const std::string& name);
+
+    osgViewer::CompositeViewer* getViewer() { return _viewer.get(); }
+
+    CefBrowser* getBrowser() { return _browser.get(); }
+
+    void setSize(unsigned int width, unsigned int height);
+
+    void addExecuteCallback( ExecuteCallback* callback );
+
+
+// CefClient methods
+public:
+    virtual CefRefPtr<CefRenderHandler> GetRenderHandler() { return this; }
+    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() { return this; }
+
+    virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                          CefProcessId source_process,
+                                          CefRefPtr<CefProcessMessage> message);
+
+
+// CefRenderHandler methods
+public:
+
+
+    //bool GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
+    bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);
+    //bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY);
+    //bool GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info);
+    void OnPopupShow(CefRefPtr<CefBrowser> browser, bool show);
+    void OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect);
+    void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height);
+    //void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor);
+
+
+// CefRequestHandler methods
+public:
+    virtual bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+                                CefRefPtr<CefFrame> frame,
+                                CefRefPtr<CefRequest> request,
+                                bool is_redirect) OVERRIDE;
+
+    virtual void OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, TerminationStatus status) OVERRIDE;
+
+
+// CefLifeSpanHandler methods
+public:
+    virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
+                               CefRefPtr<CefFrame> frame,
+                               const CefString& target_url,
+                               const CefString& target_frame_name,
+                               const CefPopupFeatures& popupFeatures,
+                               CefWindowInfo& windowInfo,
+                               CefRefPtr<CefClient>& client,
+                               CefBrowserSettings& settings,
+                               bool* no_javascript_access) OVERRIDE;
+    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
+    virtual bool DoClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
+    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
+
+
+// CefMessageRouterBrowserSide::Handler methods
+public:
+    virtual bool OnQuery(CefRefPtr<CefBrowser> browser,
+                         CefRefPtr<CefFrame> frame,
+                         int64 query_id,
+                         const CefString& request,
+                         bool persistent,
+                         CefRefPtr<Callback> callback) OVERRIDE;
+
+    virtual void OnQueryCanceled(CefRefPtr<CefBrowser> browser,
+                                 CefRefPtr<CefFrame> frame,
+                                 int64 query_id) OVERRIDE;
+
+
+protected:
+    friend class MapExecuteCallback;
+
+    void initBrowser(const std::string& url);
+    void setupMainView(unsigned int width, unsigned int height);
+
+    //CefRefPtr<RenderHandler> _renderHandler;
+    CefRefPtr<CefBrowser> _browser;
+    CefRefPtr<CefMessageRouterBrowserSide> _messageRouter;
+
+    typedef std::vector<CefMessageRouterBrowserSide::Handler*> MessageHandlerSet;
+
+    osg::ref_ptr<osgViewer::CompositeViewer> _viewer;
+    osg::ref_ptr<osgViewer::View> _mainView;
+    std::map<std::string, osg::ref_ptr<osgViewer::View>> _mapViews;
+    std::map<std::string, osg::ref_ptr<osgEarth::MapNode>> _mapNodes;
+
+    typedef std::vector< osg::ref_ptr<ExecuteCallback> > ExecuteCallbacks;
+    ExecuteCallbacks _callbacks;
+
+    unsigned int _width;
+    unsigned int _height;
+    osg::ref_ptr<osg::Image> _image;
+    osg::ref_ptr<osg::Image> _popupImage;
+    osg::ref_ptr<osg::Vec3Array> _popupVerts;
+    osg::ref_ptr<osg::Geode> _popupNode;
+
+    IMPLEMENT_REFCOUNTING(BrowserClient);
+};
+
+} }
+
+#endif
