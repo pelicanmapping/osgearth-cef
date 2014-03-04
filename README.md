@@ -1,13 +1,13 @@
 osgearth-cef
 ============
 
-osgEarth / Chromium Embedded Framework (CEF) integration
+osgEarth / Chromium Embedded Framework (CEF) integration  
 Copyright 2008-2014 Pelican Mapping
 
-http://osgearth.org
+http://osgearth.org  
 git://github.com/pelicanmapping/osgearth-cef
 
-osgearth-cef is free software; you can redistribute it and/or modify
+osgearthCef is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
