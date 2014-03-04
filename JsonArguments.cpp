@@ -1,4 +1,4 @@
-#include "JsonArguments.h"
+#include "JsonArguments"
 
 using namespace osgEarth::Cef;
 

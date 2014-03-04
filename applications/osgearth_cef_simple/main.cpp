@@ -21,7 +21,7 @@
 #include <osgDB/FileUtils>
 #include <osgViewer/Viewer>
 
-#include "CefHelper.h"
+#include "CefHelper"
 
 
 #define LC "[osgearth_cef] "

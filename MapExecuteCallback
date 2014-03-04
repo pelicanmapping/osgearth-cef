@@ -1,8 +1,8 @@
-#ifndef OSGEARTH_CEF_MAPEXECUTECALLBACK_H
-#define OSGEARTH_CEF_MAPEXECUTECALLBACK_H
+#ifndef OSGEARTH_CEF_MAPEXECUTECALLBACK
+#define OSGEARTH_CEF_MAPEXECUTECALLBACK 1
 
-#include "ExecuteCallback.h"
-#include "BrowserClient.h"
+#include "ExecuteCallback"
+#include "BrowserClient"
 
 #include <osgearth/MapCallback>
 #include <osgEarth/MapModelChange>

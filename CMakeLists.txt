@@ -91,13 +91,13 @@ set(APP_SRCS
 # header files
 
 set(APP_HDRS
-    BrowserClient.h
-    CefHelper.h
-    ExecuteCallback.h
-    JsonArguments.h
-    MapExecuteCallback.h
-    OECefApp.h
-    RenderProcessHandler.h
+    BrowserClient
+    CefHelper
+    ExecuteCallback
+    JsonArguments
+    MapExecuteCallback
+    OECefApp
+    RenderProcessHandler
 )
 
 

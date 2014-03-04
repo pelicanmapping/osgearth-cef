@@ -1,4 +1,4 @@
-#include "MapExecuteCallback.h"
+#include "MapExecuteCallback"
 
 #include <osgEarthUtil/EarthManipulator>
 

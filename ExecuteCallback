@@ -1,8 +1,8 @@
-#ifndef OSGEARTH_CEF_EXECUTECALLBACK_H
-#define OSGEARTH_CEF_EXECUTECALLBACK_H
+#ifndef OSGEARTH_CEF_EXECUTECALLBACK
+#define OSGEARTH_CEF_EXECUTECALLBACK 1
 
 
-#include "JsonArguments.h"
+#include "JsonArguments"
 
 #include "include/wrapper/cef_message_router.h"
 

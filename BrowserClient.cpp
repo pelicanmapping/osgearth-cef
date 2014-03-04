@@ -1,5 +1,5 @@
-#include "BrowserClient.h"
-#include "MapExecuteCallback.h"
+#include "BrowserClient"
+#include "MapExecuteCallback"
 
 #include <osg/Camera>
 #include <osgDB/ReadFile>

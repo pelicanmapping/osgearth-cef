@@ -1,7 +1,7 @@
-#ifndef OSGEARTH_CEF_CEFHELPER_H
-#define OSGEARTH_CEF_CEFHELPER_H
+#ifndef OSGEARTH_CEF_CEFHELPER
+#define OSGEARTH_CEF_CEFHELPER 1
 
-#include "BrowserClient.h"
+#include "BrowserClient"
 
 #include <osgViewer/CompositeViewer>
 

@@ -26,8 +26,8 @@
 
 #include "include/cef_app.h"
 
-#include "CefHelper.h"
-#include "BrowserClient.h"
+#include "CefHelper"
+#include "BrowserClient"
 
 
 #define LC "[osgearth_cef] "

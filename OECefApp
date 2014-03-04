@@ -1,9 +1,9 @@
-#ifndef OSGEARTH_CEF_OECEFAPP_H
-#define OSGEARTH_CEF_OECEFAPP_H
+#ifndef OSGEARTH_CEF_OECEFAPP
+#define OSGEARTH_CEF_OECEFAPP 1
 
 #include "include/cef_app.h"
 
-#include "RenderProcessHandler.h"
+#include "RenderProcessHandler"
 
 namespace osgEarth { namespace Cef
 {

@@ -1,4 +1,4 @@
-#include "RenderProcessHandler.h"
+#include "RenderProcessHandler"
 
 #include <osg/Camera>
 #include <osgDB/ReadFile>

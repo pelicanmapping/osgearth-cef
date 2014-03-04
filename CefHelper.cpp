@@ -1,5 +1,5 @@
-#include "CefHelper.h"
-#include "ExecuteCallback.h"
+#include "CefHelper"
+#include "ExecuteCallback"
 
 #include <osg/Notify>
 #include <osgDB/FileUtils>
@@ -9,8 +9,8 @@
 
 #include "include/cef_app.h"
 
-#include "OECefApp.h"
-#include "BrowserClient.h"
+#include "OECefApp"
+#include "BrowserClient"
 
 using namespace osgEarth::Cef;
 
