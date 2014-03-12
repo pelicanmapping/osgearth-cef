@@ -7,8 +7,10 @@
 #include <osgViewer/CompositeViewer>
 
 #include <osgearth/Notify>
+#include <osgearth/StringUtils>
 #include <osgEarthUtil/ExampleResources>
 
+using namespace osgEarth;
 using namespace osgEarth::Cef;
 
 
@@ -19,91 +21,183 @@ namespace
 {
     struct BrowserEventHandler : public osgGA::GUIEventHandler 
     {
-        BrowserEventHandler( osgViewer::View* view, BrowserClient* browserClient, CefBrowser* browser ) : _view(view), _browserClient(browserClient), _browser(browser) { }
+        BrowserEventHandler( osgViewer::View* view, BrowserClient* browserClient, CefBrowser* browser )
+          : _view(view), _browserClient(browserClient), _browser(browser)
+        {
+            //initialize _scrollFactor
+            const char* sf = ::getenv("CEF_SCROLL_FACTOR");
+            if ( sf )
+                _scrollFactor = as<float>(sf, 0.0);
+            else
+                _scrollFactor = 70.0f;
+        }
+
+        unsigned int getCefModifiers(int modKeyMask)
+        {
+            int modifiers = 0;
+            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
+              modifiers |= EVENTFLAG_CONTROL_DOWN;
+            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_SHIFT)
+              modifiers |= EVENTFLAG_SHIFT_DOWN;
+            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_ALT)
+              modifiers |= EVENTFLAG_ALT_DOWN;
+            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CAPS_LOCK)
+              modifiers |= EVENTFLAG_CAPS_LOCK_ON;
+            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_NUM_LOCK)
+              modifiers |= EVENTFLAG_NUM_LOCK_ON;
+
+            //if (modKeyMask & osgGA::GUIEventAdapter:)
+            //  modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+            //if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
+            //  modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+            //if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
+            //  modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+
+            return modifiers;
+        }
+
+        CefBrowserHost::MouseButtonType getCefMouseButton(int button)
+        {
+          return button == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON ? MBT_LEFT : button == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON ? MBT_RIGHT : MBT_MIDDLE;
+        }
+
+        bool getScrollDeltas(const osgGA::GUIEventAdapter& ea, float &deltaX, float &deltaY)
+        {
+          if (ea.getScrollingDeltaX() != 0 || ea.getScrollingDeltaY() != 0)
+          {
+              deltaX = ea.getScrollingDeltaX();
+              deltaY = ea.getScrollingDeltaY();
+              return true;
+          }
+
+          deltaX = 0.0f;
+          deltaY = 0.0f;
+
+          switch (ea.getScrollingMotion())
+          {
+              case osgGA::GUIEventAdapter::SCROLL_UP:
+                  deltaY = _scrollFactor;
+                  break;
+
+              case osgGA::GUIEventAdapter::SCROLL_DOWN:
+                  deltaY = -_scrollFactor;
+                  break;
+
+              case osgGA::GUIEventAdapter::SCROLL_LEFT:
+                  deltaX = -_scrollFactor;
+                  break;
+
+              case osgGA::GUIEventAdapter::SCROLL_RIGHT:
+                  deltaX = _scrollFactor;
+                  break;
+          }
+
+          return deltaX != 0.0f || deltaY != 0.0f;
+        }
 
         bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
         {
-            if (ea.getEventType() == ea.PUSH)
+            switch (ea.getEventType())
             {
-                CefMouseEvent mouse_event;
-                mouse_event.x = (int)ea.getX();
-                mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                mouse_event.modifiers = 0; //TODO
-                CefBrowserHost::MouseButtonType button = ea.getButton() == ea.LEFT_MOUSE_BUTTON ? MBT_LEFT : ea.getButton() == ea.RIGHT_MOUSE_BUTTON ? MBT_RIGHT : MBT_MIDDLE;
-                _browser->GetHost()->SendMouseClickEvent(mouse_event, button, false, 1);
+                case osgGA::GUIEventAdapter::PUSH:
+                    {
+                        CefMouseEvent mouse_event;
+                        mouse_event.x = (int)ea.getX();
+                        mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
+                        mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        _browser->GetHost()->SendMouseClickEvent(mouse_event, getCefMouseButton(ea.getButton()), false, 1);
+                    }
+                    break;
 
-                //return true;
+                case osgGA::GUIEventAdapter::RELEASE:
+                    {
+                        CefMouseEvent mouse_event;
+                        mouse_event.x = (int)ea.getX();
+                        mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
+                        mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        _browser->GetHost()->SendMouseClickEvent(mouse_event, getCefMouseButton(ea.getButton()), true, 1);
+
+                        _browser->GetHost()->SendFocusEvent(true);
+                    }
+                    break;
+
+                case osgGA::GUIEventAdapter::KEYDOWN:
+                    if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F12)
+                    {
+                        CefWindowInfo windowInfo;
+                        windowInfo.SetAsPopup(0L, "DevTools");
+                        CefBrowserSettings browserSettings;
+                        _browser->GetHost()->ShowDevTools(windowInfo, _browserClient.get(), browserSettings);
+                    }
+
+                    {
+                        CefKeyEvent key_event;
+                        key_event.windows_key_code = ea.getKey();
+                        //key_event.native_key_code = ea.getKey();
+                        key_event.is_system_key = 0;
+                        key_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        key_event.type = KEYEVENT_RAWKEYDOWN;
+                        _browser->GetHost()->SendKeyEvent(key_event);
+                    }
+                    break;
+
+                case osgGA::GUIEventAdapter::KEYUP:
+                    {
+                        CefKeyEvent key_event;
+
+                        key_event.windows_key_code = ea.getKey();
+                        //key_event.native_key_code = ea.getKey();
+                        key_event.is_system_key = 0;
+                        key_event.modifiers = getCefModifiers(ea.getModKeyMask());
+
+
+                        key_event.type = KEYEVENT_CHAR;
+                        _browser->GetHost()->SendKeyEvent(key_event);
+
+                        key_event.type = KEYEVENT_KEYUP;
+                        _browser->GetHost()->SendKeyEvent(key_event);
+                    }
+                    break;
+
+                case osgGA::GUIEventAdapter::MOVE:
+                case osgGA::GUIEventAdapter::DRAG:
+                    {
+                        CefMouseEvent mouse_event;
+                        mouse_event.x = (int)ea.getX();
+                        mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
+                        mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        _browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
+                    }
+                    break;
+
+                case osgGA::GUIEventAdapter::SCROLL:
+                    {
+                        float deltaX, deltaY;
+                        if (getScrollDeltas(ea, deltaX, deltaY))
+                        {
+                            CefMouseEvent mouse_event;
+                            mouse_event.x = (int)ea.getX();
+                            mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
+                            mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                            _browser->GetHost()->SendMouseWheelEvent(mouse_event, deltaX, deltaY);
+                        }
+                    }
+                    break;
+
+                case osgGA::GUIEventAdapter::RESIZE:
+                    _browserClient->setSize(ea.getWindowWidth(), ea.getWindowHeight());
+                    _browser->GetHost()->WasResized();
+                    break;
             }
-            else if (ea.getEventType() == ea.RELEASE)
-            {
-                CefMouseEvent mouse_event;
-                mouse_event.x = (int)ea.getX();
-                mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                mouse_event.modifiers = 0; //TODO
-                CefBrowserHost::MouseButtonType button = ea.getButton() == ea.LEFT_MOUSE_BUTTON ? MBT_LEFT : ea.getButton() == ea.RIGHT_MOUSE_BUTTON ? MBT_RIGHT : MBT_MIDDLE;
-                _browser->GetHost()->SendMouseClickEvent(mouse_event, button, true, 1);
 
-                _browser->GetHost()->SendFocusEvent(true);
-
-                //return true;
-            }
-            else if (ea.getEventType() == ea.KEYDOWN)
-            {
-                if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F12)
-                {
-                    CefWindowInfo windowInfo;
-                    windowInfo.SetAsPopup(0L, "DevTools");
-                    CefBrowserSettings browserSettings;
-                    _browser->GetHost()->ShowDevTools(windowInfo, _browserClient.get(), browserSettings);
-
-                    return true;
-                }
-
-                CefKeyEvent key_event;
-                key_event.windows_key_code = ea.getKey();
-                //key_event.native_key_code = ea.getKey();
-                key_event.is_system_key = 0;
-                key_event.modifiers = 0;
-                key_event.type = KEYEVENT_RAWKEYDOWN;
-                _browser->GetHost()->SendKeyEvent(key_event);
-            }
-            else if (ea.getEventType() == ea.KEYUP)
-            {
-                CefKeyEvent key_event;
-
-                key_event.windows_key_code = ea.getKey();
-                //key_event.native_key_code = ea.getKey();
-                key_event.is_system_key = 0;
-                key_event.modifiers = 0;
-
-
-                key_event.type = KEYEVENT_CHAR;
-                _browser->GetHost()->SendKeyEvent(key_event);
-
-                key_event.type = KEYEVENT_KEYUP;
-                _browser->GetHost()->SendKeyEvent(key_event);
-            }
-            else if (ea.getEventType() == ea.MOVE)
-            {
-                CefMouseEvent mouse_event;
-                mouse_event.x = (int)ea.getX();
-                mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                mouse_event.modifiers = 0; //TODO
-                CefBrowserHost::MouseButtonType button = ea.getButton() == ea.LEFT_MOUSE_BUTTON ? MBT_LEFT : ea.getButton() == ea.RIGHT_MOUSE_BUTTON ? MBT_RIGHT : MBT_MIDDLE;
-                _browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
-            }
-            else if (ea.getEventType() == ea.RESIZE)
-            {
-              _browserClient->setSize(ea.getWindowWidth(), ea.getWindowHeight());
-              _browser->GetHost()->WasResized();
-            }
-
+            //TODO: Return true if event occurred over non-transparent portion of main view
             return false;
         }
 
         osg::ref_ptr<osgViewer::View> _view;
         CefRefPtr<CefBrowser> _browser;
         CefRefPtr<BrowserClient> _browserClient;
+        float _scrollFactor;
     };
 }
 
@@ -269,9 +363,9 @@ osgViewer::View* BrowserClient::getMapView(const std::string& name)
       return 0L;
 }
 
-osgEarth::MapNode* BrowserClient::getMapNode(const std::string& name)
+MapNode* BrowserClient::getMapNode(const std::string& name)
 {
-    std::map<std::string, osg::ref_ptr<osgEarth::MapNode>>::iterator it = _mapNodes.find(name);
+    std::map<std::string, osg::ref_ptr<MapNode>>::iterator it = _mapNodes.find(name);
     if (it != _mapNodes.end())
         return it->second;
     else
@@ -352,7 +446,7 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
     //            if (node)
     //            {
     //              mapView->setSceneData(node);
-    //              _mapNodes[name] = osgEarth::MapNode::findMapNode(node);
+    //              _mapNodes[name] = MapNode::findMapNode(node);
     //            }
     //            else
     //            {

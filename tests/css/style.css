@@ -114,6 +114,14 @@ html, body {
   margin-bottom: 10px;
 }
 
+#test_scrollbox {
+  width: 180px;
+  height: 150px;
+  overflow: auto;
+  background-color: #fff;
+  border 1px solid #333;
+}
+
 /* button style */
 .cool-button {
 	-moz-box-shadow:inset 0px 1px 0px 0px #a4e271;
