@@ -61,7 +61,15 @@ namespace
                 tms.url() = "http://readymap.org:8080/readymap/tiles/1.0.0/76/";
                 osgEarth::ImageLayer* layer = new osgEarth::ImageLayer( "Test Layer", tms );
 
-                _client->getMapNode(id)->getMap()->addImageLayer(layer);
+                osg::ref_ptr<osgEarth::MapNode> mapNode= _client->getMapNode(id);
+                if (mapNode.valid())
+                {
+                    mapNode->getMap()->addImageLayer(layer);
+                }
+                else
+                {
+                    return new ExecuteCallback::ReturnVal("Failed to load layer, map node not found.", -1);
+                }
 
                 return new ExecuteCallback::ReturnVal();
             }

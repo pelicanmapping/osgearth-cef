@@ -60,6 +60,19 @@ function addTestLayer() {
     $('#addLayerButton').prop('disabled', true);
 }
 
+function loadNewMap() {
+    if (myMap) {
+        myMap.loadFile("openstreetmap.earth",
+                       { onSuccess: function(v) {
+                           myMap.getImageLayers({ onSuccess: function(value) { setLayers("image_layers", value);} });
+                           myMap.getElevationLayers({ onSuccess: function(value) { setLayers("elevation_layers", value);} });
+                           myMap.getModelLayers({ onSuccess: function(value) { setLayers("model_layers", value);} });
+                           listenerId = myMap.addModelListener(onMapEvent);
+                       } });
+        $('#loadMapButton').prop('disabled', true);
+    }
+}
+
 function onSelectChange() {
     alert("You selected: " + $('#testSelect').val());
 }
@@ -125,6 +138,7 @@ $(function() {
     <div id="right_bar">
         <div id="test_controls">
             <input type="button" id="addLayerButton" value="Add Test Layer" onClick="addTestLayer()"/>
+            <input type="button" id="loadMapButton" value="Load new .earth file" onClick="loadNewMap()"/>
             <input type="button" id="customExecuteButton" value="Moo"/>
             <select id="testSelect" onchange="onSelectChange()">
                 <option value="" disabled="disabled" selected="selected">Please select a name</option>
@@ -165,7 +179,7 @@ $(function() {
         <img src="img/cube.gif" style="width: 50px;"/>
         <p title="A tool tip!">This cube is spinning!</p>
     </div>
-    
+
 </body>
 
 </html>

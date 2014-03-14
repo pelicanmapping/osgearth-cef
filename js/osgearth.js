@@ -78,6 +78,14 @@ function Map(id, x, y, width, height, earthfile, options) {
 }
  
 Map.prototype._id;
+
+Map.prototype.loadFile = function(earthfile, options) {
+    osgearth.execute("_OE_map_load_file", { id: this._id, url: earthfile }, options);
+}
+
+Map.prototype.resize = function(x, y, width, height, options) {
+    osgearth.setMap(this._id, x, y, width, height, options);
+}
  
 Map.prototype.home = function(options) {
     osgearth.execute("_OE_map_home", { id: this._id }, options);

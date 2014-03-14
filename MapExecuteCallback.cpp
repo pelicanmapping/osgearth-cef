@@ -89,6 +89,38 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
 
         return new ReturnVal();
     }
+    else if (command == "_OE_map_load_file")
+    {
+        std::string id = args["id"];
+        if (id.empty())
+            return new ReturnVal("Map load error: no id specified.", -1);
+
+        osg::ref_ptr<osgViewer::View> mapView = _client->getMapView(id);
+        if (!mapView.valid())
+            return new ReturnVal("Map load error: id not found.", -1);
+
+        std::string url = args["url"];
+        if (url.empty())
+            return new ReturnVal("Map load error: no url specified.", -1);
+
+        //TODO: cleanup old mapnode?
+        mapView->setSceneData(0L);
+        _client->_mapNodes[id] = 0L;
+
+        osg::Node* node = osgDB::readNodeFile(url);
+        if (node)
+        {
+            mapView->setSceneData(node);
+            _client->_mapNodes[id] = osgEarth::MapNode::findMapNode(node);
+        }
+        else
+        {
+            OE_DEBUG << LC << "Could not load map file: " << url << std::endl;
+            return new ReturnVal("Map load error: could not load map file: " + url, -1);
+        }
+
+        return new ReturnVal();
+    }
     else if (command == "_OE_map_home")
     {
         std::string id = args["id"];
