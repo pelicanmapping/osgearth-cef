@@ -54,12 +54,18 @@ endif()
 if(WIN32)
 
 	# configure sdk's
-	find_path(SDK_DIR NAMES create_lib.py PATHS c:/sdk NO_DEFAULT_PATH)	
+	find_path(SDK_DIR NAMES create_lib.py PATHS e:/sdk g:/sdk c:/sdk d:/sdk NO_DEFAULT_PATH)	
 
-	set(OSG_DIR ${SDK_DIR}/osg/3.2.0 ) 
-	set(OSGEARTH_DIR ${SDK_DIR}/osgearth/2.5 )
+	# --- cef
+	if(CMAKE_CL_64)
+		find_path(CEF_ROOT_DIR NAMES include/cef_version.h PATHS ${SDK_DIR}/cef/3.1750.1629 NO_DEFAULT_PATH)	
+	endif()
 
-	find_path(CEF_ROOT_DIR NAMES include/cef_version.h PATHS ${SDK_DIR}/cef/3.1547 NO_DEFAULT_PATH)	
+	if(CMAKE_CL_64) 
+		set(OSG_DIR ${SDK_DIR}/osg/3.1.4) 
+		set(OSGEARTH_DIR ${SDK_DIR}/osgearth/2.5_osg314 ) 
+		set(GDAL_DIR ${SDK_DIR}/gdal/1.10.1 ) 
+	endif()
 
 	if(CMAKE_CL_64)
 		set(LIBRARY_PATH_SUFFIXES win/64/release/lib win/64/debug/lib)
@@ -168,24 +174,17 @@ set(CEF_LIBS
 # CEF libs uses _LIBRARY_RELEASE not _LIBRARY as a postfix
 foreach(cef_lib ${CEF_LIBS})
   STRING(TOUPPER "${cef_lib}" cef_lib_upper)
-
-  target_link_libraries( ${PROJECT_NAME} optimized "${${cef_lib_upper}_LIBRARY_RELEASE}" debug "${${cef_lib_upper}_LIBRARY_DEBUG}")
+  message(STATUS "${${cef_lib_upper}_LIBRARY_RELEASE}")
+  target_link_libraries( "osgearth_cef" optimized "${${cef_lib_upper}_LIBRARY_RELEASE}" debug "${${cef_lib_upper}_LIBRARY_DEBUG}")
   target_link_libraries( "osgearth_cef_simple" optimized "${${cef_lib_upper}_LIBRARY_RELEASE}" debug "${${cef_lib_upper}_LIBRARY_DEBUG}")
 	
 endforeach()
 
 
-target_link_libraries( "osgearth_cef" optimized "${PROJECT_NAME}" )
-target_link_libraries( "osgearth_cef_simple" optimized "${PROJECT_NAME}" )
+target_link_libraries( "osgearth_cef" optimized "${PROJECT_NAME}" debug "${PROJECT_NAME}" )
+target_link_libraries( "osgearth_cef_simple" optimized "${PROJECT_NAME}" debug "${PROJECT_NAME}" )
 
 include_directories(${PROJECT_SOURCE_DIR} )
-
-
-# this supports WIN32, MACOSX
-#install(TARGETS ${PROJECT_NAME}
-#    BUNDLE DESTINATION . COMPONENT Runtime
-#    RUNTIME DESTINATION bin COMPONENT Runtime
-#)
 
 
 
