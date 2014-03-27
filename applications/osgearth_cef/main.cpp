@@ -22,7 +22,11 @@
 #include <osgViewer/Viewer>
 
 #include <osgEarth/ImageLayer>
+#include <osgEarth/Registry>
+#include <osgEarthUtil/Controls>
 #include <osgEarthDrivers/tms/TMSOptions>
+
+#include <typeinfo>
 
 #include "include/cef_app.h"
 
@@ -34,7 +38,7 @@
 
 
 using namespace osgEarth::Cef;
-
+using namespace osgEarth::Util::Controls;
 
 namespace
 {
@@ -81,6 +85,9 @@ namespace
 }
 
 
+
+
+
 int main(int argc, char** argv)
 {
     osg::ArgumentParser arguments(&argc,argv);
@@ -94,10 +101,43 @@ int main(int argc, char** argv)
         //TEST
         browserClient->addExecuteCallback(new MyExecCallback(browserClient.get()));
 
+        bool init = false;
         while (!browserClient->getViewer()->done())
         {
             browserClient->getViewer()->frame();
             CefDoMessageLoopWork();
+
+            // Demo:
+            // Once initialized, add a control to the default canvas
+            if (!init)
+            {
+                // Have to wait until view is created
+                osg::ref_ptr<osgViewer::View> view = browserClient->getMapView("map1");
+                if (view.valid())
+                {
+                    // Get the default ControlCanvas
+                    ControlCanvas* cs = ControlCanvas::get( view.get(), false  );
+
+                    HBox* box = new HBox();
+                    box->setBorderColor( 1, 1, 1, 1 );
+                    box->setBackColor( .6,.5,.4,0.5 );
+                    box->setPadding( 10 );
+                    box->setHorizAlign( Control::ALIGN_LEFT );
+                    box->setVertAlign( Control::ALIGN_BOTTOM );
+
+                    // Add a text label:
+                    LabelControl* label = new LabelControl( "osgEarth Controls Toolkit" );
+                    label->setFont( osgEarth::Registry::instance()->getDefaultFont() );
+                    label->setFontSize( 24.0f );
+                    label->setHorizAlign( Control::ALIGN_LEFT );
+                    label->setMargin( 5 );
+                    box->addControl( label );
+
+                    cs->addControl(box);
+                    
+                    init = true;
+                }
+            }
         }
     }
 
@@ -106,3 +146,4 @@ int main(int argc, char** argv)
 
     return 0; 
 }
+

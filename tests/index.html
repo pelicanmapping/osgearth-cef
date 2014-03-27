@@ -62,7 +62,7 @@ function addTestLayer() {
 
 function loadNewMap() {
     if (myMap) {
-        myMap.loadFile("openstreetmap.earth",
+        myMap.loadFile("readymap.earth",
                        { onSuccess: function(v) {
                            myMap.getImageLayers({ onSuccess: function(value) { setLayers("image_layers", value);} });
                            myMap.getElevationLayers({ onSuccess: function(value) { setLayers("elevation_layers", value);} });

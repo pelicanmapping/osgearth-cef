@@ -25,5 +25,9 @@ http://readymap.org
     <elevation name="Readymap Elevation" driver="tms">
         <url>http://readymap.org/readymap/tiles/1.0.0/9/</url>
     </elevation>
+
+    <external>
+        <sky driver="simple" hours="14.0"/>
+    </external>
     
 </map>

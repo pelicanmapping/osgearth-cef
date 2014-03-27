@@ -1,13 +1,72 @@
 #include "MapExecuteCallback"
 
+#include <osgEarthUtil/Controls>
 #include <osgEarthUtil/EarthManipulator>
+#include <osgEarthUtil/ExampleResources>
+//#include <osgEarthUtil/Ocean>
+#include <osgEarthUtil/Sky>
+//#include <osgEarthAnnotation/AnnotationRegistry>
 
 
 using namespace osgEarth::Cef;
+using namespace osgEarth::Util;
 
 
 #define LC "[MapExecuteCallback] "
 
+void MapExecuteCallback::ParseMapNode(osgEarth::MapNode* mapNode, osgViewer::View* view, osg::Group* root)
+{
+    const Config& externals = mapNode->externalConfig();
+    const Config& skyConf = externals.child("sky");
+    //const Config& oceanConf = externals.child("ocean");
+    //const Config& annoConf = externals.child("annotations");
+
+    // Sky in the map node externals:
+    if ( !skyConf.empty() )
+    {
+        SkyOptions options(skyConf);
+        if ( options.getDriver().empty() )
+        {
+            if ( mapNode->getMapSRS()->isGeographic() )
+                options.setDriver("simple");
+            else
+                options.setDriver("gl");
+        }
+
+        SkyNode* sky = SkyNode::create(options, mapNode);
+        if ( sky )
+        {
+            sky->attach( view, 0 );
+            sky->setDateTime( DateTime() );
+            osgEarth::insertGroup(sky, mapNode);
+        }
+    }
+
+    // Ocean in the map node externals:
+    //if ( !oceanConf.empty() )
+    //{
+    //    OceanNode* ocean = OceanNode::create(OceanOptions(oceanConf), mapNode);
+    //    if ( ocean )
+    //    {
+    //        root->addChild( ocean );
+
+    //        Control* c = OceanControlFactory().create(ocean);
+    //        if ( c )
+    //            mainContainer->addControl(c);
+    //    }
+    //}
+
+    // Annotations in the map node externals:
+    //if ( !annoConf.empty() )
+    //{
+    //    osg::Group* annotations = 0L;
+    //    osgEarth::Annotation::AnnotationRegistry::instance()->create( mapNode, annoConf, dbOptions.get(), annotations );
+    //    if ( annotations )
+    //    {
+    //        root->addChild( annotations );
+    //    }
+    //}
+}
 
 ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const std::string& command, const JsonArguments &args, CefRefPtr<CefMessageRouterBrowserSide::Callback> persistentCallback )
 {
@@ -42,14 +101,24 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
 
         _client->_viewer->addView( mapView );
 
+        osg::Group* root = new osg::Group();
+
+        // Install a canvas for any UI controls we plan to create:
+        osgEarth::Util::Controls::ControlCanvas* canvas =  osgEarth::Util::Controls::ControlCanvas::get(mapView, false);
+        root->addChild(canvas);
+
         std::string mapFile = args["file"];
         if (!mapFile.empty())
         {
             osg::Node* node = osgDB::readNodeFile(mapFile);
             if (node)
             {
-                mapView->setSceneData(node);
-                _client->_mapNodes[id] = osgEarth::MapNode::findMapNode(node);
+                root->addChild(node);
+
+                osgEarth::MapNode* mapNode = osgEarth::MapNode::findMapNode(node);
+                _client->_mapNodes[id] = mapNode;
+
+                ParseMapNode(mapNode, mapView, root);
             }
             else
             {
@@ -61,6 +130,8 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         {
             _client->_mapNodes[id] = 0L;
         }
+
+        mapView->setSceneData(root);
 
         return new ReturnVal();
     }
@@ -103,15 +174,29 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         if (url.empty())
             return new ReturnVal("Map load error: no url specified.", -1);
 
+        // Find and clear root node
+        osg::Group* root = dynamic_cast<osg::Group*>(mapView->getSceneData());
+        if (root)
+        {
+            root->removeChildren(0, root->getNumChildren());
+        }
+        else
+        {
+            root = new osg::Group();
+            mapView->setSceneData(root);
+        }
+
         //TODO: cleanup old mapnode?
-        mapView->setSceneData(0L);
         _client->_mapNodes[id] = 0L;
 
         osg::Node* node = osgDB::readNodeFile(url);
         if (node)
         {
-            mapView->setSceneData(node);
-            _client->_mapNodes[id] = osgEarth::MapNode::findMapNode(node);
+            root->addChild(node);
+            osgEarth::MapNode* mapNode = osgEarth::MapNode::findMapNode(node);
+            _client->_mapNodes[id] = mapNode;
+
+            ParseMapNode(mapNode, mapView, root);
         }
         else
         {

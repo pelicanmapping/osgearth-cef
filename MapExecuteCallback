@@ -17,6 +17,8 @@ public:
     ReturnVal* execute( int64 queryId, const std::string& command, const JsonArguments &args, CefRefPtr<CefMessageRouterBrowserSide::Callback> persistentCallback );
 
 private:
+    void ParseMapNode(osgEarth::MapNode* mapNode, osgViewer::View* view, osg::Group* root);
+
     CefRefPtr<BrowserClient> _client;
 
     struct MapQueryCallback: public osgEarth::MapCallback
