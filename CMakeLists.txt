@@ -132,7 +132,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES RELEASE_OUTPUT_NAME "${PROJECT_
 
 # Separate project for test app
 add_executable( "osgearth_cef" applications/osgearth_cef/main.cpp )
-add_executable( "osgearth_cef_simple" applications/osgearth_cef_simple/main.cpp )
+add_executable( "demo_cef" applications/demo_cef/main.cpp )
 
 set(EXT_LIBS
 	OSGUTIL
@@ -157,7 +157,7 @@ foreach(ext_lib ${EXT_LIBS})
   STRING(TOUPPER "${ext_lib}" ext_lib_upper)
 
   target_link_libraries( "osgearth_cef" optimized "${${ext_lib_upper}_LIBRARY}" debug "${${ext_lib_upper}_LIBRARY_DEBUG}")
-  target_link_libraries( "osgearth_cef_simple" optimized "${${ext_lib_upper}_LIBRARY}" debug "${${ext_lib_upper}_LIBRARY_DEBUG}")
+  target_link_libraries( "demo_cef" optimized "${${ext_lib_upper}_LIBRARY}" debug "${${ext_lib_upper}_LIBRARY_DEBUG}")
 	
 endforeach()
 
@@ -170,13 +170,13 @@ foreach(cef_lib ${CEF_LIBS})
   STRING(TOUPPER "${cef_lib}" cef_lib_upper)
 
   target_link_libraries( ${PROJECT_NAME} optimized "${${cef_lib_upper}_LIBRARY_RELEASE}" debug "${${cef_lib_upper}_LIBRARY_DEBUG}")
-  target_link_libraries( "osgearth_cef_simple" optimized "${${cef_lib_upper}_LIBRARY_RELEASE}" debug "${${cef_lib_upper}_LIBRARY_DEBUG}")
+  target_link_libraries( "demo_cef" optimized "${${cef_lib_upper}_LIBRARY_RELEASE}" debug "${${cef_lib_upper}_LIBRARY_DEBUG}")
 	
 endforeach()
 
 
 target_link_libraries( "osgearth_cef" optimized "${PROJECT_NAME}" )
-target_link_libraries( "osgearth_cef_simple" optimized "${PROJECT_NAME}" )
+target_link_libraries( "demo_cef" optimized "${PROJECT_NAME}" )
 
 include_directories(${PROJECT_SOURCE_DIR} )
 
