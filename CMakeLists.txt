@@ -83,6 +83,7 @@ set(APP_SRCS
     BrowserClient.cpp
     CefHelper.cpp
     JsonArguments.cpp
+    KeyboardEventAdapter.cpp
     MapExecuteCallback.cpp
     RenderProcessHandler.cpp
 )
@@ -95,6 +96,7 @@ set(APP_HDRS
     CefHelper
     ExecuteCallback
     JsonArguments
+    KeyboardEventAdapter
     MapExecuteCallback
     OECefApp
     RenderProcessHandler

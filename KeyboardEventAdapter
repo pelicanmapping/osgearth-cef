@@ -1,0 +1,25 @@
+#ifndef OSGEARTH_CEF_KEYBOARDEVENTADAPTER
+#define OSGEARTH_CEF_KEYBOARDEVENTADAPTER 1
+
+#include <osgGA/GUIEventAdapter>
+
+namespace osgEarth { namespace Cef
+{
+
+class KeyboardEventAdapter
+{
+public:
+
+    KeyboardEventAdapter();
+
+    int remapKey(int key);
+
+protected:
+
+    typedef std::map<int, int> KeyMap;
+    KeyMap _keymap;
+};
+
+} }
+
+#endif
