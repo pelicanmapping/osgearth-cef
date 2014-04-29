@@ -343,8 +343,7 @@ namespace
 #ifdef WIN32
                         key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
 #else
-                        //TODO: Use _keyAdapter once other platforms are added?
-                        key_event.native_key_code = ea.getUnmodifiedKey();
+                        key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
 #endif
 
                         key_event.is_system_key = 0;
@@ -370,8 +369,7 @@ namespace
 #ifdef WIN32
                         key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
 #else
-                        //TODO: Use _keyAdapter once other platforms are added?
-                        key_event.native_key_code = ea.getUnmodifiedKey();
+                        key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
 #endif
 
                         key_event.is_system_key = 0;
