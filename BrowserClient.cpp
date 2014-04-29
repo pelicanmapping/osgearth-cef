@@ -342,8 +342,12 @@ namespace
 
 #ifdef WIN32
                         key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
+
+                        OE_DEBUG << LC << "KEYDOWN: unmodified(" << ea.getUnmodifiedKey() << ")  modified(" << ea.getKey() << ")  remapped(" << key_event.windows_key_code << ")" << std::endl;
 #else
                         key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
+
+                        OE_DEBUG << LC << "KEYDOWN: unmodified(" << ea.getUnmodifiedKey() << ")  modified(" << ea.getKey() << ")  remapped(" << key_event.native_key_code << ")" << std::endl;
 #endif
 
                         key_event.is_system_key = 0;
