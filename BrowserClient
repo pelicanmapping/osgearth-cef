@@ -31,6 +31,8 @@ public:
 
     CefBrowser* getBrowser() { return _browser.get(); }
 
+    osg::Image* getImage() { return _image.get(); }
+
     void setSize(unsigned int width, unsigned int height);
 
     void addExecuteCallback( ExecuteCallback* callback );
@@ -106,6 +108,8 @@ protected:
     void initBrowser(const std::string& url);
     void setupMainView(unsigned int width, unsigned int height);
 
+    void addMapView(const std::string& id, osgViewer::View* mapView);
+
     //CefRefPtr<RenderHandler> _renderHandler;
     CefRefPtr<CefBrowser> _browser;
     CefRefPtr<CefMessageRouterBrowserSide> _messageRouter;
@@ -116,6 +120,8 @@ protected:
     osg::ref_ptr<osgViewer::View> _mainView;
     std::map<std::string, osg::ref_ptr<osgViewer::View>> _mapViews;
     std::map<std::string, osg::ref_ptr<osgEarth::MapNode>> _mapNodes;
+
+    osg::ref_ptr<osgGA::GUIEventHandler> _mainEventHandler;
 
     typedef std::vector< osg::ref_ptr<ExecuteCallback> > ExecuteCallbacks;
     ExecuteCallbacks _callbacks;

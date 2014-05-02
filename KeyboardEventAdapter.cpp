@@ -1,5 +1,7 @@
 #include "KeyboardEventAdapter"
 
+#include "include/internal/cef_types.h"
+
 #ifdef WIN32
   #include <windows.h>
 #elif X11
@@ -267,4 +269,309 @@ using namespace osgEarth::Cef;
     {
         KeyMap::const_iterator map = _keymap.find(key);
         return map==_keymap.end() ? key : map->second;
+    }
+
+    unsigned int KeyboardEventAdapter::getCefModifiers(int modKeyMask)
+    {
+        int modifiers = 0;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
+          modifiers |= EVENTFLAG_CONTROL_DOWN;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_SHIFT)
+          modifiers |= EVENTFLAG_SHIFT_DOWN;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_ALT)
+          modifiers |= EVENTFLAG_ALT_DOWN;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CAPS_LOCK)
+          modifiers |= EVENTFLAG_CAPS_LOCK_ON;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_NUM_LOCK)
+          modifiers |= EVENTFLAG_NUM_LOCK_ON;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_LEFT_ALT ||
+            modKeyMask & osgGA::GUIEventAdapter::MODKEY_LEFT_CTRL ||
+            modKeyMask & osgGA::GUIEventAdapter::MODKEY_LEFT_SHIFT)
+          modifiers |= EVENTFLAG_IS_LEFT;
+        if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_RIGHT_ALT ||
+            modKeyMask & osgGA::GUIEventAdapter::MODKEY_RIGHT_CTRL ||
+            modKeyMask & osgGA::GUIEventAdapter::MODKEY_RIGHT_SHIFT)
+          modifiers |= EVENTFLAG_IS_RIGHT;
+
+        //if (modKeyMask & osgGA::GUIEventAdapter:)
+        //  modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+        //if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
+        //  modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+        //if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
+        //  modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+
+        return modifiers;
+    }
+
+    //int OSRWindow::GetCefKeyboardModifiers(WPARAM wparam, LPARAM lparam)
+    //{
+    //  switch (wparam) {
+    //  case VK_RETURN:
+    //    if ((lparam >> 16) & KF_EXTENDED)
+    //      modifiers |= EVENTFLAG_IS_KEY_PAD;
+    //    break;
+    //  case VK_INSERT:
+    //  case VK_DELETE:
+    //  case VK_HOME:
+    //  case VK_END:
+    //  case VK_PRIOR:
+    //  case VK_NEXT:
+    //  case VK_UP:
+    //  case VK_DOWN:
+    //  case VK_LEFT:
+    //  case VK_RIGHT:
+    //    if (!((lparam >> 16) & KF_EXTENDED))
+    //      modifiers |= EVENTFLAG_IS_KEY_PAD;
+    //    break;
+    //  case VK_NUMLOCK:
+    //  case VK_NUMPAD0:
+    //  case VK_NUMPAD1:
+    //  case VK_NUMPAD2:
+    //  case VK_NUMPAD3:
+    //  case VK_NUMPAD4:
+    //  case VK_NUMPAD5:
+    //  case VK_NUMPAD6:
+    //  case VK_NUMPAD7:
+    //  case VK_NUMPAD8:
+    //  case VK_NUMPAD9:
+    //  case VK_DIVIDE:
+    //  case VK_MULTIPLY:
+    //  case VK_SUBTRACT:
+    //  case VK_ADD:
+    //  case VK_DECIMAL:
+    //  case VK_CLEAR:
+    //    modifiers |= EVENTFLAG_IS_KEY_PAD;
+    //    break;
+    //  case VK_SHIFT:
+    //    if (isKeyDown(VK_LSHIFT))
+    //      modifiers |= EVENTFLAG_IS_LEFT;
+    //    else if (isKeyDown(VK_RSHIFT))
+    //      modifiers |= EVENTFLAG_IS_RIGHT;
+    //    break;
+    //  case VK_CONTROL:
+    //    if (isKeyDown(VK_LCONTROL))
+    //      modifiers |= EVENTFLAG_IS_LEFT;
+    //    else if (isKeyDown(VK_RCONTROL))
+    //      modifiers |= EVENTFLAG_IS_RIGHT;
+    //    break;
+    //  case VK_MENU:
+    //    if (isKeyDown(VK_LMENU))
+    //      modifiers |= EVENTFLAG_IS_LEFT;
+    //    else if (isKeyDown(VK_RMENU))
+    //      modifiers |= EVENTFLAG_IS_RIGHT;
+    //    break;
+    //  case VK_LWIN:
+    //    modifiers |= EVENTFLAG_IS_LEFT;
+    //    break;
+    //  case VK_RWIN:
+    //    modifiers |= EVENTFLAG_IS_RIGHT;
+    //    break;
+    //  }
+    //  return modifiers;
+    //}
+
+    bool KeyboardEventAdapter::confirmCharKey(int key)
+    {
+        switch (key)
+        {
+            case osgGA::GUIEventAdapter::KEY_Space:
+            case osgGA::GUIEventAdapter::KEY_0:
+            case osgGA::GUIEventAdapter::KEY_1:
+            case osgGA::GUIEventAdapter::KEY_2:
+            case osgGA::GUIEventAdapter::KEY_3:
+            case osgGA::GUIEventAdapter::KEY_4:
+            case osgGA::GUIEventAdapter::KEY_5:
+            case osgGA::GUIEventAdapter::KEY_6:
+            case osgGA::GUIEventAdapter::KEY_7:
+            case osgGA::GUIEventAdapter::KEY_8:
+            case osgGA::GUIEventAdapter::KEY_9:
+            case osgGA::GUIEventAdapter::KEY_A:
+            case osgGA::GUIEventAdapter::KEY_B:
+            case osgGA::GUIEventAdapter::KEY_C:
+            case osgGA::GUIEventAdapter::KEY_D:
+            case osgGA::GUIEventAdapter::KEY_E:
+            case osgGA::GUIEventAdapter::KEY_F:
+            case osgGA::GUIEventAdapter::KEY_G:
+            case osgGA::GUIEventAdapter::KEY_H:
+            case osgGA::GUIEventAdapter::KEY_I:
+            case osgGA::GUIEventAdapter::KEY_J:
+            case osgGA::GUIEventAdapter::KEY_K:
+            case osgGA::GUIEventAdapter::KEY_L:
+            case osgGA::GUIEventAdapter::KEY_M:
+            case osgGA::GUIEventAdapter::KEY_N:
+            case osgGA::GUIEventAdapter::KEY_O:
+            case osgGA::GUIEventAdapter::KEY_P:
+            case osgGA::GUIEventAdapter::KEY_Q:
+            case osgGA::GUIEventAdapter::KEY_R:
+            case osgGA::GUIEventAdapter::KEY_S:
+            case osgGA::GUIEventAdapter::KEY_T:
+            case osgGA::GUIEventAdapter::KEY_U:
+            case osgGA::GUIEventAdapter::KEY_V:
+            case osgGA::GUIEventAdapter::KEY_W:
+            case osgGA::GUIEventAdapter::KEY_X:
+            case osgGA::GUIEventAdapter::KEY_Y:
+            case osgGA::GUIEventAdapter::KEY_Z:
+
+            case osgGA::GUIEventAdapter::KEY_Exclaim:
+            case osgGA::GUIEventAdapter::KEY_Quotedbl:
+            case osgGA::GUIEventAdapter::KEY_Hash:
+            case osgGA::GUIEventAdapter::KEY_Dollar:
+            case osgGA::GUIEventAdapter::KEY_Ampersand:
+            case osgGA::GUIEventAdapter::KEY_Quote:
+            case osgGA::GUIEventAdapter::KEY_Leftparen:
+            case osgGA::GUIEventAdapter::KEY_Rightparen:
+            case osgGA::GUIEventAdapter::KEY_Asterisk:
+            case osgGA::GUIEventAdapter::KEY_Plus:
+            case osgGA::GUIEventAdapter::KEY_Comma:
+            case osgGA::GUIEventAdapter::KEY_Minus:
+            case osgGA::GUIEventAdapter::KEY_Period:
+            case osgGA::GUIEventAdapter::KEY_Slash:
+            case osgGA::GUIEventAdapter::KEY_Colon:
+            case osgGA::GUIEventAdapter::KEY_Semicolon:
+            case osgGA::GUIEventAdapter::KEY_Less:
+            case osgGA::GUIEventAdapter::KEY_Equals:
+            case osgGA::GUIEventAdapter::KEY_Greater:
+            case osgGA::GUIEventAdapter::KEY_Question:
+            case osgGA::GUIEventAdapter::KEY_At:
+            case osgGA::GUIEventAdapter::KEY_Leftbracket:
+            case osgGA::GUIEventAdapter::KEY_Backslash:
+            case osgGA::GUIEventAdapter::KEY_Rightbracket:
+            case osgGA::GUIEventAdapter::KEY_Caret:
+            case osgGA::GUIEventAdapter::KEY_Underscore:
+            case osgGA::GUIEventAdapter::KEY_Backquote:
+
+            //case osgGA::GUIEventAdapter::KEY_BackSpace:
+            //case osgGA::GUIEventAdapter::KEY_Tab:
+            //case osgGA::GUIEventAdapter::KEY_Linefeed:
+            //case osgGA::GUIEventAdapter::KEY_Clear:
+            //case osgGA::GUIEventAdapter::KEY_Return:
+            //case osgGA::GUIEventAdapter::KEY_Pause:
+            //case osgGA::GUIEventAdapter::KEY_Scroll_Lock:
+            //case osgGA::GUIEventAdapter::KEY_Sys_Req:
+            //case osgGA::GUIEventAdapter::KEY_Escape:
+            //case osgGA::GUIEventAdapter::KEY_Delete:
+
+            //case osgGA::GUIEventAdapter::KEY_Home:
+            //case osgGA::GUIEventAdapter::KEY_Left:
+            //case osgGA::GUIEventAdapter::KEY_Up:
+            //case osgGA::GUIEventAdapter::KEY_Right:
+            //case osgGA::GUIEventAdapter::KEY_Down:
+            //case osgGA::GUIEventAdapter::KEY_Prior:
+            //case osgGA::GUIEventAdapter::KEY_Page_Up:
+            //case osgGA::GUIEventAdapter::KEY_Next:
+            //case osgGA::GUIEventAdapter::KEY_Page_Down:
+            //case osgGA::GUIEventAdapter::KEY_End:
+            //case osgGA::GUIEventAdapter::KEY_Begin:
+
+            //case osgGA::GUIEventAdapter::KEY_Select:
+            //case osgGA::GUIEventAdapter::KEY_Print:
+            //case osgGA::GUIEventAdapter::KEY_Execute:
+            //case osgGA::GUIEventAdapter::KEY_Insert:
+            //case osgGA::GUIEventAdapter::KEY_Undo:
+            //case osgGA::GUIEventAdapter::KEY_Redo:
+            //case osgGA::GUIEventAdapter::KEY_Menu:
+            //case osgGA::GUIEventAdapter::KEY_Find:
+            //case osgGA::GUIEventAdapter::KEY_Cancel:
+            //case osgGA::GUIEventAdapter::KEY_Help:
+            //case osgGA::GUIEventAdapter::KEY_Break:
+            //case osgGA::GUIEventAdapter::KEY_Mode_switch:
+            //case osgGA::GUIEventAdapter::KEY_Script_switch:
+            //case osgGA::GUIEventAdapter::KEY_Num_Lock:
+
+            case osgGA::GUIEventAdapter::KEY_KP_Space:
+            //case osgGA::GUIEventAdapter::KEY_KP_Tab:
+            //case osgGA::GUIEventAdapter::KEY_KP_Enter:
+            //case osgGA::GUIEventAdapter::KEY_KP_F1:
+            //case osgGA::GUIEventAdapter::KEY_KP_F2:
+            //case osgGA::GUIEventAdapter::KEY_KP_F3:
+            //case osgGA::GUIEventAdapter::KEY_KP_F4:
+            //case osgGA::GUIEventAdapter::KEY_KP_Home:
+            //case osgGA::GUIEventAdapter::KEY_KP_Left:
+            //case osgGA::GUIEventAdapter::KEY_KP_Up:
+            //case osgGA::GUIEventAdapter::KEY_KP_Right:
+            //case osgGA::GUIEventAdapter::KEY_KP_Down:
+            //case osgGA::GUIEventAdapter::KEY_KP_Prior:
+            //case osgGA::GUIEventAdapter::KEY_KP_Page_Up:
+            //case osgGA::GUIEventAdapter::KEY_KP_Next:
+            //case osgGA::GUIEventAdapter::KEY_KP_Page_Down:
+            //case osgGA::GUIEventAdapter::KEY_KP_End:
+            //case osgGA::GUIEventAdapter::KEY_KP_Begin:
+            //case osgGA::GUIEventAdapter::KEY_KP_Insert:
+            //case osgGA::GUIEventAdapter::KEY_KP_Delete:
+            case osgGA::GUIEventAdapter::KEY_KP_Equal:
+            case osgGA::GUIEventAdapter::KEY_KP_Multiply:
+            case osgGA::GUIEventAdapter::KEY_KP_Add:
+            case osgGA::GUIEventAdapter::KEY_KP_Separator:
+            case osgGA::GUIEventAdapter::KEY_KP_Subtract:
+            case osgGA::GUIEventAdapter::KEY_KP_Decimal:
+            case osgGA::GUIEventAdapter::KEY_KP_Divide:
+
+            case osgGA::GUIEventAdapter::KEY_KP_0:
+            case osgGA::GUIEventAdapter::KEY_KP_1:
+            case osgGA::GUIEventAdapter::KEY_KP_2:
+            case osgGA::GUIEventAdapter::KEY_KP_3:
+            case osgGA::GUIEventAdapter::KEY_KP_4:
+            case osgGA::GUIEventAdapter::KEY_KP_5:
+            case osgGA::GUIEventAdapter::KEY_KP_6:
+            case osgGA::GUIEventAdapter::KEY_KP_7:
+            case osgGA::GUIEventAdapter::KEY_KP_8:
+            case osgGA::GUIEventAdapter::KEY_KP_9:
+
+            //case osgGA::GUIEventAdapter::KEY_F1:
+            //case osgGA::GUIEventAdapter::KEY_F2:
+            //case osgGA::GUIEventAdapter::KEY_F3:
+            //case osgGA::GUIEventAdapter::KEY_F4:
+            //case osgGA::GUIEventAdapter::KEY_F5:
+            //case osgGA::GUIEventAdapter::KEY_F6:
+            //case osgGA::GUIEventAdapter::KEY_F7:
+            //case osgGA::GUIEventAdapter::KEY_F8:
+            //case osgGA::GUIEventAdapter::KEY_F9:
+            //case osgGA::GUIEventAdapter::KEY_F10:
+            //case osgGA::GUIEventAdapter::KEY_F11:
+            //case osgGA::GUIEventAdapter::KEY_F12:
+            //case osgGA::GUIEventAdapter::KEY_F13:
+            //case osgGA::GUIEventAdapter::KEY_F14:
+            //case osgGA::GUIEventAdapter::KEY_F15:
+            //case osgGA::GUIEventAdapter::KEY_F16:
+            //case osgGA::GUIEventAdapter::KEY_F17:
+            //case osgGA::GUIEventAdapter::KEY_F18:
+            //case osgGA::GUIEventAdapter::KEY_F19:
+            //case osgGA::GUIEventAdapter::KEY_F20:
+            //case osgGA::GUIEventAdapter::KEY_F21:
+            //case osgGA::GUIEventAdapter::KEY_F22:
+            //case osgGA::GUIEventAdapter::KEY_F23:
+            //case osgGA::GUIEventAdapter::KEY_F24:
+            //case osgGA::GUIEventAdapter::KEY_F25:
+            //case osgGA::GUIEventAdapter::KEY_F26:
+            //case osgGA::GUIEventAdapter::KEY_F27:
+            //case osgGA::GUIEventAdapter::KEY_F28:
+            //case osgGA::GUIEventAdapter::KEY_F29:
+            //case osgGA::GUIEventAdapter::KEY_F30:
+            //case osgGA::GUIEventAdapter::KEY_F31:
+            //case osgGA::GUIEventAdapter::KEY_F32:
+            //case osgGA::GUIEventAdapter::KEY_F33:
+            //case osgGA::GUIEventAdapter::KEY_F34:
+            //case osgGA::GUIEventAdapter::KEY_F35:
+
+            //case osgGA::GUIEventAdapter::KEY_Shift_L:
+            //case osgGA::GUIEventAdapter::KEY_Shift_R:
+            //case osgGA::GUIEventAdapter::KEY_Control_L:
+            //case osgGA::GUIEventAdapter::KEY_Control_R:
+            //case osgGA::GUIEventAdapter::KEY_Caps_Lock:
+            //case osgGA::GUIEventAdapter::KEY_Shift_Lock:
+
+            //case osgGA::GUIEventAdapter::KEY_Meta_L:
+            //case osgGA::GUIEventAdapter::KEY_Meta_R:
+            //case osgGA::GUIEventAdapter::KEY_Alt_L:
+            //case osgGA::GUIEventAdapter::KEY_Alt_R:
+            //case osgGA::GUIEventAdapter::KEY_Super_L:
+            //case osgGA::GUIEventAdapter::KEY_Super_R:
+            //case osgGA::GUIEventAdapter::KEY_Hyper_L:
+            //case osgGA::GUIEventAdapter::KEY_Hyper_R:
+
+              return true;
+
+            default:
+              return false;
+        }
     }

@@ -3,10 +3,13 @@
 #include "MapExecuteCallback"
 
 #include <osg/Camera>
+#include <osg/TexMat>
+#include <osg/TextureRectangle>
 #include <osgDB/ReadFile>
 #include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
 
+#include <osgearth/ImageUtils>
 #include <osgearth/Notify>
 #include <osgearth/StringUtils>
 #include <osgEarthUtil/ExampleResources>
@@ -31,236 +34,6 @@ namespace
                 _scrollFactor = as<float>(sf, 0.0);
             else
                 _scrollFactor = 70.0f;
-        }
-
-        unsigned int getCefModifiers(int modKeyMask)
-        {
-            int modifiers = 0;
-            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
-              modifiers |= EVENTFLAG_CONTROL_DOWN;
-            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_SHIFT)
-              modifiers |= EVENTFLAG_SHIFT_DOWN;
-            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_ALT)
-              modifiers |= EVENTFLAG_ALT_DOWN;
-            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CAPS_LOCK)
-              modifiers |= EVENTFLAG_CAPS_LOCK_ON;
-            if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_NUM_LOCK)
-              modifiers |= EVENTFLAG_NUM_LOCK_ON;
-
-            //if (modKeyMask & osgGA::GUIEventAdapter:)
-            //  modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
-            //if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
-            //  modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
-            //if (modKeyMask & osgGA::GUIEventAdapter::MODKEY_CTRL)
-            //  modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
-
-            return modifiers;
-        }
-
-        bool confirmCharKey(int key)
-        {
-            switch (key)
-            {
-                case osgGA::GUIEventAdapter::KEY_Space:
-                case osgGA::GUIEventAdapter::KEY_0:
-                case osgGA::GUIEventAdapter::KEY_1:
-                case osgGA::GUIEventAdapter::KEY_2:
-                case osgGA::GUIEventAdapter::KEY_3:
-                case osgGA::GUIEventAdapter::KEY_4:
-                case osgGA::GUIEventAdapter::KEY_5:
-                case osgGA::GUIEventAdapter::KEY_6:
-                case osgGA::GUIEventAdapter::KEY_7:
-                case osgGA::GUIEventAdapter::KEY_8:
-                case osgGA::GUIEventAdapter::KEY_9:
-                case osgGA::GUIEventAdapter::KEY_A:
-                case osgGA::GUIEventAdapter::KEY_B:
-                case osgGA::GUIEventAdapter::KEY_C:
-                case osgGA::GUIEventAdapter::KEY_D:
-                case osgGA::GUIEventAdapter::KEY_E:
-                case osgGA::GUIEventAdapter::KEY_F:
-                case osgGA::GUIEventAdapter::KEY_G:
-                case osgGA::GUIEventAdapter::KEY_H:
-                case osgGA::GUIEventAdapter::KEY_I:
-                case osgGA::GUIEventAdapter::KEY_J:
-                case osgGA::GUIEventAdapter::KEY_K:
-                case osgGA::GUIEventAdapter::KEY_L:
-                case osgGA::GUIEventAdapter::KEY_M:
-                case osgGA::GUIEventAdapter::KEY_N:
-                case osgGA::GUIEventAdapter::KEY_O:
-                case osgGA::GUIEventAdapter::KEY_P:
-                case osgGA::GUIEventAdapter::KEY_Q:
-                case osgGA::GUIEventAdapter::KEY_R:
-                case osgGA::GUIEventAdapter::KEY_S:
-                case osgGA::GUIEventAdapter::KEY_T:
-                case osgGA::GUIEventAdapter::KEY_U:
-                case osgGA::GUIEventAdapter::KEY_V:
-                case osgGA::GUIEventAdapter::KEY_W:
-                case osgGA::GUIEventAdapter::KEY_X:
-                case osgGA::GUIEventAdapter::KEY_Y:
-                case osgGA::GUIEventAdapter::KEY_Z:
-
-                case osgGA::GUIEventAdapter::KEY_Exclaim:
-                case osgGA::GUIEventAdapter::KEY_Quotedbl:
-                case osgGA::GUIEventAdapter::KEY_Hash:
-                case osgGA::GUIEventAdapter::KEY_Dollar:
-                case osgGA::GUIEventAdapter::KEY_Ampersand:
-                case osgGA::GUIEventAdapter::KEY_Quote:
-                case osgGA::GUIEventAdapter::KEY_Leftparen:
-                case osgGA::GUIEventAdapter::KEY_Rightparen:
-                case osgGA::GUIEventAdapter::KEY_Asterisk:
-                case osgGA::GUIEventAdapter::KEY_Plus:
-                case osgGA::GUIEventAdapter::KEY_Comma:
-                case osgGA::GUIEventAdapter::KEY_Minus:
-                case osgGA::GUIEventAdapter::KEY_Period:
-                case osgGA::GUIEventAdapter::KEY_Slash:
-                case osgGA::GUIEventAdapter::KEY_Colon:
-                case osgGA::GUIEventAdapter::KEY_Semicolon:
-                case osgGA::GUIEventAdapter::KEY_Less:
-                case osgGA::GUIEventAdapter::KEY_Equals:
-                case osgGA::GUIEventAdapter::KEY_Greater:
-                case osgGA::GUIEventAdapter::KEY_Question:
-                case osgGA::GUIEventAdapter::KEY_At:
-                case osgGA::GUIEventAdapter::KEY_Leftbracket:
-                case osgGA::GUIEventAdapter::KEY_Backslash:
-                case osgGA::GUIEventAdapter::KEY_Rightbracket:
-                case osgGA::GUIEventAdapter::KEY_Caret:
-                case osgGA::GUIEventAdapter::KEY_Underscore:
-                case osgGA::GUIEventAdapter::KEY_Backquote:
-
-                //case osgGA::GUIEventAdapter::KEY_BackSpace:
-                //case osgGA::GUIEventAdapter::KEY_Tab:
-                //case osgGA::GUIEventAdapter::KEY_Linefeed:
-                //case osgGA::GUIEventAdapter::KEY_Clear:
-                //case osgGA::GUIEventAdapter::KEY_Return:
-                //case osgGA::GUIEventAdapter::KEY_Pause:
-                //case osgGA::GUIEventAdapter::KEY_Scroll_Lock:
-                //case osgGA::GUIEventAdapter::KEY_Sys_Req:
-                //case osgGA::GUIEventAdapter::KEY_Escape:
-                //case osgGA::GUIEventAdapter::KEY_Delete:
-
-                //case osgGA::GUIEventAdapter::KEY_Home:
-                //case osgGA::GUIEventAdapter::KEY_Left:
-                //case osgGA::GUIEventAdapter::KEY_Up:
-                //case osgGA::GUIEventAdapter::KEY_Right:
-                //case osgGA::GUIEventAdapter::KEY_Down:
-                //case osgGA::GUIEventAdapter::KEY_Prior:
-                //case osgGA::GUIEventAdapter::KEY_Page_Up:
-                //case osgGA::GUIEventAdapter::KEY_Next:
-                //case osgGA::GUIEventAdapter::KEY_Page_Down:
-                //case osgGA::GUIEventAdapter::KEY_End:
-                //case osgGA::GUIEventAdapter::KEY_Begin:
-
-                //case osgGA::GUIEventAdapter::KEY_Select:
-                //case osgGA::GUIEventAdapter::KEY_Print:
-                //case osgGA::GUIEventAdapter::KEY_Execute:
-                //case osgGA::GUIEventAdapter::KEY_Insert:
-                //case osgGA::GUIEventAdapter::KEY_Undo:
-                //case osgGA::GUIEventAdapter::KEY_Redo:
-                //case osgGA::GUIEventAdapter::KEY_Menu:
-                //case osgGA::GUIEventAdapter::KEY_Find:
-                //case osgGA::GUIEventAdapter::KEY_Cancel:
-                //case osgGA::GUIEventAdapter::KEY_Help:
-                //case osgGA::GUIEventAdapter::KEY_Break:
-                //case osgGA::GUIEventAdapter::KEY_Mode_switch:
-                //case osgGA::GUIEventAdapter::KEY_Script_switch:
-                //case osgGA::GUIEventAdapter::KEY_Num_Lock:
-
-                case osgGA::GUIEventAdapter::KEY_KP_Space:
-                //case osgGA::GUIEventAdapter::KEY_KP_Tab:
-                //case osgGA::GUIEventAdapter::KEY_KP_Enter:
-                //case osgGA::GUIEventAdapter::KEY_KP_F1:
-                //case osgGA::GUIEventAdapter::KEY_KP_F2:
-                //case osgGA::GUIEventAdapter::KEY_KP_F3:
-                //case osgGA::GUIEventAdapter::KEY_KP_F4:
-                //case osgGA::GUIEventAdapter::KEY_KP_Home:
-                //case osgGA::GUIEventAdapter::KEY_KP_Left:
-                //case osgGA::GUIEventAdapter::KEY_KP_Up:
-                //case osgGA::GUIEventAdapter::KEY_KP_Right:
-                //case osgGA::GUIEventAdapter::KEY_KP_Down:
-                //case osgGA::GUIEventAdapter::KEY_KP_Prior:
-                //case osgGA::GUIEventAdapter::KEY_KP_Page_Up:
-                //case osgGA::GUIEventAdapter::KEY_KP_Next:
-                //case osgGA::GUIEventAdapter::KEY_KP_Page_Down:
-                //case osgGA::GUIEventAdapter::KEY_KP_End:
-                //case osgGA::GUIEventAdapter::KEY_KP_Begin:
-                //case osgGA::GUIEventAdapter::KEY_KP_Insert:
-                //case osgGA::GUIEventAdapter::KEY_KP_Delete:
-                case osgGA::GUIEventAdapter::KEY_KP_Equal:
-                case osgGA::GUIEventAdapter::KEY_KP_Multiply:
-                case osgGA::GUIEventAdapter::KEY_KP_Add:
-                case osgGA::GUIEventAdapter::KEY_KP_Separator:
-                case osgGA::GUIEventAdapter::KEY_KP_Subtract:
-                case osgGA::GUIEventAdapter::KEY_KP_Decimal:
-                case osgGA::GUIEventAdapter::KEY_KP_Divide:
-
-                case osgGA::GUIEventAdapter::KEY_KP_0:
-                case osgGA::GUIEventAdapter::KEY_KP_1:
-                case osgGA::GUIEventAdapter::KEY_KP_2:
-                case osgGA::GUIEventAdapter::KEY_KP_3:
-                case osgGA::GUIEventAdapter::KEY_KP_4:
-                case osgGA::GUIEventAdapter::KEY_KP_5:
-                case osgGA::GUIEventAdapter::KEY_KP_6:
-                case osgGA::GUIEventAdapter::KEY_KP_7:
-                case osgGA::GUIEventAdapter::KEY_KP_8:
-                case osgGA::GUIEventAdapter::KEY_KP_9:
-
-                //case osgGA::GUIEventAdapter::KEY_F1:
-                //case osgGA::GUIEventAdapter::KEY_F2:
-                //case osgGA::GUIEventAdapter::KEY_F3:
-                //case osgGA::GUIEventAdapter::KEY_F4:
-                //case osgGA::GUIEventAdapter::KEY_F5:
-                //case osgGA::GUIEventAdapter::KEY_F6:
-                //case osgGA::GUIEventAdapter::KEY_F7:
-                //case osgGA::GUIEventAdapter::KEY_F8:
-                //case osgGA::GUIEventAdapter::KEY_F9:
-                //case osgGA::GUIEventAdapter::KEY_F10:
-                //case osgGA::GUIEventAdapter::KEY_F11:
-                //case osgGA::GUIEventAdapter::KEY_F12:
-                //case osgGA::GUIEventAdapter::KEY_F13:
-                //case osgGA::GUIEventAdapter::KEY_F14:
-                //case osgGA::GUIEventAdapter::KEY_F15:
-                //case osgGA::GUIEventAdapter::KEY_F16:
-                //case osgGA::GUIEventAdapter::KEY_F17:
-                //case osgGA::GUIEventAdapter::KEY_F18:
-                //case osgGA::GUIEventAdapter::KEY_F19:
-                //case osgGA::GUIEventAdapter::KEY_F20:
-                //case osgGA::GUIEventAdapter::KEY_F21:
-                //case osgGA::GUIEventAdapter::KEY_F22:
-                //case osgGA::GUIEventAdapter::KEY_F23:
-                //case osgGA::GUIEventAdapter::KEY_F24:
-                //case osgGA::GUIEventAdapter::KEY_F25:
-                //case osgGA::GUIEventAdapter::KEY_F26:
-                //case osgGA::GUIEventAdapter::KEY_F27:
-                //case osgGA::GUIEventAdapter::KEY_F28:
-                //case osgGA::GUIEventAdapter::KEY_F29:
-                //case osgGA::GUIEventAdapter::KEY_F30:
-                //case osgGA::GUIEventAdapter::KEY_F31:
-                //case osgGA::GUIEventAdapter::KEY_F32:
-                //case osgGA::GUIEventAdapter::KEY_F33:
-                //case osgGA::GUIEventAdapter::KEY_F34:
-                //case osgGA::GUIEventAdapter::KEY_F35:
-
-                //case osgGA::GUIEventAdapter::KEY_Shift_L:
-                //case osgGA::GUIEventAdapter::KEY_Shift_R:
-                //case osgGA::GUIEventAdapter::KEY_Control_L:
-                //case osgGA::GUIEventAdapter::KEY_Control_R:
-                //case osgGA::GUIEventAdapter::KEY_Caps_Lock:
-                //case osgGA::GUIEventAdapter::KEY_Shift_Lock:
-
-                //case osgGA::GUIEventAdapter::KEY_Meta_L:
-                //case osgGA::GUIEventAdapter::KEY_Meta_R:
-                //case osgGA::GUIEventAdapter::KEY_Alt_L:
-                //case osgGA::GUIEventAdapter::KEY_Alt_R:
-                //case osgGA::GUIEventAdapter::KEY_Super_L:
-                //case osgGA::GUIEventAdapter::KEY_Super_R:
-                //case osgGA::GUIEventAdapter::KEY_Hyper_L:
-                //case osgGA::GUIEventAdapter::KEY_Hyper_R:
-
-                  return true;
-
-                default:
-                  return false;
-            }
         }
 
         CefBrowserHost::MouseButtonType getCefMouseButton(int button)
@@ -302,26 +75,124 @@ namespace
           return deltaX != 0.0f || deltaY != 0.0f;
         }
 
+        bool transparentPixel(osgViewer::View* view, const osgGA::GUIEventAdapter& ea) const
+        {
+            osgUtil::LineSegmentIntersector::Intersections intersections;
+            bool foundIntersection = view==0 ? false : view->computeIntersections(ea.getX(), ea.getY(), intersections);
+
+            if (foundIntersection)
+            {
+                osg::Vec2 tc(0.5f,0.5f);
+
+                // use the nearest intersection
+                const osgUtil::LineSegmentIntersector::Intersection& intersection = *(intersections.begin());
+                osg::Drawable* drawable = intersection.drawable.get();
+                osg::Geometry* geometry = drawable ? drawable->asGeometry() : 0;
+                osg::Vec3Array* vertices = geometry ? dynamic_cast<osg::Vec3Array*>(geometry->getVertexArray()) : 0;
+                if (vertices)
+                {
+                    // get the vertex indices.
+                    const osgUtil::LineSegmentIntersector::Intersection::IndexList& indices = intersection.indexList;
+                    const osgUtil::LineSegmentIntersector::Intersection::RatioList& ratios = intersection.ratioList;
+
+                    if (indices.size()==3 && ratios.size()==3)
+                    {
+                        unsigned int i1 = indices[0];
+                        unsigned int i2 = indices[1];
+                        unsigned int i3 = indices[2];
+
+                        float r1 = ratios[0];
+                        float r2 = ratios[1];
+                        float r3 = ratios[2];
+
+                        osg::Array* texcoords = (geometry->getNumTexCoordArrays()>0) ? geometry->getTexCoordArray(0) : 0;
+                        osg::Vec2Array* texcoords_Vec2Array = dynamic_cast<osg::Vec2Array*>(texcoords);
+                        if (texcoords_Vec2Array)
+                        {
+                            // we have tex coord array so now we can compute the final tex coord at the point of intersection.
+                            osg::Vec2 tc1 = (*texcoords_Vec2Array)[i1];
+                            osg::Vec2 tc2 = (*texcoords_Vec2Array)[i2];
+                            osg::Vec2 tc3 = (*texcoords_Vec2Array)[i3];
+                            tc = tc1*r1 + tc2*r2 + tc3*r3;
+                        }
+                    }
+
+                    osg::TexMat* activeTexMat = 0;
+                    osg::Texture* activeTexture = 0;
+
+                    if (drawable->getStateSet())
+                    {
+                        osg::TexMat* texMat = dynamic_cast<osg::TexMat*>(drawable->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXMAT));
+                        if (texMat) activeTexMat = texMat;
+
+                        osg::Texture* texture = dynamic_cast<osg::Texture*>(drawable->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXTURE));
+                        if (texture) activeTexture = texture;
+                    }
+
+                    if (activeTexMat)
+                    {
+                        osg::Vec4 tc_transformed = osg::Vec4(tc.x(), tc.y(), 0.0f,0.0f) * activeTexMat->getMatrix();
+                        tc.x() = tc_transformed.x();
+                        tc.y() = tc_transformed.y();
+                    }
+
+                    osg::Image* image = _browserClient->getImage();
+                    if (image)
+                    {
+                        int x = int( float(image->s()) * tc.x() );
+                        int y = int( float(image->t()) * tc.y() );
+
+                        ImageUtils::PixelReader ia(image);
+                        osg::Vec4 color = ia(x, y);
+
+                        return color.a() == 0.0;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
         {
+            
+            switch(ea.getEventType())
+            {
+                case(osgGA::GUIEventAdapter::MOVE):
+                case(osgGA::GUIEventAdapter::DRAG):
+                case(osgGA::GUIEventAdapter::PUSH):
+                case(osgGA::GUIEventAdapter::RELEASE):
+                case(osgGA::GUIEventAdapter::DOUBLECLICK):
+                {
+                    if (transparentPixel(_view, ea))
+                    {
+                        return false;
+                    }
+                    break;
+                }
+            }
+
             switch (ea.getEventType())
             {
+                case(osgGA::GUIEventAdapter::DOUBLECLICK):
+                    return true;
+
                 case osgGA::GUIEventAdapter::PUSH:
                     {
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
                         mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                        mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        mouse_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
                         _browser->GetHost()->SendMouseClickEvent(mouse_event, getCefMouseButton(ea.getButton()), false, 1);
+                        return true;
                     }
-                    break;
 
                 case osgGA::GUIEventAdapter::RELEASE:
                     {
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
                         mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                        mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        mouse_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
                         _browser->GetHost()->SendMouseClickEvent(mouse_event, getCefMouseButton(ea.getButton()), true, 1);
 
                         _browser->GetHost()->SendFocusEvent(true);
@@ -351,12 +222,12 @@ namespace
 #endif
 
                         key_event.is_system_key = 0;
-                        key_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        key_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
 
                         key_event.type = KEYEVENT_RAWKEYDOWN;
                         _browser->GetHost()->SendKeyEvent(key_event);
 
-                        if (confirmCharKey(ea.getUnmodifiedKey()))
+                        if (_keyAdapter.confirmCharKey(ea.getUnmodifiedKey()))
                         {
                             key_event.type = KEYEVENT_CHAR;
                             key_event.windows_key_code = ea.getKey();
@@ -377,7 +248,7 @@ namespace
 #endif
 
                         key_event.is_system_key = 0;
-                        key_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        key_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
 
                         key_event.type = KEYEVENT_KEYUP;
                         _browser->GetHost()->SendKeyEvent(key_event);
@@ -390,8 +261,9 @@ namespace
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
                         mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                        mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                        mouse_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
                         _browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
+                        return true;
                     }
                     break;
 
@@ -403,8 +275,9 @@ namespace
                             CefMouseEvent mouse_event;
                             mouse_event.x = (int)ea.getX();
                             mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                            mouse_event.modifiers = getCefModifiers(ea.getModKeyMask());
+                            mouse_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
                             _browser->GetHost()->SendMouseWheelEvent(mouse_event, deltaX, deltaY);
+                            return true;
                         }
                     }
                     break;
@@ -424,6 +297,25 @@ namespace
         CefRefPtr<BrowserClient> _browserClient;
         float _scrollFactor;
         KeyboardEventAdapter _keyAdapter;
+    };
+
+
+    struct MapProxyHandler : public osgGA::GUIEventHandler 
+    {
+        MapProxyHandler(osgGA::GUIEventHandler* handler)
+        {
+            _handler = handler;
+        }
+
+        bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
+        {
+            if (_handler.valid())
+                return _handler->handle(ea, aa);
+        
+            return false;
+        }
+
+        osg::ref_ptr<osgGA::GUIEventHandler> _handler;
     };
 }
 
@@ -454,7 +346,9 @@ void BrowserClient::initBrowser(const std::string& url)
     }
 
     addExecuteCallback(new MapExecuteCallback(this));
-    _mainView->addEventHandler(new BrowserEventHandler(_mainView.get(), this, _browser));
+
+    _mainEventHandler = new BrowserEventHandler(_mainView.get(), this, _browser);
+    _mainView->addEventHandler(_mainEventHandler);
 }
 
 void BrowserClient::setupMainView(unsigned int width, unsigned int height)
@@ -510,6 +404,7 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
 
     geometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
     geometry->setDataVariance(osg::Object::DYNAMIC);
+    geometry->setName("CEFGeometry");
 
     osg::Geode* geode = new osg::Geode;
     geode->addDrawable(geometry);
@@ -578,6 +473,20 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
 
 
     _mainView->setSceneData(modelViewMat);
+}
+
+void BrowserClient::addMapView(const std::string &id, osgViewer::View *mapView)
+{
+    std::map<std::string, osg::ref_ptr<osgViewer::View>>::iterator it = _mapViews.find(id);
+    if (it != _mapViews.end())
+    {
+        // Remove event handlers if replacing a view
+        it->second->getEventHandlers().clear();
+    }
+
+    mapView->addEventHandler(new MapProxyHandler(_mainEventHandler));
+    _mapViews[id] = mapView;
+    _viewer->addView( mapView );
 }
 
 osgViewer::View* BrowserClient::getMapView(const std::string& name)

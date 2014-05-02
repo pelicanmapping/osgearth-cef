@@ -97,9 +97,7 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         mapView->setCameraManipulator( new osgEarth::Util::EarthManipulator() );    
         mapView->getCamera()->setProjectionMatrixAsPerspective(30.0, double(width) / double(height), 1.0, 1000.0);
 
-        _client->_mapViews[id] = mapView;
-
-        _client->_viewer->addView( mapView );
+        _client->addMapView(id, mapView);
 
         osg::Group* root = new osg::Group();
 

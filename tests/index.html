@@ -73,6 +73,10 @@ function loadNewMap() {
     }
 }
 
+function hoverClick() {
+    alert("Hover button clicked!");
+}
+
 function onSelectChange() {
     alert("You selected: " + $('#testSelect').val());
 }
@@ -178,6 +182,7 @@ $(function() {
     <div id="hover_div">
         <img src="img/cube.gif" style="width: 50px;"/>
         <p title="A tool tip!">This cube is spinning!</p>
+        <input type="button" id="hover_button" value="Click me!" onClick="hoverClick()"/>
     </div>
 
 </body>

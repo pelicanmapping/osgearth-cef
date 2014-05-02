@@ -13,6 +13,8 @@ public:
     KeyboardEventAdapter();
 
     int remapKey(int key);
+    unsigned int getCefModifiers(int modKeyMask);
+    bool confirmCharKey(int key);
 
 protected:
 
