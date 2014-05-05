@@ -163,6 +163,7 @@ namespace
                 case(osgGA::GUIEventAdapter::PUSH):
                 case(osgGA::GUIEventAdapter::RELEASE):
                 case(osgGA::GUIEventAdapter::DOUBLECLICK):
+                case(osgGA::GUIEventAdapter::SCROLL):
                 {
                     if (transparentPixel(_view, ea))
                     {
@@ -288,7 +289,6 @@ namespace
                     break;
             }
 
-            //TODO: Return true if event occurred over non-transparent portion of main view
             return false;
         }
 

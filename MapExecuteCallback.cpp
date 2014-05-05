@@ -156,6 +156,27 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         mapView->getCamera()->setViewport( x, y, width, height);
         mapView->getCamera()->setProjectionMatrixAsPerspective(30.0, double(width) / double(height), 1.0, 1000.0);
 
+        //manually update ControlCanvas (needed because of event ordering)
+        osgEarth::Util::Controls::ControlCanvas* cs =  osgEarth::Util::Controls::ControlCanvas::get(mapView, false);
+        cs->setProjectionMatrix(osg::Matrix::ortho2D( 0, width-1, 0, height-1 ) );
+
+        ControlContext cx;
+        cx._view = mapView.get();
+        cx._vp = new osg::Viewport( 0, 0, width, height );
+        
+        osg::View* view = mapView.get();
+        osg::GraphicsContext* gc = view->getCamera()->getGraphicsContext();
+        if ( !gc && view->getNumSlaves() > 0 )
+            gc = view->getSlave(0)._camera->getGraphicsContext();
+
+        if ( gc )
+            cx._viewContextID = gc->getState()->getContextID();
+        else
+            cx._viewContextID = ~0u;
+
+        cs->setControlContext( cx );
+
+
         return new ReturnVal();
     }
     else if (command == "_OE_map_load_file")
