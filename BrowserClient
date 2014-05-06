@@ -52,9 +52,9 @@ public:
 public:
 
 
-    //bool GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
+    bool GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
     bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);
-    //bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY);
+    bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY);
     //bool GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info);
     void OnPopupShow(CefRefPtr<CefBrowser> browser, bool show);
     void OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect);
@@ -132,6 +132,7 @@ protected:
     osg::ref_ptr<osg::Image> _popupImage;
     osg::ref_ptr<osg::Vec3Array> _popupVerts;
     osg::ref_ptr<osg::Geode> _popupNode;
+    osg::ref_ptr<osg::Geometry> _popupGeom;
 
     IMPLEMENT_REFCOUNTING(BrowserClient);
 };

@@ -359,7 +359,7 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     _mainView->getCamera()->setRenderOrder(osg::Camera::POST_RENDER);
     _mainView->getCamera()->setClearMask(GL_DEPTH_BUFFER_BIT);
     _mainView->getCamera()->setProjectionMatrix(osg::Matrix::ortho2D(0, 1, 0, 1));
-    _mainView->getCamera()->setProjectionResizePolicy(osg::Camera::FIXED); 
+    _mainView->getCamera()->setProjectionResizePolicy(osg::Camera::FIXED);
     _mainView->getCamera()->setViewMatrix(osg::Matrix::identity());
     _mainView->getCamera()->setClearColor( osg::Vec4( 1., 0., 1., 0. ) );
 
@@ -434,7 +434,7 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     tex->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
 
     //setup quad to render on
-    geometry = new osg::Geometry();
+    _popupGeom = new osg::Geometry();
 
     _popupVerts = new osg::Vec3Array();
     _popupVerts->reserve( 4 );
@@ -442,27 +442,27 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     _popupVerts->push_back( osg::Vec3(1,0,0));
     _popupVerts->push_back( osg::Vec3(1,1,0));
     _popupVerts->push_back( osg::Vec3(0,1,0));
-    geometry->setVertexArray( _popupVerts );
+    _popupGeom->setVertexArray( _popupVerts );
 
     colors = new osg::Vec4Array;
     colors->push_back(osg::Vec4(1.0f,1.0f,1.0f,1.0f));
-    geometry->setColorArray(colors);
-    geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+    _popupGeom->setColorArray(colors);
+    _popupGeom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
     tcoords = new osg::Vec2Array(4);
     (*tcoords)[3].set(0.0f,0.0f);
     (*tcoords)[2].set(1.0f,0.0f);
     (*tcoords)[1].set(1.0f,1.0f);
     (*tcoords)[0].set(0.0f,1.0f);
-    geometry->setTexCoordArray(0,tcoords);
+    _popupGeom->setTexCoordArray(0,tcoords);
 
-    geometry->addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4 ) );
+    _popupGeom->addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4 ) );
 
-    geometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
-    geometry->setDataVariance(osg::Object::DYNAMIC);
+    _popupGeom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
+    _popupGeom->setDataVariance(osg::Object::DYNAMIC);
 
     _popupNode = new osg::Geode();
-    _popupNode->addDrawable(geometry);
+    _popupNode->addDrawable(_popupGeom);
     _popupNode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     _popupNode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
     _popupNode->getOrCreateStateSet()->setMode( GL_BLEND, osg::StateAttribute::ON );
@@ -671,17 +671,21 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
 }
 
 
-//bool BrowserClient::GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
-//{
-//  const osg::GraphicsContext::Traits* traits = _mainView->getCamera()->getGraphicsContext()->getTraits();
-//  if (traits)
-//  {
-//      rect = CefRect(traits->x, traits->y, traits->width, traits->height);
-//      return true;
-//  }
-//
-//  return false;
-//}
+bool BrowserClient::GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
+{
+  osgViewer::Viewer::Windows windows;
+  _viewer->getWindows(windows);
+  if (windows.size() > 0)
+  {
+      int x, y, width, height;
+      windows[0]->getWindowRectangle(x, y, width, height);
+      rect = CefRect(x, y, width, height);
+
+      return true;
+  }
+
+  return false;
+}
 
 bool BrowserClient::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
 {
@@ -689,18 +693,18 @@ bool BrowserClient::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
     return true;
 }
 
-//bool BrowserClient::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY)
-//{
-//    CefRect rect;
-//    if (GetRootScreenRect(browser, rect))
-//    {
-//        screenX = rect.x + viewX;
-//        screenY = rect.y + viewY;
-//        return true;
-//    }
-//
-//    return false;
-//}
+bool BrowserClient::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY)
+{
+    const osg::GraphicsContext::Traits* traits = _mainView->getCamera()->getGraphicsContext()->getTraits();
+    if (traits)
+    {
+        screenX = traits->x + viewX;
+        screenY = traits->y + viewY;
+        return true;
+    }
+
+    return false;
+}
 
 //bool BrowserClient::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info)
 //{
@@ -709,13 +713,16 @@ bool BrowserClient::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
 
 void BrowserClient::OnPopupShow(CefRefPtr<CefBrowser> browser, bool show)
 {
-    OE_DEBUG << LC << "OnPopupShow: " << (show ? "true" : "false") << std::endl;
-
     _popupNode->setNodeMask(show ? ~0 : 0);
 }
 
 void BrowserClient::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect)
 {
+    if (rect.width <= 0 || rect.height <= 0)
+    {
+        return;
+    }
+
     float x1 = (float)rect.x / (float)_width;
     float y1 = ((float)_height - (float)rect.y - (float)rect.height) / (float)_height;
     float x2 = ((float)rect.x + (float)rect.width) / (float)_width;
@@ -725,6 +732,8 @@ void BrowserClient::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& re
     (*_popupVerts.get())[1].set(x2, y1, 0.1);
     (*_popupVerts.get())[2].set(x2, y2, 0.1);
     (*_popupVerts.get())[3].set(x1, y2, 0.1);
+
+    _popupGeom->dirtyDisplayList();
 }  
 
 void BrowserClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height)
