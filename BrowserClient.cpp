@@ -167,6 +167,12 @@ namespace
                 {
                     if (transparentPixel(_view, ea))
                     {
+                        if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE || ea.getEventType() == osgGA::GUIEventAdapter::DOUBLECLICK)
+                        {
+                            _browser->GetHost()->SendFocusEvent(false);
+                            _browserClient->setInFocus(false);
+                        }
+
                         return false;
                     }
                     break;
@@ -197,6 +203,7 @@ namespace
                         _browser->GetHost()->SendMouseClickEvent(mouse_event, getCefMouseButton(ea.getButton()), true, 1);
 
                         _browser->GetHost()->SendFocusEvent(true);
+                        _browserClient->setInFocus(true);
                     }
                     break;
 
@@ -210,6 +217,10 @@ namespace
                     }
 
                     {
+                        // Down process keys if not in focus
+                        if (!_browserClient->getInFocus())
+                            return false;
+
                         CefKeyEvent key_event;
 
 #ifdef WIN32
@@ -235,11 +246,17 @@ namespace
 
                             _browser->GetHost()->SendKeyEvent(key_event);
                         }
+
+                        return true;
                     }
                     break;
 
                 case osgGA::GUIEventAdapter::KEYUP:
                     {
+                        // Down process keys if not in focus
+                        if (!_browserClient->getInFocus())
+                            return false;
+
                         CefKeyEvent key_event;
                         
 #ifdef WIN32
@@ -253,6 +270,8 @@ namespace
 
                         key_event.type = KEYEVENT_KEYUP;
                         _browser->GetHost()->SendKeyEvent(key_event);
+
+                        return true;
                     }
                     break;
 
@@ -321,7 +340,7 @@ namespace
 
 
 BrowserClient::BrowserClient(osgViewer::CompositeViewer* viewer, const std::string& url, int width, int height)
-: _viewer(viewer), _width(width), _height(height)
+: _viewer(viewer), _width(width), _height(height), _inFocus(true)
 {
     initBrowser(url);
 }

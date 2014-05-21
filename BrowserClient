@@ -37,6 +37,9 @@ public:
 
     void addExecuteCallback( ExecuteCallback* callback );
 
+    bool getInFocus() { return _inFocus; }
+    void setInFocus(bool focus) { _inFocus = focus; }
+
 
 // CefClient methods
 public:
@@ -133,6 +136,7 @@ protected:
     osg::ref_ptr<osg::Vec3Array> _popupVerts;
     osg::ref_ptr<osg::Geode> _popupNode;
     osg::ref_ptr<osg::Geometry> _popupGeom;
+    bool _inFocus;
 
     IMPLEMENT_REFCOUNTING(BrowserClient);
 };
