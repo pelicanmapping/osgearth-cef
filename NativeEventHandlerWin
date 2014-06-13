@@ -1,0 +1,32 @@
+#ifndef OSGEARTH_CEF_NATIVEEVENTHANDLERWIN
+#define OSGEARTH_CEF_NATIVEEVENTHANDLERWIN 1
+
+#include "BrowserClient"
+
+#include <windows.h>
+
+namespace osgEarth { namespace Cef
+{
+
+class NativeEventHandlerWin
+{
+public:
+
+    NativeEventHandlerWin(HWND hWnd, BrowserClient* browserClient, CefBrowser* browser);
+
+private:
+
+    static int GetCefKeyboardModifiers(WPARAM wparam, LPARAM lparam);
+    static int GetCefMouseModifiers(WPARAM wparam);
+    static bool isKeyDown(WPARAM wparam);
+
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+    CefRefPtr<BrowserClient> _browserClient;
+    CefRefPtr<CefBrowser> _browser;
+    WNDPROC _oldWndProc;
+};
+
+} }
+
+#endif  // OSGEARTH_CEF_NATIVEEVENTHANDLERWIN

@@ -2,12 +2,17 @@
 #include "KeyboardEventAdapter"
 #include "MapExecuteCallback"
 
+#ifdef WIN32
+#include "NativeEventHandlerWin"
+#endif
+
 #include <osg/Camera>
 #include <osg/TexMat>
 #include <osg/TextureRectangle>
 #include <osgDB/ReadFile>
 #include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
+#include <osgViewer/api/Win32/GraphicsWindowWin32>
 
 #include <osgearth/ImageUtils>
 #include <osgearth/Notify>
@@ -206,7 +211,7 @@ namespace
                         _browserClient->setInFocus(true);
                     }
                     break;
-
+#ifndef WIN32
                 case osgGA::GUIEventAdapter::KEYDOWN:
                     if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F12)
                     {
@@ -223,15 +228,15 @@ namespace
 
                         CefKeyEvent key_event;
 
-#ifdef WIN32
+//#ifdef WIN32
                         key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
 
                         OE_DEBUG << LC << "KEYDOWN: unmodified(" << ea.getUnmodifiedKey() << ")  modified(" << ea.getKey() << ")  remapped(" << key_event.windows_key_code << ")" << std::endl;
-#else
+//#else
                         key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
 
                         OE_DEBUG << LC << "KEYDOWN: unmodified(" << ea.getUnmodifiedKey() << ")  modified(" << ea.getKey() << ")  remapped(" << key_event.native_key_code << ")" << std::endl;
-#endif
+//#endif
 
                         key_event.is_system_key = 0;
                         key_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
@@ -259,11 +264,11 @@ namespace
 
                         CefKeyEvent key_event;
                         
-#ifdef WIN32
+//#ifdef WIN32
                         key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
-#else
+//#else
                         key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
-#endif
+//#endif
 
                         key_event.is_system_key = 0;
                         key_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
@@ -274,7 +279,7 @@ namespace
                         return true;
                     }
                     break;
-
+#endif
                 case osgGA::GUIEventAdapter::MOVE:
                 case osgGA::GUIEventAdapter::DRAG:
                     {
@@ -342,7 +347,18 @@ namespace
 BrowserClient::BrowserClient(osgViewer::CompositeViewer* viewer, const std::string& url, int width, int height)
 : _viewer(viewer), _width(width), _height(height), _inFocus(true)
 {
+#ifdef WIN32
+    _nativeEventHandler = 0L;
+#endif
+
     initBrowser(url);
+}
+
+BrowserClient::~BrowserClient()
+{
+#ifdef WIN32
+    delete _nativeEventHandler;
+#endif
 }
 
 void BrowserClient::initBrowser(const std::string& url)
@@ -363,6 +379,14 @@ void BrowserClient::initBrowser(const std::string& url)
         _browser = CefBrowserHost::CreateBrowserSync(windowInfo, this, url.c_str(), browserSettings, 0L);
         _browser->GetHost()->SendFocusEvent(true);
     }
+
+#ifdef WIN32
+    //Setup native event handling on Windows
+    osgViewer::GraphicsHandleWin32* graphicsHandleWin32 = dynamic_cast<osgViewer::GraphicsHandleWin32*>(_mainView->getCamera()->getGraphicsContext());
+    if (graphicsHandleWin32)
+        _nativeEventHandler = new NativeEventHandlerWin(graphicsHandleWin32->getHWND(), this, _browser);
+
+#endif
 
     addExecuteCallback(new MapExecuteCallback(this));
 

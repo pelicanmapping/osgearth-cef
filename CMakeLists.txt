@@ -102,6 +102,16 @@ set(APP_HDRS
     RenderProcessHandler
 )
 
+#--------------------------------------------------------------------------------
+# platform specfic files
+
+if(WIN32)
+
+    set (APP_SRCS ${APP_SRCS} NativeEventHandlerWin.cpp)
+    set (APP_HDRS ${APP_HDRS} NativeEventHandlerWin)
+
+endif()
+
 
 find_package(OSG COMPONENTS osg osgViewer ) 
 include_directories(${OSG_INCLUDE_DIRS} )

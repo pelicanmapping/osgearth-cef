@@ -17,12 +17,17 @@ namespace osgEarth { namespace Cef
 // forward declarations
 class MapExecuteCallback;
 
+#ifdef WIN32
+class NativeEventHandlerWin;
+#endif
+
 
 // for manual render handler
 class BrowserClient : public CefClient, public CefRenderHandler, public CefRequestHandler, public CefLifeSpanHandler, public CefMessageRouterBrowserSide::Handler
 {
 public:
     BrowserClient(osgViewer::CompositeViewer* viewer, const std::string& url, int width, int height);
+    ~BrowserClient();
 
     osgViewer::View* getMapView(const std::string& name);
     osgEarth::MapNode* getMapNode(const std::string& name);
@@ -125,6 +130,10 @@ protected:
     std::map<std::string, osg::ref_ptr<osgEarth::MapNode>> _mapNodes;
 
     osg::ref_ptr<osgGA::GUIEventHandler> _mainEventHandler;
+
+#ifdef WIN32
+    NativeEventHandlerWin* _nativeEventHandler;
+#endif
 
     typedef std::vector< osg::ref_ptr<ExecuteCallback> > ExecuteCallbacks;
     ExecuteCallbacks _callbacks;
