@@ -211,7 +211,7 @@ namespace
                         _browserClient->setInFocus(true);
                     }
                     break;
-#ifndef WIN32
+
                 case osgGA::GUIEventAdapter::KEYDOWN:
                     if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F12)
                     {
@@ -220,7 +220,7 @@ namespace
                         CefBrowserSettings browserSettings;
                         _browser->GetHost()->ShowDevTools(windowInfo, _browserClient.get(), browserSettings);
                     }
-
+#ifndef WIN32
                     {
                         // Down process keys if not in focus
                         if (!_browserClient->getInFocus())
@@ -228,15 +228,7 @@ namespace
 
                         CefKeyEvent key_event;
 
-//#ifdef WIN32
-                        key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
-
-                        OE_DEBUG << LC << "KEYDOWN: unmodified(" << ea.getUnmodifiedKey() << ")  modified(" << ea.getKey() << ")  remapped(" << key_event.windows_key_code << ")" << std::endl;
-//#else
                         key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
-
-                        OE_DEBUG << LC << "KEYDOWN: unmodified(" << ea.getUnmodifiedKey() << ")  modified(" << ea.getKey() << ")  remapped(" << key_event.native_key_code << ")" << std::endl;
-//#endif
 
                         key_event.is_system_key = 0;
                         key_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
@@ -254,8 +246,9 @@ namespace
 
                         return true;
                     }
+#endif
                     break;
-
+#ifndef WIN32
                 case osgGA::GUIEventAdapter::KEYUP:
                     {
                         // Down process keys if not in focus
@@ -264,11 +257,7 @@ namespace
 
                         CefKeyEvent key_event;
                         
-//#ifdef WIN32
-                        key_event.windows_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
-//#else
                         key_event.native_key_code = _keyAdapter.remapKey(ea.getUnmodifiedKey());
-//#endif
 
                         key_event.is_system_key = 0;
                         key_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());

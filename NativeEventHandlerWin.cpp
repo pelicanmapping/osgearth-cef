@@ -135,38 +135,40 @@ LRESULT CALLBACK NativeEventHandlerWin::WndProc(HWND hWnd, UINT message, WPARAM 
 {
   NativeEventHandlerWin* handler = reinterpret_cast<NativeEventHandlerWin*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
-  switch (message)
+
+  if (handler && handler->_browserClient && handler->_browserClient->getInFocus())
   {
-    case WM_SYSCHAR:
-    case WM_SYSKEYDOWN:
-    case WM_SYSKEYUP:
-    case WM_KEYDOWN:
-    case WM_KEYUP:
-    case WM_CHAR:
+    switch (message)
     {
-      CefKeyEvent event;
-      event.windows_key_code = wParam;
-      event.native_key_code = lParam;
-      event.is_system_key = message == WM_SYSCHAR ||
-                            message == WM_SYSKEYDOWN ||
-                            message == WM_SYSKEYUP;
+      case WM_SYSCHAR:
+      case WM_SYSKEYDOWN:
+      case WM_SYSKEYUP:
+      case WM_KEYDOWN:
+      case WM_KEYUP:
+      case WM_CHAR:
+      {
+        CefKeyEvent event;
+        event.windows_key_code = wParam;
+        event.native_key_code = lParam;
+        event.is_system_key = message == WM_SYSCHAR ||
+                              message == WM_SYSKEYDOWN ||
+                              message == WM_SYSKEYUP;
 
-      if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
-        event.type = KEYEVENT_RAWKEYDOWN;
-      else if (message == WM_KEYUP || message == WM_SYSKEYUP)
-        event.type = KEYEVENT_KEYUP;
-      else
-        event.type = KEYEVENT_CHAR;
-      event.modifiers = GetCefKeyboardModifiers(wParam, lParam);
+        if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
+          event.type = KEYEVENT_RAWKEYDOWN;
+        else if (message == WM_KEYUP || message == WM_SYSKEYUP)
+          event.type = KEYEVENT_KEYUP;
+        else
+          event.type = KEYEVENT_CHAR;
+        event.modifiers = GetCefKeyboardModifiers(wParam, lParam);
 
-      if (handler && handler->_browser)
-        handler->_browser->GetHost()->SendKeyEvent(event);
+        if (handler && handler->_browser)
+          handler->_browser->GetHost()->SendKeyEvent(event);
 
-      break;
+        break;
+      }
     }
-    default:
-      return CallWindowProc(handler->_oldWndProc, hWnd, message, wParam, lParam);
   }
 
-  return 0;
+  return CallWindowProc(handler->_oldWndProc, hWnd, message, wParam, lParam);
 }
