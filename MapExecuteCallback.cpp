@@ -102,8 +102,8 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         osg::Group* root = new osg::Group();
 
         // Install a canvas for any UI controls we plan to create:
-        osgEarth::Util::Controls::ControlCanvas* canvas =  osgEarth::Util::Controls::ControlCanvas::get(mapView, false);
-        root->addChild(canvas);
+        osgEarth::Util::Controls::ControlCanvas* canvas =  osgEarth::Util::Controls::ControlCanvas::getOrCreate(mapView);
+        //root->addChild(canvas);
 
         std::string mapFile = args["file"];
         if (!mapFile.empty())
@@ -157,7 +157,7 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         mapView->getCamera()->setProjectionMatrixAsPerspective(30.0, double(width) / double(height), 1.0, 1000.0);
 
         //manually update ControlCanvas (needed because of event ordering)
-        osgEarth::Util::Controls::ControlCanvas* cs =  osgEarth::Util::Controls::ControlCanvas::get(mapView, false);
+        osgEarth::Util::Controls::ControlCanvas* cs =  osgEarth::Util::Controls::ControlCanvas::get(mapView);
         cs->setProjectionMatrix(osg::Matrix::ortho2D( 0, width-1, 0, height-1 ) );
 
         ControlContext cx;

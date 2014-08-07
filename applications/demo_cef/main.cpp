@@ -82,6 +82,16 @@ namespace
             return 0L;
         }
     };
+
+
+    struct MyClickHandler : public ControlEventHandler
+    {
+        void onClick( Control* control, const osg::Vec2f& pos, int mouseButtonMask )
+        {
+            OE_NOTICE << "You clicked at (" << pos.x() << ", " << pos.y() << ") within the control."
+                << std::endl;
+        }
+    };
 }
 
 
@@ -116,22 +126,39 @@ int main(int argc, char** argv)
                 if (view.valid())
                 {
                     // Get the default ControlCanvas
-                    ControlCanvas* cs = ControlCanvas::get( view.get(), false  );
+                    ControlCanvas* cs = ControlCanvas::get( view.get() );
 
                     HBox* box = new HBox();
                     box->setBorderColor( 1, 1, 1, 1 );
                     box->setBackColor( .6,.5,.4,0.5 );
+                    box->setMargin( 40 );
                     box->setPadding( 10 );
                     box->setHorizAlign( Control::ALIGN_LEFT );
                     box->setVertAlign( Control::ALIGN_BOTTOM );
 
                     // Add a text label:
-                    LabelControl* label = new LabelControl( "osgEarth Controls Toolkit" );
+                    LabelControl* label = new LabelControl( "osgEarth Controls" );
                     label->setFont( osgEarth::Registry::instance()->getDefaultFont() );
                     label->setFontSize( 24.0f );
                     label->setHorizAlign( Control::ALIGN_LEFT );
                     label->setMargin( 5 );
                     box->addControl( label );
+
+                    label = new LabelControl("Hover Me");
+                    label->setMargin( 10 );
+                    label->setBackColor( 1,1,1,0.4 );
+                    box->addControl( label );
+                    label->setActiveColor(1,.3,.3,1);
+                    label->addEventHandler( new MyClickHandler );
+
+                    // Add some checkboxes
+                    HBox* c4 = new HBox();
+                    c4->setChildSpacing( 5 );
+                    {
+                        c4->addControl( new CheckBoxControl( true ) );
+                        c4->addControl( new LabelControl( "Checkbox" ) );
+                    }
+                    box->addControl( c4 );
 
                     cs->addControl(box);
                     
