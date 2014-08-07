@@ -13,7 +13,7 @@ using namespace osgEarth::Cef;
 NativeEventHandlerWin::NativeEventHandlerWin(HWND hWnd, BrowserClient* browserClient, CefBrowser* browser)
 : _browserClient(browserClient), _browser(browser), _oldWndProc(0L)
 {
-  _oldWndProc = (WNDPROC)SetWindowLongPtr(hWnd, GWL_WNDPROC, reinterpret_cast<LONG_PTR>(&NativeEventHandlerWin::WndProc));
+  _oldWndProc = (WNDPROC)SetWindowLongPtr( hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&NativeEventHandlerWin::WndProc) );
 
   if (!_oldWndProc)
     OE_WARN << LC << "Error registering WNDPROC handler" << std::endl;
