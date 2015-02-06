@@ -31,7 +31,7 @@ namespace
     struct BrowserEventHandler : public osgGA::GUIEventHandler 
     {
         BrowserEventHandler( osgViewer::View* view, BrowserClient* browserClient, CefBrowser* browser )
-          : _view(view), _browserClient(browserClient), _browser(browser)
+          : _view(view), _browserClient(browserClient), _browser(browser), _mouseLMBdown(false)
         {
             //initialize _scrollFactor
             const char* sf = ::getenv("CEF_SCROLL_FACTOR");
@@ -170,7 +170,7 @@ namespace
                 case(osgGA::GUIEventAdapter::DOUBLECLICK):
                 case(osgGA::GUIEventAdapter::SCROLL):
                 {
-                    if (transparentPixel(_view, ea))
+                    if (transparentPixel(_view, ea) && !_mouseLMBdown)
                     {
                         if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE || ea.getEventType() == osgGA::GUIEventAdapter::DOUBLECLICK)
                         {
@@ -191,6 +191,10 @@ namespace
 
                 case osgGA::GUIEventAdapter::PUSH:
                     {
+        				if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
+        					_mouseLMBdown = true;
+        				}
+                        
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
                         mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
@@ -201,6 +205,9 @@ namespace
 
                 case osgGA::GUIEventAdapter::RELEASE:
                     {
+        				if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
+        					_mouseLMBdown = false;
+        				}
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
                         mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
@@ -309,6 +316,7 @@ namespace
         CefRefPtr<CefBrowser> _browser;
         CefRefPtr<BrowserClient> _browserClient;
         float _scrollFactor;
+        bool _mouseLMBdown;
         KeyboardEventAdapter _keyAdapter;
     };
 
