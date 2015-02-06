@@ -144,8 +144,8 @@ namespace
                     osg::Image* image = _browserClient->getImage();
                     if (image)
                     {
-                        int x = int( float(image->s()) * tc.x() );
-                        int y = int( float(image->t()) * tc.y() );
+                        int x = int( float(image->s() - 1) * tc.x() );
+                        int y = int( float(image->t() - 1) * tc.y() );
 
                         ImageUtils::PixelReader ia(image);
                         osg::Vec4 color = ia(x, y);
