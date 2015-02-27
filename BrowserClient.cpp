@@ -82,6 +82,9 @@ namespace
 
         bool transparentPixel(osgViewer::View* view, const osgGA::GUIEventAdapter& ea) const
         {
+            osg::Image* image = _browserClient->getImage();
+            if (!image || !image->getPixelFormat())
+                return false;
             osgUtil::LineSegmentIntersector::Intersections intersections;
             bool foundIntersection = view==0 ? false : view->computeIntersections(ea.getX(), ea.getY(), intersections);
 
@@ -225,7 +228,7 @@ namespace
                         CefWindowInfo windowInfo;
                         windowInfo.SetAsPopup(0L, "DevTools");
                         CefBrowserSettings browserSettings;
-                        _browser->GetHost()->ShowDevTools(windowInfo, _browserClient.get(), browserSettings);
+                        _browser->GetHost()->ShowDevTools(windowInfo, _browserClient.get(), browserSettings, CefPoint());
                     }
 #ifndef WIN32
                     {
@@ -368,10 +371,11 @@ void BrowserClient::initBrowser(const std::string& url)
         CefWindowInfo windowInfo;
         CefBrowserSettings browserSettings;
 
-        // in linux set a gtk widget, in windows a hwnd. If not available set nullptr - may cause some render errors, in context-menu and plugins.
-        windowInfo.SetAsOffScreen(0L);
-        windowInfo.SetTransparentPainting(true);
-        //windowInfo.SetAsWindowless(0L, true);
+        //TODO: populate settings from CLA's
+
+        //windowInfo.SetAsOffScreen(0L);
+        //windowInfo.SetTransparentPainting(true);
+        windowInfo.SetAsWindowless(0L, true);
 
         _browser = CefBrowserHost::CreateBrowserSync(windowInfo, this, url.c_str(), browserSettings, 0L);
         _browser->GetHost()->SendFocusEvent(true);
@@ -523,6 +527,10 @@ void BrowserClient::addMapView(const std::string &id, osgViewer::View *mapView)
         // Remove event handlers if replacing a view
         it->second->getEventHandlers().clear();
     }
+
+    // Allow the map view to handle events and pass them to the main view
+    // because they aren't being passed through correctly.
+    _mainView->getCamera()->setAllowEventFocus(false);
 
     mapView->addEventHandler(new MapProxyHandler(_mainEventHandler));
     _mapViews[id] = mapView;
@@ -865,7 +873,10 @@ bool BrowserClient::DoClose(CefRefPtr<CefBrowser> browser) {
   // process.
   if (_browser->GetIdentifier() == browser->GetIdentifier()) {
     // Notify the browser that the parent window is about to close.
-    browser->GetHost()->ParentWindowWillClose();
+    //browser->GetHost()->ParentWindowWillClose();
+
+    // Set a flag to indicate that the window close should be allowed.
+//    is_closing_ = true;
 
     // Set a flag to indicate that the window close should be allowed.
     //m_bIsClosing = true;

@@ -39,6 +39,8 @@ CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::s
         if (getenv("CEF_LOCALES_DIR") != 0)
             CefString(&settings.locales_dir_path) = getenv("CEF_LOCALES_DIR");
 
+        settings.windowless_rendering_enabled = true;
+
         bool result = CefInitialize(cef_args, settings, cef_app, 0L);
         if (!result)
         {
