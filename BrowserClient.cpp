@@ -230,9 +230,10 @@ namespace
                         CefBrowserSettings browserSettings;
                         _browser->GetHost()->ShowDevTools(windowInfo, _browserClient.get(), browserSettings, CefPoint());
                     }
+
 #ifndef WIN32
                     {
-                        // Down process keys if not in focus
+                        // Don't process keys if not in focus
                         if (!_browserClient->getInFocus())
                             return false;
 
@@ -256,6 +257,9 @@ namespace
 
                         return true;
                     }
+#else
+                    // return true if in focus to prevent map from receiving events
+                    return _browserClient->getInFocus();
 #endif
                     break;
 #ifndef WIN32

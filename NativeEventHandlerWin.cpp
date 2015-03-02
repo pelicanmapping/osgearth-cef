@@ -162,7 +162,7 @@ LRESULT CALLBACK NativeEventHandlerWin::WndProc(HWND hWnd, UINT message, WPARAM 
           event.type = KEYEVENT_CHAR;
         event.modifiers = GetCefKeyboardModifiers(wParam, lParam);
 
-        if (handler && handler->_browser)
+        if (handler && handler->_browser /*&& handler->_browserClient->getInFocus()*/)
           handler->_browser->GetHost()->SendKeyEvent(event);
 
         break;
