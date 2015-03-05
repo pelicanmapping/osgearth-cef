@@ -809,10 +809,36 @@ void BrowserClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type
     }
 }
 
-//void BrowserClient::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor)
-//{
-//}
+void BrowserClient::OnCursorChange( CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo& custom_cursor_info )
+{    
+#ifdef WIN32
+    osgViewer::GraphicsWindowWin32* graphicsWindowWin32 = dynamic_cast<osgViewer::GraphicsWindowWin32*>(_mainView->getCamera()->getGraphicsContext());
 
+    if( !::IsWindow( graphicsWindowWin32->getHWND() ) )
+        return;
+    
+    switch( type ) {
+        case CT_POINTER: 
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::LeftArrowCursor );
+            break;
+        case CT_HAND:             
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::HandCursor );
+            break;
+        case CT_WAIT: 
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::WaitCursor );
+            break;
+        case CT_CROSS:
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::CrosshairCursor );
+            break;
+        case CT_IBEAM:
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::TextCursor);
+            break;
+        default:
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::LeftArrowCursor );
+            break;
+    }
+#endif
+}
 
 bool BrowserClient::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
                                       CefRefPtr<CefFrame> frame,
