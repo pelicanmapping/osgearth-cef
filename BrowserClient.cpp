@@ -289,7 +289,16 @@ namespace
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
                         mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
-                        mouse_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
+                        uint32 modifiers = _keyAdapter.getCefModifiers( ea.getModKeyMask() );
+        
+                        if(ea.getButtonMask() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+                            modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+                        if( ea.getButtonMask() & osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON )
+                            modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+                        if( ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON )
+                            modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+        
+                        mouse_event.modifiers = modifiers;
                         _browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
                         return true;
                     }
