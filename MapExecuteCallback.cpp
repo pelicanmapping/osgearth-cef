@@ -3,9 +3,9 @@
 #include <osgEarthUtil/Controls>
 #include <osgEarthUtil/EarthManipulator>
 #include <osgEarthUtil/ExampleResources>
-//#include <osgEarthUtil/Ocean>
+#include <osgEarthUtil/Ocean>
 #include <osgEarthUtil/Sky>
-//#include <osgEarthAnnotation/AnnotationRegistry>
+#include <osgEarthAnnotation/AnnotationRegistry>
 
 
 using namespace osgEarth::Cef;
@@ -18,8 +18,8 @@ void MapExecuteCallback::ParseMapNode(osgEarth::MapNode* mapNode, osgViewer::Vie
 {
     const Config& externals = mapNode->externalConfig();
     const Config& skyConf = externals.child("sky");
-    //const Config& oceanConf = externals.child("ocean");
-    //const Config& annoConf = externals.child("annotations");
+    const Config& oceanConf = externals.child("ocean");
+    const Config& annoConf = externals.child("annotations");
 
     // Sky in the map node externals:
     if ( !skyConf.empty() )
@@ -43,32 +43,32 @@ void MapExecuteCallback::ParseMapNode(osgEarth::MapNode* mapNode, osgViewer::Vie
     }
 
     // Ocean in the map node externals:
-    //if ( !oceanConf.empty() )
-    //{
-    //    OceanNode* ocean = OceanNode::create(OceanOptions(oceanConf), mapNode);
-    //    if ( ocean )
-    //    {
-    //        root->addChild( ocean );
+    if ( !oceanConf.empty() )
+    {
+        OceanNode* ocean = OceanNode::create(OceanOptions(oceanConf), mapNode);
+        if ( ocean )
+        {
+            root->addChild( ocean );
 
-    //        Control* c = OceanControlFactory().create(ocean);
-    //        if ( c )
-    //            mainContainer->addControl(c);
-    //    }
-    //}
+            //Control* c = OceanControlFactory().create(ocean);
+            //if ( c )
+            //    mainContainer->addControl(c);
+        }
+    }
 
     // Annotations in the map node externals:
-    //if ( !annoConf.empty() )
-    //{
-    //    osg::Group* annotations = 0L;
-    //    osgEarth::Annotation::AnnotationRegistry::instance()->create( mapNode, annoConf, dbOptions.get(), annotations );
-    //    if ( annotations )
-    //    {
-    //        root->addChild( annotations );
-    //    }
-    //}
+    if ( !annoConf.empty() )
+    {
+        osg::Group* annotations = 0L;
+        osgEarth::Annotation::AnnotationRegistry::instance()->create( mapNode, annoConf, 0L, annotations ); //TODO: pass dbOptions along
+        if ( annotations )
+        {
+            root->addChild( annotations );
+        }
+    }
 }
 
-ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const std::string& command, const JsonArguments &args, CefRefPtr<CefMessageRouterBrowserSide::Callback> persistentCallback )
+ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const std::string& command, const JsonArguments &args, bool persistent, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback )
 {
     if (command == "_OE_create_map")
     {
@@ -102,7 +102,7 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         osg::Group* root = new osg::Group();
 
         // Install a canvas for any UI controls we plan to create:
-        osgEarth::Util::Controls::ControlCanvas* canvas =  osgEarth::Util::Controls::ControlCanvas::getOrCreate(mapView);
+        //osgEarth::Util::Controls::ControlCanvas* canvas =  osgEarth::Util::Controls::ControlCanvas::getOrCreate(mapView);
         //root->addChild(canvas);
 
         std::string mapFile = args["file"];
@@ -214,6 +214,8 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
             root->addChild(node);
             osgEarth::MapNode* mapNode = osgEarth::MapNode::findMapNode(node);
             _client->_mapNodes[id] = mapNode;
+
+            mapView->setCameraManipulator( new osgEarth::Util::EarthManipulator() );
 
             ParseMapNode(mapNode, mapView, root);
         }
@@ -327,10 +329,10 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
         if (!mapNode.valid())
             return new ReturnVal("Map error: id not found.", -1);
 
-        if (!persistentCallback)
-            return new ReturnVal("Map listener callback not persistent.", -1);
+        if (!persistent || !callback)
+            return new ReturnVal("Map listener callback missing or not persistent.", -1);
 
-        osg::ref_ptr<MapQueryCallback> cb = new MapQueryCallback(id, persistentCallback);
+        osg::ref_ptr<MapQueryCallback> cb = new MapQueryCallback(id, callback);
         mapNode->getMap()->addMapCallback(cb);
         _mapCallbacks[query_id] = cb;
         

@@ -14,7 +14,7 @@ class MapExecuteCallback : public ExecuteCallback
 {
 public:
     MapExecuteCallback(BrowserClient* client) : _client(client) { }
-    ReturnVal* execute( int64 queryId, const std::string& command, const JsonArguments &args, CefRefPtr<CefMessageRouterBrowserSide::Callback> persistentCallback );
+    ReturnVal* execute( int64 queryId, const std::string& command, const JsonArguments &args, bool persistent, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback );
 
 private:
     void ParseMapNode(osgEarth::MapNode* mapNode, osgViewer::View* view, osg::Group* root);

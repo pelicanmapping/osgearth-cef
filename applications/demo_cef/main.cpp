@@ -48,7 +48,7 @@ namespace
 
         MyExecCallback(BrowserClient* client) : _client(client) { }
 
-        ExecuteCallback::ReturnVal* execute( int64 query_id, const std::string& command, const JsonArguments &args, CefRefPtr<CefMessageRouterBrowserSide::Callback> persistentCallback )
+        ExecuteCallback::ReturnVal* execute( int64 query_id, const std::string& command, const JsonArguments &args, bool persistent, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback )
         {
             if (command == "says")
             {
@@ -62,7 +62,7 @@ namespace
                 std::string id = args["id"];
 
                 osgEarth::Drivers::TMSOptions tms;
-                tms.url() = "http://readymap.org:8080/readymap/tiles/1.0.0/76/";
+                tms.url() = "http://readymap.org/readymap/tiles/1.0.0/76/";
                 osgEarth::ImageLayer* layer = new osgEarth::ImageLayer( "Test Layer", tms );
 
                 osg::ref_ptr<osgEarth::MapNode> mapNode= _client->getMapNode(id);

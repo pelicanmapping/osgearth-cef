@@ -1,6 +1,7 @@
 #include "BrowserClient"
 #include "KeyboardEventAdapter"
 #include "MapExecuteCallback"
+#include "FileExecuteCallback"
 
 #ifdef WIN32
 #include "NativeEventHandlerWin"
@@ -402,7 +403,8 @@ void BrowserClient::initBrowser(const std::string& url)
 
 #endif
 
-    addExecuteCallback(new MapExecuteCallback(this));
+    addExecuteCallback(new MapExecuteCallback(this));   // handles map related calls
+    addExecuteCallback(new FileExecuteCallback(this));  // handles file related calls
 
     _mainEventHandler = new BrowserEventHandler(_mainView.get(), this, _browser);
     _mainView->addEventHandler(_mainEventHandler);
@@ -979,7 +981,6 @@ bool BrowserClient::OnQuery(CefRefPtr<CefBrowser> browser,
   JsonArguments args(request);
   std::string command = args["command"];
 
-
   // Pass to callbacks to handle
   bool handled = false;
   if (!command.empty())
@@ -988,18 +989,22 @@ bool BrowserClient::OnQuery(CefRefPtr<CefBrowser> browser,
     {
         if ( i->valid() )
         {
-            osg::ref_ptr<ExecuteCallback::ReturnVal> ret = i->get()->execute(query_id, command, args, persistent ? callback : 0L);
+            osg::ref_ptr<ExecuteCallback::ReturnVal> ret = i->get()->execute(query_id, command, args, persistent, callback);
             if (ret.valid())
             {
                 handled = true;
 
-                if (ret->errorCode == 0)
+                if (ret->isAsync)
                 {
-                    callback->Success(ret->value);
+                    //nop (at least for now)
+                }
+                else if (ret->errorCode != 0)
+                {
+                    callback->Failure(ret->errorCode, ret->value);
                 }
                 else
                 {
-                    callback->Failure(ret->errorCode, ret->value);
+                    callback->Success(ret->value);
                 }
 
                 break;
@@ -1013,7 +1018,6 @@ bool BrowserClient::OnQuery(CefRefPtr<CefBrowser> browser,
         }
     }
   }
-
 
   // If unhandled call Failure callback
   if (!handled)
@@ -1041,4 +1045,59 @@ void BrowserClient::OnQueryCanceled(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
             i = _callbacks.erase( i );
         }
     }
+}
+
+void BrowserClient::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title)
+{
+    osgViewer::Viewer::Windows ViewerWindow; 
+    _viewer->getWindows(ViewerWindow); 
+
+    if (!ViewerWindow.empty()) 
+    { 
+        ViewerWindow.front()->setWindowName(title.ToString()); 
+    }
+}
+
+void BrowserClient::OnFaviconURLChange(CefRefPtr<CefBrowser> browser, const std::vector<CefString>& icon_urls)
+{
+    //TODO:  Implement for other platforms
+
+#ifdef WIN32  
+    osgViewer::Viewer::Windows ViewerWindow; 
+    _viewer->getWindows(ViewerWindow); 
+
+    if (!ViewerWindow.empty()) 
+    { 
+        osgViewer::GraphicsWindowWin32* window = dynamic_cast<osgViewer::GraphicsWindowWin32*>(ViewerWindow.front());
+
+        if (window)
+        {
+            std::string iconUrl = icon_urls.front().ToString();
+            if (iconUrl.length() > 5)
+            {
+                if (iconUrl.substr(0, 5) == "file:" && iconUrl.length() > 8)
+                {
+                    iconUrl = iconUrl.substr(8); // strip off the leading file:///
+                    while (iconUrl.find("/") != std::string::npos)
+                    {
+                        iconUrl.replace(iconUrl.find("/"), 1, "\\");
+                    }
+                }
+
+                HWND hWnd = window->getHWND();
+                HANDLE hIcon = LoadImage(0,
+                                         iconUrl.c_str(),
+                                         iconUrl.length() > 3 && osgEarth::toLower(iconUrl.substr(iconUrl.length() - 3)) == "bmp" ? IMAGE_BITMAP : IMAGE_ICON,
+                                         0,
+                                         0,
+                                         LR_LOADFROMFILE); 
+
+                if( hWnd && hIcon ) 
+                { 
+                    SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon); 
+                }
+            }
+        }
+    }
+#endif
 }

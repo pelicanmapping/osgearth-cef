@@ -16,15 +16,17 @@ public:
 
     struct ReturnVal : public osg::Referenced
     {
-        ReturnVal() : value(""), errorCode(0) { }
-        ReturnVal(const std::string& val, int errCode=0) : value(val), errorCode(errCode) { }
+        ReturnVal() : value(""), errorCode(0), isAsync(false) { }
+        ReturnVal(bool async) : value(""), errorCode(0), isAsync(async) { }
+        ReturnVal(const std::string& val, int errCode=0) : value(val), errorCode(errCode), isAsync(false) { }
 
         std::string value;
         int errorCode;
+        bool isAsync;
     };
 
     // called when a command is received from the javascript object
-    virtual ReturnVal* execute(int64 query_id, const std::string& command, const JsonArguments &args, CefRefPtr<CefMessageRouterBrowserSide::Callback> persistentCallback) { return 0L; }
+    virtual ReturnVal* execute(int64 query_id, const std::string& command, const JsonArguments &args, bool persistent, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback) { return 0L; }
 
     // called when a command is canceled
     virtual bool cancel(int64 query_id) { return false; }

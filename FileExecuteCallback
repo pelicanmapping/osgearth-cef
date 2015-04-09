@@ -1,0 +1,25 @@
+#ifndef OSGEARTH_CEF_FILEEXECUTECALLBACK
+#define OSGEARTH_CEF_FILEEXECUTECALLBACK 1
+
+#include "ExecuteCallback"
+#include "BrowserClient"
+
+#include <osgearth/MapCallback>
+#include <osgEarth/MapModelChange>
+
+namespace osgEarth { namespace Cef
+{
+
+class FileExecuteCallback : public ExecuteCallback
+{
+public:
+    FileExecuteCallback(BrowserClient* client) : _client(client) { }
+    ReturnVal* execute( int64 queryId, const std::string& command, const JsonArguments &args, bool persistent, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback );
+
+private:
+    CefRefPtr<BrowserClient> _client;
+};
+
+} }
+
+#endif  // OSGEARTH_CEF_FILEEXECUTECALLBACK

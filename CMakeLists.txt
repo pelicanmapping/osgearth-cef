@@ -82,6 +82,7 @@ make_directory(${OUTPUT_BINDIR})
 set(APP_SRCS 
     BrowserClient.cpp
     CefHelper.cpp
+    FileExecuteCallback.cpp
     JsonArguments.cpp
     KeyboardEventAdapter.cpp
     MapExecuteCallback.cpp
@@ -95,6 +96,7 @@ set(APP_HDRS
     BrowserClient
     CefHelper
     ExecuteCallback
+    FileExecuteCallback
     JsonArguments
     KeyboardEventAdapter
     MapExecuteCallback

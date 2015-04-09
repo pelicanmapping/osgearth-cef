@@ -65,6 +65,20 @@
         return doQuery(request, options);
     }
 
+
+    this.osgearth.openFileDialog = function(options, multiple, extensions) {
+        if (multiple === true) {
+            this.execute("_OE_open_multifile_dialog", { filters: extensions }, options);
+        }
+        else {
+            this.execute("_OE_open_file_dialog", { filters: extensions }, options);
+        }
+    }
+
+    this.osgearth.openFolderDialog = function(options) {
+        this.execute("_OE_open_folder_dialog", { }, options);
+    }
+
 })();
 
 
