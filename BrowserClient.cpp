@@ -84,79 +84,15 @@ namespace
         bool transparentPixel(osgViewer::View* view, const osgGA::GUIEventAdapter& ea) const
         {
             osg::Image* image = _browserClient->getImage();
-            if (!image || !image->getPixelFormat())
-                return false;
-            osgUtil::LineSegmentIntersector::Intersections intersections;
-            bool foundIntersection = view==0 ? false : view->computeIntersections(ea.getX(), ea.getY(), intersections);
-
-            if (foundIntersection)
+            if (image && image->getPixelFormat())
             {
-                osg::Vec2 tc(0.5f,0.5f);
+                int x = ea.getX();
+                int y = ea.getWindowHeight() - ea.getY();
 
-                // use the nearest intersection
-                const osgUtil::LineSegmentIntersector::Intersection& intersection = *(intersections.begin());
-                osg::Drawable* drawable = intersection.drawable.get();
-                osg::Geometry* geometry = drawable ? drawable->asGeometry() : 0;
-                osg::Vec3Array* vertices = geometry ? dynamic_cast<osg::Vec3Array*>(geometry->getVertexArray()) : 0;
-                if (vertices)
-                {
-                    // get the vertex indices.
-                    const osgUtil::LineSegmentIntersector::Intersection::IndexList& indices = intersection.indexList;
-                    const osgUtil::LineSegmentIntersector::Intersection::RatioList& ratios = intersection.ratioList;
+                ImageUtils::PixelReader ia(image);
+                osg::Vec4 color = ia(x, y);
 
-                    if (indices.size()==3 && ratios.size()==3)
-                    {
-                        unsigned int i1 = indices[0];
-                        unsigned int i2 = indices[1];
-                        unsigned int i3 = indices[2];
-
-                        float r1 = ratios[0];
-                        float r2 = ratios[1];
-                        float r3 = ratios[2];
-
-                        osg::Array* texcoords = (geometry->getNumTexCoordArrays()>0) ? geometry->getTexCoordArray(0) : 0;
-                        osg::Vec2Array* texcoords_Vec2Array = dynamic_cast<osg::Vec2Array*>(texcoords);
-                        if (texcoords_Vec2Array)
-                        {
-                            // we have tex coord array so now we can compute the final tex coord at the point of intersection.
-                            osg::Vec2 tc1 = (*texcoords_Vec2Array)[i1];
-                            osg::Vec2 tc2 = (*texcoords_Vec2Array)[i2];
-                            osg::Vec2 tc3 = (*texcoords_Vec2Array)[i3];
-                            tc = tc1*r1 + tc2*r2 + tc3*r3;
-                        }
-                    }
-
-                    osg::TexMat* activeTexMat = 0;
-                    osg::Texture* activeTexture = 0;
-
-                    if (drawable->getStateSet())
-                    {
-                        osg::TexMat* texMat = dynamic_cast<osg::TexMat*>(drawable->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXMAT));
-                        if (texMat) activeTexMat = texMat;
-
-                        osg::Texture* texture = dynamic_cast<osg::Texture*>(drawable->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXTURE));
-                        if (texture) activeTexture = texture;
-                    }
-
-                    if (activeTexMat)
-                    {
-                        osg::Vec4 tc_transformed = osg::Vec4(tc.x(), tc.y(), 0.0f,0.0f) * activeTexMat->getMatrix();
-                        tc.x() = tc_transformed.x();
-                        tc.y() = tc_transformed.y();
-                    }
-
-                    osg::Image* image = _browserClient->getImage();
-                    if (image)
-                    {
-                        int x = int( float(image->s() - 1) * tc.x() );
-                        int y = int( float(image->t() - 1) * tc.y() );
-
-                        ImageUtils::PixelReader ia(image);
-                        osg::Vec4 color = ia(x, y);
-
-                        return color.a() == 0.0;
-                    }
-                }
+                return color.a() == 0.0;
             }
 
             return false;
