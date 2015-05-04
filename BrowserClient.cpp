@@ -89,10 +89,13 @@ namespace
                 int x = ea.getX();
                 int y = ea.getWindowHeight() - ea.getY();
 
-                ImageUtils::PixelReader ia(image);
-                osg::Vec4 color = ia(x, y);
+                if (x < image->s() && y < image->t())
+                {
+                    ImageUtils::PixelReader ia(image);
+                    osg::Vec4 color = ia(x, y);
 
-                return color.a() == 0.0;
+                    return color.a() == 0.0;
+                }
             }
 
             return false;
