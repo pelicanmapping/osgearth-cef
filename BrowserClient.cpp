@@ -89,7 +89,7 @@ namespace
                 int x = ea.getX();
                 int y = ea.getWindowHeight() - ea.getY();
 
-                if (x < image->s() && y < image->t())
+                if (x >= 0 && x < image->s() && y >= 0 && y < image->t())
                 {
                     ImageUtils::PixelReader ia(image);
                     osg::Vec4 color = ia(x, y);
