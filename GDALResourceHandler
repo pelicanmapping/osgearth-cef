@@ -1,0 +1,50 @@
+#ifndef OSGEARTH_CEF_GDAL_RESOURCE_HANDLER
+#define OSGEARTH_CEF_GDAL_RESOURCE_HANDLER 1
+
+#include "include/cef_resource_handler.h"
+#include "include/cef_scheme.h"
+
+#include <osg/Image>
+
+namespace osgEarth { namespace Cef
+{
+
+    // Implements a resource handler for previewing GDAL files
+    // You can specify a url of the type gdal://gdal/path/to/file.tif and this will return a jpeg preview of the image.
+    class GDALResourceHandler : public CefResourceHandler {
+    public:
+        GDALResourceHandler();
+
+        virtual bool ProcessRequest(CefRefPtr<CefRequest> request, CefRefPtr<CefCallback> callback) OVERRIDE;
+
+        virtual void GetResponseHeaders(CefRefPtr<CefResponse> response, int64& response_length, CefString& redirectUrl) OVERRIDE;
+
+        virtual void Cancel() OVERRIDE;
+
+        virtual bool ReadResponse(void* data_out, int bytes_to_read, int& bytes_read, CefRefPtr<CefCallback> callback) OVERRIDE;
+
+    private:
+        IMPLEMENT_REFCOUNTING(GDALResourceHandler);
+
+        osg::ref_ptr< osg::Image> _image;
+        int _readOffset;
+        std::string _data;
+    };
+
+
+
+    class GDALHandlerFactory : public CefSchemeHandlerFactory
+    {
+    public:
+        virtual CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser> browser,
+            CefRefPtr<CefFrame> frame,
+            const CefString& scheme_name,
+            CefRefPtr<CefRequest> request)
+            OVERRIDE;
+
+        IMPLEMENT_REFCOUNTING(GDALHandlerFactory);
+    };
+
+} }
+
+#endif

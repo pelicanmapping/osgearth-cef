@@ -56,9 +56,7 @@ if(WIN32)
 	# configure sdk's
 	find_path(SDK_DIR NAMES create_lib.py PATHS c:/sdk NO_DEFAULT_PATH)	
 
-	set(OSG_DIR ${SDK_DIR}/osg/3.2.0 ) 
-	set(OSGEARTH_DIR ${SDK_DIR}/osgearth/2.5 )
-
+	
 	find_path(CEF_ROOT_DIR NAMES include/cef_version.h PATHS ${SDK_DIR}/cef/3.1547 NO_DEFAULT_PATH)	
 
 	if(CMAKE_CL_64)
@@ -83,6 +81,7 @@ set(APP_SRCS
     BrowserClient.cpp
     CefHelper.cpp
     FileExecuteCallback.cpp
+    GDALResourceHandler.cpp
     JsonArguments.cpp
     KeyboardEventAdapter.cpp
     MapExecuteCallback.cpp
@@ -97,6 +96,7 @@ set(APP_HDRS
     CefHelper
     ExecuteCallback
     FileExecuteCallback
+    GDALResourceHandler
     JsonArguments
     KeyboardEventAdapter
     MapExecuteCallback
