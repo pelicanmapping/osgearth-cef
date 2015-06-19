@@ -513,6 +513,9 @@ void BrowserClient::setSize(unsigned int width, unsigned int height)
 {
     _width = osg::maximum(0U, width);
     _height = osg::maximum(0U, height);
+
+	static unsigned char s_empty;
+	_image->setImage(0, 0, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, (unsigned char*)(&s_empty), osg::Image::NO_DELETE);
 }
 
 void BrowserClient::addExecuteCallback( ExecuteCallback* callback )
