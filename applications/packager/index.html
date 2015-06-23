@@ -75,7 +75,7 @@
         function addFile(filename) {
             var file = gdal.open(filename);
             if (file) {
-                var row = '<tr>' +
+                var row = '<tr class="file-row" data-filename="' + filename + '">' +
                           '<td>' + 
                           '<button type="button" class="del-button btn btn-danger btn-sm">' +
                           '    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
@@ -132,6 +132,17 @@
             });
 
             $("#next-3").click(function() {
+
+                // Collect all the files that have a data-filename attribute
+                var filenames = [];
+                $(".file-row").each(function() {
+                   var filename = $(this).data("filename");        
+                   if (filename) {
+                    filenames.push( filename );
+                   }            
+                });
+                alert("Tiling " + filenames.length + " files");
+
                 $("#page-4").show();
                 $("#page-3").hide();
             });
