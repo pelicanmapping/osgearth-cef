@@ -18,6 +18,8 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="js/bootstrap.min.js"></script>
 
+    <script src="../../js/osgearth.js"></script>
+
 
     <style>
         body, html {
@@ -69,7 +71,50 @@
     </style>
 
     <script type="text/javascript">
+
+        function addFile(filename) {
+            var file = gdal.open(filename);
+            if (file) {
+                var row = '<tr>' +
+                          '<td>' + 
+                          '<button type="button" class="del-button btn btn-danger btn-sm">' +
+                          '    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
+                          '</button>' +
+                          '</td>' +
+                          '<td><img class="thumbnail" src="gdal://gdal/' + filename + '"/></img></td>' +
+                          '<td>' + filename + '</td>' +
+                          '<td>' + file.bands + '</td>' +
+                          '<td>' + file.size[0] + "x" + file.size[1] + '</td>' +
+                          '<td>' + file.projection + '</td>' +
+                          '</tr>';
+
+                $("#file-table").append(row);
+            }
+            else {
+                alert("Failed to open " + filename);
+            }
+        }
+
         $(function() {
+
+            $("#add-files-button").click(function() {
+                osgearth.openFileDialog({
+                    onSuccess: function(file) {
+                       addFile( file );
+                    },
+                    onFailure: function(error_code, error_message) {
+
+                    }
+                },
+                false,
+                ".tif;*.tif;*.ecw");
+            });
+
+            
+            // Remove a row if the del button is clicked.
+            $("body").on("click", ".del-button", function(e) {
+               $(this).parent().parent().remove();
+            });
 
             $("#next-1").click(function() {
                 $("#page-2").show();
@@ -111,43 +156,17 @@
         <div id="page-1" class="clearfix">
            <h1> Select files to tile</h1>
 
-           <button class="btn btn-primary btn-lg">Add file</button>
-           <table class="table table-striped">
+           <button id="add-files-button" class="btn btn-primary btn-lg">Add file</button>
+           <table id="file-table" class="table table-striped">
                 <thead>
                     <th style="width: 50px;"></th>
                     <th style="width: 20px;"></th>
                     <th>Filename</th>
+                    <th>Bands</th>
+                    <th>Dimensions</th>
+                    <th>Projection</th>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm">
-                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                            </button>
-                        </td>
-                        <td><img class="thumbnail" src="img/thumb.jpg"/></img></td>
-                        <td>foo.png</td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                             <button type="button" class="btn btn-danger btn-sm">
-                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                            </button>
-                        </td>
-                        <td><img class="thumbnail" src="img/thumb.jpg"/></img></td>
-                        <td>blah.png</td>
-                    </tr>
-
-                     <tr>
-                        <td>
-                             <button type="button" class="btn btn-danger btn-sm">
-                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                            </button>
-                        </td>
-                        <td><img class="thumbnail" src="img/thumb.jpg"/></img></td>
-                        <td>test.png</td>
-                    </tr>
                 </tbody>
             </table>
 
