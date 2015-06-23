@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <title>Packager</title>
+
+    <link rel="stylesheet" type="text/css" href="css/packager.css">
+    <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="js/packager.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+
+    <style>
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+        }
+
+        .page {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 110px;
+            bottom: 0px;
+        }
+
+        .clearfix {
+            overflow: auto;
+        }
+
+        .header {
+        }
+
+        .thumbnail {
+            width: 50px;
+            height: 50px;
+            padding: 0px;
+            margin: 0px;
+        }
+
+        .page-footer {
+            float:right;
+        }
+
+        .tile {
+            width: 300px;
+            height: 300px;
+            background-color: gray;
+            display:inline-block;
+            margin: 10px;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        .zoom-input {
+            width: 50px;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+        $(function() {
+
+            $("#next-1").click(function() {
+                $("#page-2").show();
+                $("#page-1").hide();
+            });
+
+            $("#next-2").click(function() {
+                $("#page-3").show();
+                $("#page-2").hide();
+            });
+
+            $("#prev-2").click(function() {
+                $("#page-2").hide();
+                $("#page-1").show();
+            });
+
+            $("#next-3").click(function() {
+                $("#page-4").show();
+                $("#page-3").hide();
+            });
+
+            $("#prev-3").click(function() {
+                $("#page-3").hide();
+                $("#page-2").show();
+            });
+
+        });
+    </script>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <img src="img/logo.png"></img>
+        </div>
+
+        <div id="page-1" class="clearfix">
+           <h1> Select files to tile</h1>
+
+           <button class="btn btn-primary btn-lg">Add file</button>
+           <table class="table table-striped">
+                <thead>
+                    <th style="width: 50px;"></th>
+                    <th style="width: 20px;"></th>
+                    <th>Filename</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                            </button>
+                        </td>
+                        <td><img class="thumbnail" src="img/thumb.jpg"/></img></td>
+                        <td>foo.png</td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                             <button type="button" class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                            </button>
+                        </td>
+                        <td><img class="thumbnail" src="img/thumb.jpg"/></img></td>
+                        <td>blah.png</td>
+                    </tr>
+
+                     <tr>
+                        <td>
+                             <button type="button" class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                            </button>
+                        </td>
+                        <td><img class="thumbnail" src="img/thumb.jpg"/></img></td>
+                        <td>test.png</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="page-footer clearfix">
+                <button id="next-1" class="btn btn-primary">Next</button>
+            </div>
+        </div>
+
+        <div id="page-2" class="clearfix" style="display:none">
+            <h1>What kind of tiles do you want to make?</h1>
+
+            <div style="margin-left: auto; margin-right: auto; max-width: 800px;">
+                <div class="tile">TMS</div>
+                <div class="tile">MBTiles</div>
+
+            </div>
+
+            <div class="page-footer">
+                <button id="prev-2" class="btn">Go back</button>
+                <button id="next-2" class="btn btn-primary">Next</button>
+            </div>
+        </div>
+
+        <div id="page-3" class="clearfix" style="display:none">
+
+            <h1>Export options</h1>
+            <h4>Zoom levels</h4>
+            <input class="zoom-input" type="text" value="0"></input> to <input class="zoom-input" type="text" value="10"></input>
+           
+
+            <div style="font-size: small; font-weight: bold;">Export will take ~10 weeks and produce 10GB of tiles</div>
+
+            <hr/>
+
+            <h4>Data type</h4>
+
+            <div class="radio">
+                <label>
+                    <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                    Imagery
+                </label>
+            </div>
+
+            <div class="radio">
+              <label>
+                <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+                Elevation
+              </label>
+            </div>
+
+            <hr/>
+
+            <div class="page-footer">
+                <button id="prev-3" class="btn">Go back</button>
+                <button id="next-3" class="btn btn-primary">Export</button>
+            </div>
+
+        </div>
+
+        <div id="page-4" class="clearfix" style="display:none">
+            <h1>Exporting</h1>
+            <div class="progress">
+               <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+               <span>60% Complete</span>
+              </div>
+            </div>
+            <h3>Processed 500 of 13432343 tiles.  ~2 days remaining.</h3>
+            <button class="btn btn-danger btn-xlarge">Cancel</button>
+        </div>
+
+    </div>
+</body>
+
+</html>
