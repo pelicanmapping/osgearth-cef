@@ -108,8 +108,7 @@
                 },
                 false,
                 ".tif;*.tif;*.ecw");
-            });
-
+            });     
             
             // Remove a row if the del button is clicked.
             $("body").on("click", ".del-button", function(e) {
@@ -141,8 +140,32 @@
                     filenames.push( filename );
                    }            
                 });
-                alert("Tiling " + filenames.length + " files");
 
+                var minLevel = parseInt($("#min-level").val());
+                var maxLevel = parseInt($("#max-level").val());
+
+
+                osgearth.package({
+                    filenames: filenames,
+                    destination:  "d:/temp5",
+                    extension: "jpg",
+                    min_level: minLevel,
+                    max_level: maxLevel,
+                    progress: function( current, total, currentStage, totalStages, msg) {
+                        var message = "Completed " + current + " of " + total + " tiles";
+                        var percentComplete = ((current / total) * 100.0).toFixed();
+                        $("#progress-bar").css({"width": percentComplete + "%"});
+                        $("#percent-complete").html(percentComplete + "%");
+                        $("#progress-message").html(message);
+                    },
+                    complete: function() {
+                        $("#progress-bar").css({"width": "100%"});
+                        $("#percent-complete").html("100%");
+                        $("#progress-message").html("Completed exporting");
+                    }
+                });
+
+                
                 $("#page-4").show();
                 $("#page-3").hide();
             });
@@ -205,7 +228,7 @@
 
             <h1>Export options</h1>
             <h4>Zoom levels</h4>
-            <input class="zoom-input" type="text" value="0"></input> to <input class="zoom-input" type="text" value="10"></input>
+            <input id="min-level" class="zoom-input" type="text" value="0"></input> to <input id="max-level" class="zoom-input" type="text" value="10"></input>
            
 
             <div style="font-size: small; font-weight: bold;">Export will take ~10 weeks and produce 10GB of tiles</div>
@@ -240,11 +263,11 @@
         <div id="page-4" class="clearfix" style="display:none">
             <h1>Exporting</h1>
             <div class="progress">
-               <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
-               <span>60% Complete</span>
+               <div id="progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+               <span id="percent-complete">0% Complete</span>
               </div>
             </div>
-            <h3>Processed 500 of 13432343 tiles.  ~2 days remaining.</h3>
+            <h3 id="progress-message">Progress</h3>
             <button class="btn btn-danger btn-xlarge">Cancel</button>
         </div>
 

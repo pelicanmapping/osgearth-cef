@@ -1,5 +1,6 @@
 #include "RenderProcessHandler"
 #include "GDALLayer"
+#include "PackagerExtensions"
 
 #include <osg/Camera>
 #include <osgDB/ReadFile>
@@ -28,6 +29,7 @@ void RenderProcessHandler::OnWebKitInitialized()
     _messageRouter = CefMessageRouterRendererSide::Create(config);
 
     GDALAPI::AddGDALExtensions(0);
+    PackagerAPI::AddExtensions(0);
 }
 
 void RenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)

@@ -86,6 +86,7 @@ set(APP_SRCS
     JsonArguments.cpp
     KeyboardEventAdapter.cpp
     MapExecuteCallback.cpp
+    PackagerExtensions.cpp
     RenderProcessHandler.cpp
 )
 
@@ -103,6 +104,7 @@ set(APP_HDRS
     KeyboardEventAdapter
     MapExecuteCallback
     OECefApp
+    PackagerExtensions
     RenderProcessHandler
 )
 
