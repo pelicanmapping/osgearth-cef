@@ -58,6 +58,13 @@
             width: 50px;
         }
 
+        .projection {
+            width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;            
+        }
+
     </style>
 
     <script type="text/javascript">
@@ -74,7 +81,6 @@
                           '<td>' + filename + '</td>' +
                           '<td>' + file.bands + '</td>' +
                           '<td>' + file.size[0] + "x" + file.size[1] + '</td>' +
-                          '<td>' + file.projection + '</td>' +
                           '</tr>';
 
                 $("#file-table").append(row);
@@ -83,6 +89,42 @@
                 alert("Failed to open " + filename);
             }
         }
+
+        var extensions = 
+        [
+            ".sid",
+            "*.ecw",
+            "*.vrt",
+            "*.jp2",
+            "*.j2k",
+            "*.tiff",
+            "*.png",
+            "*.jpg",
+            "*.jpeg",
+            "*.dem",
+            "*.dt0",
+            "*.dt1",
+            "*.dt2",
+            "*.adf",
+            "*.blx",
+            "*.xlb",
+            "*.bag",
+            "*.bmp",
+            "*.bt",
+            "*.doq",
+            "*.hdr",
+            "*.n1",
+            "*.ers",
+            "*.fits",
+            "*.gif",
+            "*.img",
+            "*.nitf",
+            "*.ntf",
+            "*.toc",
+            "*.kap"
+        ];
+
+        var extensions_string = extensions.join(";");
 
         $(function() {
 
@@ -96,7 +138,7 @@
                     }
                 },
                 false,
-                ".tif;*.tif;*.ecw");
+                extensions_string);
             });     
             
             // Remove a row if the del button is clicked.
@@ -112,9 +154,7 @@
                     onFailure: function(error_code, error_message) {
 
                     }
-                },
-                false,
-                ".tif;*.tif;*.ecw");
+                });
             });     
 
             $("#next-1").click(function() {
@@ -197,7 +237,6 @@
                     <th>Filename</th>
                     <th>Bands</th>
                     <th>Dimensions</th>
-                    <th>Projection</th>
                 </thead>
                 <tbody>
                 </tbody>
