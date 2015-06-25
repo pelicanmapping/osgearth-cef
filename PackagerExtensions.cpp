@@ -79,7 +79,6 @@ public:
         unsigned           totalStages,
         const std::string& msg )
     {
-        OSG_NOTICE << "Posting task " << current << " of " << total << std::endl;
         _taskRunner->PostTask( new RunCallbackTask( _context, _callback, current, total, currentStage, totalStages, msg ) );
         return false;
     }
