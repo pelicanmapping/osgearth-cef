@@ -188,23 +188,7 @@ public:
         else
         {
             _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", compositeOpt) );
-        }
-
-            /*
-            // Create an image layer from just the first image for now and tile it.  Need to make a composite and reproject them, etc.
-            GDALOptions layerOpt;
-            layerOpt.url() = filenames[0];
-
-            if (elevation)
-            {
-            _layer = new osgEarth::ElevationLayer( ElevationLayerOptions("layer", layerOpt) );
-            }
-            else
-            {
-            _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", layerOpt) );
-        }
-        */
-       
+        }     
 
         _map = new Map();
 
