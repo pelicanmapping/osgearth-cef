@@ -84,10 +84,24 @@
                           '</tr>';
 
                 $("#file-table").append(row);
+
+                $("#files-error").hide();
             }
             else {
                 alert("Failed to open " + filename);
             }
+        }
+
+        function getFilenames() {
+            // Collect all the files that have a data-filename attribute
+            var filenames = [];
+            $(".file-row").each(function() {
+               var filename = $(this).data("filename");        
+               if (filename) {
+                filenames.push( filename );
+               }            
+            });
+            return filenames;
         }
 
 
@@ -190,6 +204,15 @@
             });     
 
             $("#next-1").click(function() {
+                var filenames = getFilenames();
+                if (filenames.length == 0) {
+                    $("#files-error").show();
+                    return;
+                }
+
+                $("#files-error").hide();
+
+                // Go to the next page
                 $("#page-2").show();
                 $("#page-1").hide();
             });
@@ -201,14 +224,7 @@
 
             $("#next-2").click(function() {
 
-                // Collect all the files that have a data-filename attribute
-                var filenames = [];
-                $(".file-row").each(function() {
-                   var filename = $(this).data("filename");        
-                   if (filename) {
-                    filenames.push( filename );
-                   }            
-                });
+                var filenames = getFilenames();
 
                 // Get the min/max levels
                 var minLevel = parseInt($("#min-level").val());
@@ -274,6 +290,11 @@
 
         <div id="page-1" class="clearfix">
            <h1> Select files to tile</h1>
+
+           <div id="files-error" style="display:none" class="alert alert-danger">
+               Please select at least one file
+           </div>
+
 
            <button id="add-files-button" class="btn btn-primary btn-lg">Add file</button>
            <table id="file-table" class="table table-striped">
