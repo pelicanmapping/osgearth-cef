@@ -5,6 +5,7 @@
 #include <osgDB/FileNameUtils>
 
 #include <osgEarthDrivers/gdal/GDALOptions>
+#include <osgEarth/CompositeTileSource>
 #include <osgEarthUtil/TMSPackager>
 
 using namespace osgEarth::Cef;
@@ -163,18 +164,46 @@ public:
         // create a folder for the output
         osgDB::makeDirectory( destination );
 
-        // Create an image layer from just the first image for now and tile it.  Need to make a composite and reproject them, etc.
-        GDALOptions layerOpt;
-        layerOpt.url() = filenames[0];
+        CompositeTileSourceOptions compositeOpt;
+
+        for (unsigned int i = 0; i < filenames.size(); i++)
+        {
+            GDALOptions layerOpt;
+            layerOpt.url() = filenames[i];
+
+            if (elevation)
+            {
+                compositeOpt.add(ElevationLayerOptions(filenames[i], layerOpt)); 
+            }
+            else
+            {
+                compositeOpt.add(ImageLayerOptions(filenames[i], layerOpt));
+            }
+        }
 
         if (elevation)
         {
-             _layer = new osgEarth::ElevationLayer( ElevationLayerOptions("layer", layerOpt) );
+            _layer = new osgEarth::ElevationLayer( ElevationLayerOptions("layer", compositeOpt) );
         }
         else
         {
+            _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", compositeOpt) );
+        }
+
+            /*
+            // Create an image layer from just the first image for now and tile it.  Need to make a composite and reproject them, etc.
+            GDALOptions layerOpt;
+            layerOpt.url() = filenames[0];
+
+            if (elevation)
+            {
+            _layer = new osgEarth::ElevationLayer( ElevationLayerOptions("layer", layerOpt) );
+            }
+            else
+            {
             _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", layerOpt) );
         }
+        */
        
 
         _map = new Map();
