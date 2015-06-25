@@ -115,14 +115,22 @@
                $(this).parent().parent().remove();
             });
 
+            $("#browse").click(function() {
+                osgearth.openFolderDialog({
+                    onSuccess: function(file) {
+                       $("#destination").val(file);
+                    },
+                    onFailure: function(error_code, error_message) {
+
+                    }
+                },
+                false,
+                ".tif;*.tif;*.ecw");
+            });     
+
             $("#next-1").click(function() {
                 $("#page-2").show();
                 $("#page-1").hide();
-            });
-
-            $("#next-2").click(function() {
-                $("#page-3").show();
-                $("#page-2").hide();
             });
 
             $("#prev-2").click(function() {
@@ -130,7 +138,7 @@
                 $("#page-1").show();
             });
 
-            $("#next-3").click(function() {
+            $("#next-2").click(function() {
 
                 // Collect all the files that have a data-filename attribute
                 var filenames = [];
@@ -141,13 +149,17 @@
                    }            
                 });
 
+                // Get the min/max levels
                 var minLevel = parseInt($("#min-level").val());
                 var maxLevel = parseInt($("#max-level").val());
+
+                // Get the output directory
+                var destination = $("#destination").val();
 
 
                 osgearth.package({
                     filenames: filenames,
-                    destination:  "d:/temp5",
+                    destination:  destination,
                     extension: "jpg",
                     min_level: minLevel,
                     max_level: maxLevel,
@@ -165,15 +177,11 @@
                     }
                 });
 
-                
-                $("#page-4").show();
-                $("#page-3").hide();
+                $("#page-3").show();
+                $("#page-2").hide();
             });
 
-            $("#prev-3").click(function() {
-                $("#page-3").hide();
-                $("#page-2").show();
-            });
+            
 
         });
     </script>
@@ -210,23 +218,17 @@
         </div>
 
         <div id="page-2" class="clearfix" style="display:none">
-            <h1>What kind of tiles do you want to make?</h1>
-
-            <div style="margin-left: auto; margin-right: auto; max-width: 800px;">
-                <div class="tile">TMS</div>
-                <div class="tile">MBTiles</div>
-
-            </div>
-
-            <div class="page-footer">
-                <button id="prev-2" class="btn">Go back</button>
-                <button id="next-2" class="btn btn-primary">Next</button>
-            </div>
-        </div>
-
-        <div id="page-3" class="clearfix" style="display:none">
 
             <h1>Export options</h1>
+
+            <h4>Destination</h4>
+
+            <input type="text" id="destination"></input> <button id="browse" class="btn">Browse</button>
+
+            <hr/>
+
+
+
             <h4>Zoom levels</h4>
             <input id="min-level" class="zoom-input" type="text" value="0"></input> to <input id="max-level" class="zoom-input" type="text" value="10"></input>
            
@@ -254,13 +256,13 @@
             <hr/>
 
             <div class="page-footer">
-                <button id="prev-3" class="btn">Go back</button>
-                <button id="next-3" class="btn btn-primary">Export</button>
+                <button id="prev-2" class="btn">Go back</button>
+                <button id="next-2" class="btn btn-primary">Export</button>
             </div>
 
         </div>
 
-        <div id="page-4" class="clearfix" style="display:none">
+        <div id="page-3" class="clearfix" style="display:none">
             <h1>Exporting</h1>
             <div class="progress">
                <div id="progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
@@ -268,7 +270,6 @@
               </div>
             </div>
             <h3 id="progress-message">Progress</h3>
-            <button class="btn btn-danger btn-xlarge">Cancel</button>
         </div>
 
     </div>
