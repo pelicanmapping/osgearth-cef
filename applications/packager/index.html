@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Packager</title>
+    <title>Pelican Map Slicer</title>
 
     <link rel="stylesheet" type="text/css" href="css/packager.css">
     <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
@@ -88,6 +88,38 @@
             else {
                 alert("Failed to open " + filename);
             }
+        }
+
+
+        function prettyPrintTime(seconds) {
+
+            var s = seconds;
+
+            var days = Math.floor(s / 86400);
+            s = s - (days * 86400);
+            var hours = Math.floor(s / 3600);
+            s = s - (hours * 3600);
+            var minutes = Math.floor(s / 60);
+            s = s - (minutes * 60);
+
+            var result = "";
+            if (days > 0) {
+                result = result + days.toFixed().toString() + " days ";
+            }
+
+            if (hours > 0) {
+                result = result + hours.toFixed().toString() + " hours ";
+            }
+
+            if (minutes > 0) {
+                result = result + minutes.toFixed().toString() + " min ";
+            }
+
+            if (seconds > 0) {
+                result = result + s.toFixed().toString() + " s";
+            }
+
+            return result;
         }
 
         var extensions = 
@@ -188,6 +220,11 @@
                 // Get the extension
                 var ext = $( "input:radio[name=format]:checked" ).val();
 
+                var cores = parseInt($("#cores").val());
+
+                var startTime = new Date();
+
+                var completedTiles = 0;
 
                 osgearth.package({
                     filenames: filenames,
@@ -195,17 +232,25 @@
                     extension: ext,
                     min_level: minLevel,
                     max_level: maxLevel,
+                    cores: cores,
                     progress: function( current, total, currentStage, totalStages, msg) {
                         var message = "Completed " + current + " of " + total + " tiles";
                         var percentComplete = ((current / total) * 100.0).toFixed();
                         $("#progress-bar").css({"width": percentComplete + "%"});
                         $("#percent-complete").html(percentComplete + "%");
                         $("#progress-message").html(message);
+                        completedTiles = current;
                     },
                     complete: function() {
+                        var endTime = new Date();
+                        var seconds = (endTime.getTime() - startTime.getTime())/1000.0;
+
                         $("#progress-bar").css({"width": "100%"});
                         $("#percent-complete").html("100%");
-                        $("#progress-message").html("Completed exporting");
+                        var message = "<h3>Tiling complete!</h3>" +
+                                      "Created " + completedTiles + " in " + prettyPrintTime( seconds ) + "<br/>" +
+                                      "Your tiles are located at <b>" + destination + "</b>";
+                        $("#progress-message").html(message).addClass("alert alert-success");
                     }
                 });
 
@@ -297,15 +342,19 @@
 
             <hr/>
 
+            <h4>Number of cores to use</h4>
+            <input id="cores" type="text" value="1"/>
+
             <div class="page-footer">
                 <button id="prev-2" class="btn">Go back</button>
                 <button id="next-2" class="btn btn-primary">Export</button>
             </div>
 
+      
         </div>
 
         <div id="page-3" class="clearfix" style="display:none">
-            <h1>Exporting</h1>
+            <h1>Creating tiles...</h1>
             <div class="progress">
                <div id="progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
                <span id="percent-complete">0% Complete</span>

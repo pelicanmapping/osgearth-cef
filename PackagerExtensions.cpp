@@ -109,7 +109,28 @@ public:
         }
 
 
-        osg::ref_ptr< TileVisitor > visitor = new TileVisitor(); 
+        osg::ref_ptr< TileVisitor > visitor;
+
+        int cores = 0;
+        if (opt->HasValue("cores"))
+        {
+            cores = opt->GetValue("cores")->GetIntValue();
+        }
+
+        cores = max(1, cores);
+
+        if (cores > 1)
+        {
+            OSG_NOTICE << "Multithread with " << cores << " cores" << std::endl;
+            MultithreadedTileVisitor* v = new MultithreadedTileVisitor();
+            v->setNumThreads(cores);
+            visitor = v;
+        }
+        else
+        {
+            visitor = new TileVisitor();
+        }
+         
         packager.setVisitor( visitor );
 
 
