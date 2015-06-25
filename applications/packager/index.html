@@ -156,11 +156,14 @@
                 // Get the output directory
                 var destination = $("#destination").val();
 
+                // Get the extension
+                var ext = $( "input:radio[name=format]:checked" ).val();
+
 
                 osgearth.package({
                     filenames: filenames,
                     destination:  destination,
-                    extension: "jpg",
+                    extension: ext,
                     min_level: minLevel,
                     max_level: maxLevel,
                     progress: function( current, total, currentStage, totalStages, msg) {
@@ -232,26 +235,31 @@
             <h4>Zoom levels</h4>
             <input id="min-level" class="zoom-input" type="text" value="0"></input> to <input id="max-level" class="zoom-input" type="text" value="10"></input>
            
-
-            <div style="font-size: small; font-weight: bold;">Export will take ~10 weeks and produce 10GB of tiles</div>
-
             <hr/>
 
-            <h4>Data type</h4>
+            <h4>Format</h4>
 
             <div class="radio">
                 <label>
-                    <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
-                    Imagery
+                    <input type="radio" name="format" id="format-png" value="png" checked>
+                    <b>PNG</b> - Use for imagery that will contain transparency.
                 </label>
             </div>
 
             <div class="radio">
-              <label>
-                <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
-                Elevation
-              </label>
+                <label>
+                    <input type="radio" name="format" id="format-jpg" value="jpg">
+                    <b>JPEG</b> - Use for imagery that will cover the entire globe.  Does not support transparency.
+                </label>
             </div>
+
+            <div class="radio">
+                <label>
+                    <input type="radio" name="format" id="format-tif" value="tif">
+                    <b>TIFF</b> - Used for elevation data.
+                </label>
+            </div>
+
 
             <hr/>
 
