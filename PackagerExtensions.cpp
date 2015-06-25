@@ -111,10 +111,34 @@ public:
         osg::ref_ptr< TileVisitor > visitor = new TileVisitor(); 
         packager.setVisitor( visitor );
 
+
+        std::string extension;
         // Get the extension
         if (opt->HasValue("extension"))
         {
-            packager.setExtension( opt->GetValue("extension")->GetStringValue().ToString() );
+            extension = opt->GetValue("extension")->GetStringValue().ToString();
+        }
+
+        // Setup the write options so that it will compress elevation using lzw
+        osg::ref_ptr< osgDB::Options > options = new osgDB::Options("tiff_compression=lzw");
+        packager.setWriteOptions( options.get() );
+
+        bool elevation = false;
+        if (extension == "tif16")
+        {
+            elevation = true;
+            packager.setExtension("tif");
+            packager.setElevationPixelDepth(16);
+        }
+        else if (extension == "tif32")
+        {
+            elevation = true;
+            packager.setExtension("tif");
+            packager.setElevationPixelDepth(32);
+        }
+        else
+        {
+            packager.setExtension( extension  );
         }
 
         // Get the min level
@@ -142,7 +166,16 @@ public:
         // Create an image layer from just the first image for now and tile it.  Need to make a composite and reproject them, etc.
         GDALOptions layerOpt;
         layerOpt.url() = filenames[0];
-        _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", layerOpt) );
+
+        if (elevation)
+        {
+             _layer = new osgEarth::ElevationLayer( ElevationLayerOptions("layer", layerOpt) );
+        }
+        else
+        {
+            _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", layerOpt) );
+        }
+       
 
         _map = new Map();
 

@@ -54,16 +54,6 @@
             float:right;
         }
 
-        .tile {
-            width: 300px;
-            height: 300px;
-            background-color: gray;
-            display:inline-block;
-            margin: 10px;
-            text-align: center;
-            font-size: x-large;
-        }
-
         .zoom-input {
             width: 50px;
         }
@@ -81,7 +71,6 @@
                           '    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
                           '</button>' +
                           '</td>' +
-                          '<td><img class="thumbnail" src="gdal://gdal/' + filename + '"/></img></td>' +
                           '<td>' + filename + '</td>' +
                           '<td>' + file.bands + '</td>' +
                           '<td>' + file.size[0] + "x" + file.size[1] + '</td>' +
@@ -205,7 +194,6 @@
            <table id="file-table" class="table table-striped">
                 <thead>
                     <th style="width: 50px;"></th>
-                    <th style="width: 20px;"></th>
                     <th>Filename</th>
                     <th>Bands</th>
                     <th>Dimensions</th>
@@ -255,8 +243,15 @@
 
             <div class="radio">
                 <label>
-                    <input type="radio" name="format" id="format-tif" value="tif">
-                    <b>TIFF</b> - Used for elevation data.
+                    <input type="radio" name="format" id="format-tif16" value="tif16">
+                    <b>TIFF (16-bit)</b> - Used for elevation data.  Produces smaller files than 32 bit tiff.
+                </label>
+            </div>
+
+            <div class="radio">
+                <label>
+                    <input type="radio" name="format" id="format-tif32" value="tif32">
+                    <b>TIFF (32-bit)</b> - Used for elevation data.  Produces larger tiles than 16 bit but will be more accurate for data with sub meter resolution..
                 </label>
             </div>
 
