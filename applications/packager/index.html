@@ -15,10 +15,14 @@
     <!-- Optional theme -->
     <link rel="stylesheet" href="css/bootstrap-theme.min.css">
 
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+
     <!-- Latest compiled and minified JavaScript -->
     <script src="js/bootstrap.min.js"></script>
 
     <script src="../../js/osgearth.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
 
 
     <style>
@@ -71,6 +75,11 @@
 
         #estimate {
             font-weight: bold;
+        }
+
+        #map {
+            width: 400px;
+            height: 400px;
         }
 
     </style>
@@ -215,6 +224,30 @@
 
         var extensions_string = extensions.join(";");
 
+        var map = null;
+        var exportBoundsPolygon = null;
+
+        function updateBounds() {
+            if (exportBoundsPolygon) {
+                map.removeLayer( exportBoundsPolygon );
+                exportBoundsPolygon = null;
+            }
+
+            var minLon = parseFloat($("#min-lon").val());
+            var minLat = parseFloat($("#min-lat").val());
+            var maxLon = parseFloat($("#max-lon").val());
+            var maxLat = parseFloat($("#max-lat").val());
+
+            exportBoundsPolygon = L.polygon([
+                [minLat, minLon],
+                [minLat, maxLon] ,
+                [maxLat, maxLon],
+                [maxLat, minLon]
+            ]).addTo( map );
+
+            updateEstimate();
+        }
+
         $(function() {
 
             $("#add-files-button").click(function() {
@@ -237,6 +270,12 @@
             $("#max-level").change(function() {
                 updateEstimate();
             });
+
+            $("#min-lon").change(updateBounds);
+            $("#min-lat").change(updateBounds);
+            $("#max-lon").change(updateBounds);
+            $("#max-lat").change(updateBounds);
+
 
 
             
@@ -266,11 +305,18 @@
 
                 $("#files-error").hide();
 
-                updateEstimate();
-
                 // Go to the next page
                 $("#page-2").show();
                 $("#page-1").hide();
+
+                map = L.map('map').setView([0,0], 1);
+                L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+                    maxZoom: 18,               
+                    id: 'examples.map-i875mjb7'
+                }).addTo(map);
+
+                updateEstimate();
+                updateBounds();
             });
 
             $("#prev-2").click(function() {
@@ -279,6 +325,16 @@
             });
 
             $("#next-2").click(function() {
+                $("#page-3").show();
+                $("#page-2").hide();
+            });
+
+            $("#prev-3").click(function() {
+                $("#page-3").hide();
+                $("#page-2").show();
+            });
+
+            $("#next-3").click(function() {
 
                 var filenames = getFilenames();
 
@@ -331,8 +387,8 @@
                     }
                 });
 
-                $("#page-3").show();
-                $("#page-2").hide();
+                $("#page-4").show();
+                $("#page-3").hide();
             });
 
             
@@ -374,7 +430,33 @@
             </div>
         </div>
 
-        <div id="page-2" class="clearfix" style="display:none">
+        <div id="page-2" class="clearfix" style="display:none">          
+            <h1>Select extents and levels</h1>
+
+            <div>
+                <h4>Zoom levels</h4>
+                <input id="min-level" class="zoom-input" type="text" value="0"></input> to <input id="max-level" class="zoom-input" type="text" value="10"></input>
+            </div>
+
+            <div>
+                <h4>Extents</h4>
+                <input id="min-lon" type="text" value="-180"/> <input id="min-lat" type="text" value="-90"/> to
+                <input id="max-lon" type="text" value="180"/> <input id="max-lat" type="text" value="90"/> 
+            </div>
+
+            <div id="estimate">Estimate</div>
+
+            <div id="map"></div>
+
+            <div class="page-footer">
+                <button id="prev-2" class="btn">Go back</button>
+                <button id="next-2" class="btn btn-primary">Next</button>
+            </div>
+
+
+        </div>
+
+        <div id="page-3" class="clearfix" style="display:none">
 
             <h1>Export options</h1>
 
@@ -385,18 +467,7 @@
             </div>
 
             <input type="text" id="destination"></input> <button id="browse" class="btn">Browse</button>
-
-            <hr/>
-
-
-
-            <h4>Zoom levels</h4>
-            <input id="min-level" class="zoom-input" type="text" value="0"></input> to <input id="max-level" class="zoom-input" type="text" value="10"></input>
-
-            <div id="estimate">
-            </div>
-            
-           
+        
             <hr/>
 
             <h4>Format</h4>
@@ -436,14 +507,14 @@
             <input id="cores" type="text" value="1"/>
 
             <div class="page-footer">
-                <button id="prev-2" class="btn">Go back</button>
-                <button id="next-2" class="btn btn-primary">Export</button>
+                <button id="prev-3" class="btn">Go back</button>
+                <button id="next-3" class="btn btn-primary">Export</button>
             </div>
 
       
         </div>
 
-        <div id="page-3" class="clearfix" style="display:none">
+        <div id="page-4" class="clearfix" style="display:none">
             <h1>Creating tiles...</h1>
             <div class="progress">
                <div id="progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
