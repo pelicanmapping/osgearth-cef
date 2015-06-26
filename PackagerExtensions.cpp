@@ -175,6 +175,26 @@ public:
             visitor->setMaxLevel( opt->GetValue("max_level")->GetIntValue() );
         }
 
+
+        // Get the extents
+        double minLon = -180.0;
+        double minLat = -90.0;
+        double maxLon = 180.0;
+        double maxLat = 90.0;
+
+        if (opt->HasValue("extents"))
+        {
+            CefRefPtr< CefV8Value > extents = opt->GetValue("extents");
+            minLon = extents->GetValue(0)->GetIntValue();
+            minLat = extents->GetValue(1)->GetIntValue();
+            maxLon = extents->GetValue(2)->GetIntValue();
+            maxLat = extents->GetValue(3)->GetIntValue();
+        }
+
+        visitor->addExtent(GeoExtent(SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
+
+
+
         std::string destination = "tiles";
         if ( opt->HasValue("destination"))
         {
@@ -297,6 +317,22 @@ bool PackagerV8Handler::Execute(const CefString& name,
         {
             est.setMaxLevel( opt->GetValue("max_level")->GetIntValue() );
         }
+
+        double minLon = -180.0;
+        double minLat = -90.0;
+        double maxLon = 180.0;
+        double maxLat = 90.0;
+
+        if (opt->HasValue("extents"))
+        {
+            CefRefPtr< CefV8Value > extents = opt->GetValue("extents");
+            minLon = extents->GetValue(0)->GetIntValue();
+            minLat = extents->GetValue(1)->GetIntValue();
+            maxLon = extents->GetValue(2)->GetIntValue();
+            maxLat = extents->GetValue(3)->GetIntValue();
+        }
+
+        est.addExtent(GeoExtent(osgEarth::SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
 
         retval = CefV8Value::CreateObject(0);
         retval->SetValue("tiles", CefV8Value::CreateUInt(est.getNumTiles()), V8_PROPERTY_ATTRIBUTE_NONE);

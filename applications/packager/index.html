@@ -142,7 +142,8 @@
 
             var est = osgearth.estimate({
                 min_level: minLevel,
-                max_level: maxLevel
+                max_level: maxLevel,
+                extents: getExtents()
             });          
 
             var message = "~" + est.tiles + " tiles in " + prettyPrintTime(est.seconds) + " and use " + prettyFileSize(est.size * 1000000);
@@ -183,6 +184,15 @@
                }            
             });
             return filenames;
+        }
+
+        function getExtents() {
+            var minLon = parseFloat($("#min-lon").val());
+            var minLat = parseFloat($("#min-lat").val());
+            var maxLon = parseFloat($("#max-lon").val());
+            var maxLat = parseFloat($("#max-lat").val());           
+
+            return [minLon, minLat, maxLon, maxLat]; 
         }
 
 
@@ -233,16 +243,13 @@
                 exportBoundsPolygon = null;
             }
 
-            var minLon = parseFloat($("#min-lon").val());
-            var minLat = parseFloat($("#min-lat").val());
-            var maxLon = parseFloat($("#max-lon").val());
-            var maxLat = parseFloat($("#max-lat").val());
+            var extents = getExtents();
 
             exportBoundsPolygon = L.polygon([
-                [minLat, minLon],
-                [minLat, maxLon] ,
-                [maxLat, maxLon],
-                [maxLat, minLon]
+                [extents[1], extents[0]],
+                [extents[1], extents[2]] ,
+                [extents[3], extents[2]],
+                [extents[3], extents[0]]
             ]).addTo( map );
 
             updateEstimate();
@@ -365,6 +372,7 @@
                     min_level: minLevel,
                     max_level: maxLevel,
                     cores: cores,
+                    extents: getExtents(),
                     progress: function( current, total, currentStage, totalStages, msg) {
                         var message = "Completed " + current + " of " + total + " tiles";
                         var percentComplete = ((current / total) * 100.0).toFixed();
