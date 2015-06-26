@@ -65,6 +65,10 @@
             text-overflow: ellipsis;            
         }
 
+        #destination {
+            width: 500px;
+        }
+
     </style>
 
     <script type="text/javascript">
@@ -196,6 +200,7 @@
                 osgearth.openFolderDialog({
                     onSuccess: function(file) {
                        $("#destination").val(file);
+                        $("#destination-error").hide();
                     },
                     onFailure: function(error_code, error_message) {
 
@@ -231,7 +236,11 @@
                 var maxLevel = parseInt($("#max-level").val());
 
                 // Get the output directory
-                var destination = $("#destination").val();
+                var destination = $("#destination").val().trim();
+                if (destination.length == 0) {
+                    $("#destination-error").show();
+                    return;
+                }
 
                 // Get the extension
                 var ext = $( "input:radio[name=format]:checked" ).val();
@@ -264,9 +273,10 @@
                         $("#progress-bar").css({"width": "100%"});
                         $("#percent-complete").html("100%");
                         var message = "<h3>Tiling complete!</h3>" +
-                                      "Created " + completedTiles + " in " + prettyPrintTime( seconds ) + "<br/>" +
+                                      "Created " + completedTiles + " tiles in " + prettyPrintTime( seconds ) + "<br/>" +
                                       "Your tiles are located at <b>" + destination + "</b>";
                         $("#progress-message").html(message).addClass("alert alert-success");
+                        $("#close").show();
                     }
                 });
 
@@ -318,6 +328,10 @@
             <h1>Export options</h1>
 
             <h4>Destination</h4>
+
+            <div id="destination-error" style="display:none" class="alert alert-danger">
+               Please select a destination
+            </div>
 
             <input type="text" id="destination"></input> <button id="browse" class="btn">Browse</button>
 
@@ -382,6 +396,10 @@
               </div>
             </div>
             <h3 id="progress-message">Progress</h3>
+
+            <div class="page-footer">
+                <button id="close" class="btn btn-primary btn-lg" sytle="display:none"/>Close</button>
+            </div>
         </div>
 
     </div>
