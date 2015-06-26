@@ -6,6 +6,7 @@
 
 #include <osgEarthDrivers/gdal/GDALOptions>
 #include <osgEarth/CompositeTileSource>
+#include <osgEarth/CacheEstimator>
 #include <osgEarthUtil/TMSPackager>
 
 using namespace osgEarth::Cef;
@@ -121,7 +122,6 @@ public:
 
         if (cores > 1)
         {
-            OSG_NOTICE << "Multithread with " << cores << " cores" << std::endl;
             MultithreadedTileVisitor* v = new MultithreadedTileVisitor();
             v->setNumThreads(cores);
             visitor = v;
@@ -283,6 +283,27 @@ bool PackagerV8Handler::Execute(const CefString& name,
         //retval->SetValue("cancel", CefV8Value::CreateFunction("cancel", progressHandler), V8_PROPERTY_ATTRIBUTE_NONE);   
         return true;
     }
+    else if (name == "Estimate")
+    {
+        CefRefPtr< CefV8Value > opt = arguments[0];
+
+        CacheEstimator est;
+        if (opt->HasValue("min_level"))
+        {
+            est.setMinLevel( opt->GetValue("min_level")->GetIntValue() );
+        }
+
+        if (opt->HasValue("max_level"))
+        {
+            est.setMaxLevel( opt->GetValue("max_level")->GetIntValue() );
+        }
+
+        retval = CefV8Value::CreateObject(0);
+        retval->SetValue("tiles", CefV8Value::CreateUInt(est.getNumTiles()), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("size", CefV8Value::CreateDouble(est.getSizeInMB()), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("seconds", CefV8Value::CreateDouble(est.getTotalTimeInSeconds()), V8_PROPERTY_ATTRIBUTE_NONE);
+        return true;
+    }
     return false;
 }
 
@@ -297,6 +318,10 @@ namespace
         "    osgearth.package = function(options) {"
         "        native function Package();"
         "        return Package(options);"
+        "    };"
+        "    osgearth.estimate = function(options) {"
+        "        native function Estimate();"
+        "        return Estimate(options);"
         "    };"
         "})();";
 }

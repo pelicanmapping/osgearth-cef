@@ -363,10 +363,12 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
 
     //create image and texture to render to
     _image = new osg::Image();
+    /*
     osg::PixelBufferObject* pbo = new osg::PixelBufferObject(_image.get());
     pbo->setCopyDataAndReleaseGLBufferObject(true);
     pbo->setUsage(GL_DYNAMIC_DRAW_ARB);
     _image->setPixelBufferObject(pbo);
+    */
 
     osg::Texture2D* tex = new osg::Texture2D(_image);
     tex->setResizeNonPowerOfTwoHint(false);
@@ -419,10 +421,12 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     
     // setup popup
     _popupImage = new osg::Image();
+    /*
     pbo = new osg::PixelBufferObject(_popupImage.get());
     pbo->setCopyDataAndReleaseGLBufferObject(true);
     pbo->setUsage(GL_DYNAMIC_DRAW_ARB);
     _popupImage->setPixelBufferObject(pbo);
+    */
 
     tex = new osg::Texture2D(_popupImage);
     tex->setResizeNonPowerOfTwoHint(false);
