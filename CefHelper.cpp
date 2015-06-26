@@ -94,6 +94,10 @@ CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::s
     // Setup a CompositeViewer
     osg::ref_ptr<osgViewer::CompositeViewer> viewer = new osgViewer::CompositeViewer(args);
     viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
+
+    // prevents "ESC" from killing the application
+    viewer->setKeyEventSetsDone( 0 );
+    viewer->setQuitEventSetsDone( false );
     
 
     // Create the BrowserClient
