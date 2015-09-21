@@ -7,6 +7,7 @@
 #include "NativeEventHandlerWin"
 #endif
 
+#include <osg/BlendFunc>
 #include <osg/Camera>
 #include <osg/TexMat>
 #include <osg/TextureRectangle>
@@ -409,6 +410,7 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
     geode->getOrCreateStateSet()->setMode( GL_BLEND, osg::StateAttribute::ON );
+    geode->getOrCreateStateSet()->setAttributeAndModes( new osg::BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA), osg::StateAttribute::ON );
     geode->setDataVariance(osg::Object::DYNAMIC);
 
     osg::MatrixTransform* modelViewMat = new osg::MatrixTransform;
