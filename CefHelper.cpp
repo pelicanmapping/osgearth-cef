@@ -6,17 +6,18 @@
 #include <osgDB/FileNameUtils>
 #include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
+#include <osgDB/WriteFile>
 
 #include "include/cef_app.h"
 
 #include "OECefApp"
 #include "BrowserClient"
+#include "GDALResourceHandler"
 
 using namespace osgEarth::Cef;
 
 
 #define LC "[CefHelper] "
-
 
 CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::string& htmlFile)
 {
@@ -47,6 +48,10 @@ CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::s
             OE_WARN << LC << "CefInitialize failed." << std::endl;
             return 0L;
         }
+
+
+        // Register custom resource handlers
+        CefRegisterSchemeHandlerFactory("gdal", "gdal", new GDALHandlerFactory());
     }
 
 
@@ -89,6 +94,10 @@ CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::s
     // Setup a CompositeViewer
     osg::ref_ptr<osgViewer::CompositeViewer> viewer = new osgViewer::CompositeViewer(args);
     viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
+
+    // prevents "ESC" from killing the application
+    viewer->setKeyEventSetsDone( 0 );
+    viewer->setQuitEventSetsDone( false );
     
 
     // Create the BrowserClient

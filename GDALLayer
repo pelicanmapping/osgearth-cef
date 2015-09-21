@@ -1,0 +1,30 @@
+#ifndef OSGEARTH_CEF_GDAL_LAYER
+#define OSGEARTH_CEF_GDAL_LAYER 1
+
+
+#include "include/cef_v8.h"
+
+
+namespace osgEarth { namespace Cef
+{
+    class GDALV8Handler : public CefV8Handler {
+    public:
+        GDALV8Handler();
+
+        virtual bool Execute(const CefString& name,
+            CefRefPtr<CefV8Value> object,
+            const CefV8ValueList& arguments,
+            CefRefPtr<CefV8Value>& retval,
+            CefString& exception) OVERRIDE;
+
+        // Provide the reference counting implementation for this class.
+        IMPLEMENT_REFCOUNTING(GDALV8Handler);
+    };
+
+    struct GDALAPI
+    {
+        static void AddGDALExtensions(CefRefPtr<CefV8Value> global);
+    };
+} }
+
+#endif

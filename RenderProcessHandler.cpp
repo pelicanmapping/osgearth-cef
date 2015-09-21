@@ -1,4 +1,6 @@
 #include "RenderProcessHandler"
+#include "GDALLayer"
+#include "PackagerExtensions"
 
 #include <osg/Camera>
 #include <osgDB/ReadFile>
@@ -25,13 +27,18 @@ void RenderProcessHandler::OnWebKitInitialized()
     // Create the renderer-side router for query handling.
     CefMessageRouterConfig config;
     _messageRouter = CefMessageRouterRendererSide::Create(config);
+
+    GDALAPI::AddGDALExtensions(0);
+    PackagerAPI::AddExtensions(0);
 }
 
 void RenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 {
     _messageRouter->OnContextCreated(browser,  frame, context);
 
-    //CefRefPtr<CefV8Value> global = context->GetGlobal();
+    CefRefPtr<CefV8Value> global = context->GetGlobal();
+
+    GDALAPI::AddGDALExtensions( global );
 
     // Create a basic osgearth object in the context if one does not already exist (via the inclusion of our osgearth.js library)
     //if (!global->HasValue("osgearth"))

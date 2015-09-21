@@ -364,11 +364,11 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
 
     //create image and texture to render to
     _image = new osg::Image();
-    osg::PixelBufferObject* pbo = new osg::PixelBufferObject(_image.get());
+     osg::PixelBufferObject* pbo = new osg::PixelBufferObject(_image.get());
     pbo->setCopyDataAndReleaseGLBufferObject(true);
     pbo->setUsage(GL_DYNAMIC_DRAW_ARB);
     _image->setPixelBufferObject(pbo);
-
+ 
     osg::Texture2D* tex = new osg::Texture2D(_image);
     tex->setResizeNonPowerOfTwoHint(false);
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
@@ -515,6 +515,9 @@ void BrowserClient::setSize(unsigned int width, unsigned int height)
 {
     _width = osg::maximum(0U, width);
     _height = osg::maximum(0U, height);
+
+	static unsigned char s_empty;
+	_image->setImage(0, 0, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, (unsigned char*)(&s_empty), osg::Image::NO_DELETE);
 }
 
 void BrowserClient::addExecuteCallback( ExecuteCallback* callback )

@@ -43,12 +43,9 @@
         return window.cefQuery(query);
     }
 
-
-    // create global osgearth object
-    this.osgearth = function() {
-        //nop  
+    if (!osgearth) {
+        osgearth = {};
     }
-
 
     this.osgearth.createMap = function(id, x, y, width, height, earthfile, options) {
         this.execute("_OE_create_map", { id: id, x: x, y: y, width: width, height: height, file: earthfile }, options);

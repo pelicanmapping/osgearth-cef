@@ -56,9 +56,7 @@ if(WIN32)
 	# configure sdk's
 	find_path(SDK_DIR NAMES create_lib.py PATHS c:/sdk NO_DEFAULT_PATH)	
 
-	set(OSG_DIR ${SDK_DIR}/osg/3.2.0 ) 
-	set(OSGEARTH_DIR ${SDK_DIR}/osgearth/2.5 )
-
+	
 	find_path(CEF_ROOT_DIR NAMES include/cef_version.h PATHS ${SDK_DIR}/cef/3.1547 NO_DEFAULT_PATH)	
 
 	if(CMAKE_CL_64)
@@ -83,9 +81,12 @@ set(APP_SRCS
     BrowserClient.cpp
     CefHelper.cpp
     FileExecuteCallback.cpp
+    GDALLayer.cpp
+    GDALResourceHandler.cpp
     JsonArguments.cpp
     KeyboardEventAdapter.cpp
     MapExecuteCallback.cpp
+    PackagerExtensions.cpp
     RenderProcessHandler.cpp
 )
 
@@ -97,10 +98,13 @@ set(APP_HDRS
     CefHelper
     ExecuteCallback
     FileExecuteCallback
+    GDALResourceHandler
+    GDALLayer
     JsonArguments
     KeyboardEventAdapter
     MapExecuteCallback
     OECefApp
+    PackagerExtensions
     RenderProcessHandler
 )
 
@@ -121,6 +125,8 @@ find_package(OSGEARTH REQUIRED)
 include_directories(${OSGEARTH_INCLUDE_DIRS} )
 find_package(CEF REQUIRED)
 include_directories(${CEF_INCLUDE_DIR} )
+find_package(GDAL REQUIRED)
+include_directories(${GDAL_INCLUDE_DIR})
 
 message(STATUS "OSG found: ${OSG_FOUND} includes: ${OSG_INCLUDE_DIRS} libraries: ${OSG_LIBRARIES_DIR}")
 message(STATUS "OSGEARTH found: ${OSGEARTH_FOUND} includes: ${OSGEARTH_INCLUDE_DIRS} libraries: ${OSGEARTH_LIBRARY} / ${OSGEARTH_LIBRARY_DEBUG}")
@@ -142,6 +148,7 @@ add_library(
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_OUTPUT_NAME "${PROJECT_NAME}${CMAKE_DEBUG_POSTFIX}")
 set_target_properties(${PROJECT_NAME} PROPERTIES RELEASE_OUTPUT_NAME "${PROJECT_NAME}${CMAKE_RELEASE_POSTFIX}")
+
 
 
 # Separate project for test app
@@ -191,6 +198,9 @@ endforeach()
 
 target_link_libraries( "osgearth_cef" optimized "${PROJECT_NAME}" )
 target_link_libraries( "demo_cef" optimized "${PROJECT_NAME}" )
+
+target_link_libraries( "osgearth_cef" optimized "${GDAL_LIBRARY}")
+target_link_libraries( "demo_cef" optimized "${GDAL_LIBRARY}")
 
 include_directories(${PROJECT_SOURCE_DIR} )
 
