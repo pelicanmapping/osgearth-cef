@@ -81,8 +81,6 @@ set(APP_SRCS
     BrowserClient.cpp
     CefHelper.cpp
     FileExecuteCallback.cpp
-    GDALLayer.cpp
-    GDALResourceHandler.cpp
     JsonArguments.cpp
     KeyboardEventAdapter.cpp
     MapExecuteCallback.cpp
@@ -98,8 +96,6 @@ set(APP_HDRS
     CefHelper
     ExecuteCallback
     FileExecuteCallback
-    GDALResourceHandler
-    GDALLayer
     JsonArguments
     KeyboardEventAdapter
     MapExecuteCallback
@@ -125,8 +121,6 @@ find_package(OSGEARTH REQUIRED)
 include_directories(${OSGEARTH_INCLUDE_DIRS} )
 find_package(CEF REQUIRED)
 include_directories(${CEF_INCLUDE_DIR} )
-find_package(GDAL REQUIRED)
-include_directories(${GDAL_INCLUDE_DIR})
 
 message(STATUS "OSG found: ${OSG_FOUND} includes: ${OSG_INCLUDE_DIRS} libraries: ${OSG_LIBRARIES_DIR}")
 message(STATUS "OSGEARTH found: ${OSGEARTH_FOUND} includes: ${OSGEARTH_INCLUDE_DIRS} libraries: ${OSGEARTH_LIBRARY} / ${OSGEARTH_LIBRARY_DEBUG}")
@@ -198,9 +192,6 @@ endforeach()
 
 target_link_libraries( "osgearth_cef" optimized "${PROJECT_NAME}" )
 target_link_libraries( "demo_cef" optimized "${PROJECT_NAME}" )
-
-target_link_libraries( "osgearth_cef" optimized "${GDAL_LIBRARY}")
-target_link_libraries( "demo_cef" optimized "${GDAL_LIBRARY}")
 
 include_directories(${PROJECT_SOURCE_DIR} )
 

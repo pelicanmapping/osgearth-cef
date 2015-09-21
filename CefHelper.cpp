@@ -12,7 +12,6 @@
 
 #include "OECefApp"
 #include "BrowserClient"
-#include "GDALResourceHandler"
 
 using namespace osgEarth::Cef;
 
@@ -48,10 +47,6 @@ CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::s
             OE_WARN << LC << "CefInitialize failed." << std::endl;
             return 0L;
         }
-
-
-        // Register custom resource handlers
-        CefRegisterSchemeHandlerFactory("gdal", "gdal", new GDALHandlerFactory());
     }
 
 
