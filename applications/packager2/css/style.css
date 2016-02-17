@@ -1,0 +1,341 @@
+.pushright {
+  float: right; }
+
+html, body {
+  background-color: #607D8B;
+  color: #212121;
+  padding: 0px;
+  margin: 0px;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  min-height: 500px;
+  min-width: 500px;
+  font-family: Verdana, Geneva, sans-serif;
+  overflow: hidden; }
+
+#leftbar {
+  position: absolute;
+  top: 0px;
+  bottom: 25px;
+  left: 0px;
+  width: 400px;
+  background-color: #607D8B; }
+
+#leftbar_buttons {
+  position: absolute;
+  top: 0px;
+  left: 10px;
+  right: 10px;
+  height: 0px;
+  line-height: 0px;
+  text-align: center;
+  /*border-bottom: 1px solid #fff;*/ }
+
+#data_header {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px; }
+
+#data_header .fa-plus {
+  font-size: 22px;
+  vertical-align: middle;
+  cursor: pointer; }
+
+.box-header {
+  height: 36px;
+  line-height: 36px;
+  font-size: 16px;
+  padding: 0px 10px;
+  color: #fff;
+  background-color: #455A64;
+  border-radius: 2px 2px 0px 0px; }
+
+.layer-box {
+  background-color: #FFFFFF;
+  padding: 5px;
+  font-size: 14px;
+  overflow: auto;
+  border-radius: 0px 0px 2px 2px;
+  box-sizing: border-box; }
+
+#data_sources {
+  position: absolute;
+  top: 46px;
+  left: 10px;
+  right: 10px;
+  bottom: 280px; }
+
+.file-row {
+  height: 22px;
+  line-height: 22px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap; }
+
+.file-row.selected {
+  background-color: #607D8B;
+  color: #FFFFFF; }
+
+.file-row:hover {
+  background-color: #E0E9ED;
+  color: #212121; }
+
+.file-row .fa-remove, #out_cancel .fa-remove {
+  font-size: 18px;
+  vertical-align: middle;
+  color: #F45D4C; }
+
+.file-row .fa-remove:hover, #out_cancel .fa-remove:hover {
+  color: #FBC2BC; }
+
+#props_header {
+  position: absolute;
+  bottom: 234px;
+  left: 10px;
+  right: 10px; }
+
+#data_props {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 224px;
+  font-size: 12px; }
+
+#left_bar .layer-name {
+  padding: 5px; }
+
+#left_bar .layer-name:hover {
+  background-color: #ddd; }
+
+#map {
+  position: absolute;
+  top: 10px;
+  bottom: 305px;
+  left: 400px;
+  right: 10px; }
+
+#logo_div {
+  /*background-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  font-size: 10px;*/
+  position: absolute;
+  right: 10px;
+  bottom: 315px;
+  padding: 2px;
+  /*border: 1px solid rgba(255, 255, 255, 0.6);*/ }
+
+#footer {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  height: 25px;
+  box-sizing: border-box;
+  padding-right: 10px;
+  background-color: #455A64;
+  color: #fff;
+  text-align: right;
+  line-height: 25px;
+  font-size: 14px; }
+
+#footer .error-msg {
+  background-color: #F45D4C;
+  padding: 1px 4px; }
+
+#bottombar {
+  position: absolute;
+  left: 400px;
+  right: 0px;
+  bottom: 25px;
+  height: 280px;
+  background-color: #607D8B; }
+
+#output_header {
+  position: absolute;
+  top: 10px;
+  left: 0px;
+  right: 180px; }
+
+#output_props {
+  position: absolute;
+  top: 46px;
+  left: 0px;
+  right: 180px;
+  bottom: 10px;
+  overflow: visible;
+  z-index: 99; }
+
+.flat-button {
+  border: 0 none;
+  border-radius: 2px;
+  color: #fff;
+  background-color: #455A64;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 20px;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  /*transition: all 0.05s ease 0s;
+  -moz-transition: all 0.05s ease 0s;
+  -webkit-transition: all 0.05s ease 0s;*/ }
+
+.flat-button:hover {
+  background-color: #009688; }
+
+#destination_button.flat-button {
+  line-height: 14px;
+  font-size: 14px;
+  padding: 4px 12px; }
+
+#extents_button.flat-button {
+  line-height: 14px;
+  font-size: 14px;
+  padding: 4px 8px; }
+
+/*
+#load_button {
+  width: 100%;
+  line-height: $buttonbox-size - 40px;
+  background-color: #6792AB;
+}
+#load_button:hover {
+  background-color: #073E5B;
+}
+*/
+/*#output_props > div {
+  line-height: 40px;
+  height: 40px;
+  font-size: 14px;
+}*/
+#output_props input[type="text"] {
+  width: 60px; }
+
+#destination_box {
+  padding: 15px 0px 0px 10px; }
+
+#out_button {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 10px;
+  width: 160px;
+  padding-top: 110px; }
+
+#out_button .fa {
+  font-size: 30px; }
+
+.table {
+  display: table;
+  width: 100%; }
+
+#destination_table.table {
+  width: 50%;
+  min-width: 400px; }
+
+.table-row {
+  display: table-row;
+  padding: 10px; }
+
+.table-cell {
+  display: table-cell;
+  padding: 15px 10px 0px;
+  width: 25%; }
+
+.table-cell.short {
+  width: 1px; }
+
+.table-cell.long {
+  width: 100%; }
+
+.table-cell span {
+  margin-top: 6px; }
+
+#output_props .table-cell.long input[type="text"] {
+  width: 100%; }
+
+.extent-input.inerror, .zoom-input.inerror, #output_destination.inerror {
+  background-color: #F45D4C; }
+
+.accent-mark {
+  color: #009688; }
+
+.nowrap {
+  white-space: nowrap; }
+
+#destination_button.flat-button {
+  line-height: 14px;
+  font-size: 14px;
+  padding: 4px 12px; }
+
+.tooltipped .tooltip {
+  z-index: 100;
+  display: none; }
+
+.tooltipped:hover .tooltip {
+  display: inline;
+  float: right;
+  background-color: #FFFFFF;
+  color: #212121;
+  font-size: 14px;
+  padding: 0px 10px;
+  border: 1px solid #212121;
+  position: absolute;
+  border-radius: 2px; }
+
+#format_trigger .tooltip {
+  width: 360px;
+  margin-top: -60px;
+  margin-left: -150px;
+  padding: 0px 10px; }
+
+#out_progress {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #B6B6B6;
+  cursor: default;
+  line-height: 280px;
+  display: none; }
+
+#out_cancel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px;
+  cursor: pointer;
+  line-height: 24px;
+  z-index: 11; }
+
+#out_cancel .fa-remove {
+  font-size: 24px; }
+
+#out_textwrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 10; }
+
+#out_progressbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0%;
+  background-color: #00FF00;
+  z-index: 5; }
+
+.leaflet-container {
+  background: #000; }
+
+/*# sourceMappingURL=style.css.map */

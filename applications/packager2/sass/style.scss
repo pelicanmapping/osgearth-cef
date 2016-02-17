@@ -1,0 +1,411 @@
+$leftbar-size: 400px;
+$bottombar-size: 280px;
+$footer-size: 25px;
+$boxheader-size: 36px;
+$buttonbox-size: 0px;
+$default-margin: 10px;
+$bottom-box-top: $bottombar-size - $boxheader-size - $default-margin;
+$btnout-size: 160px;
+
+$content-bg: #607D8B;
+$box-bg: #FFFFFF;
+$header-bg: #455A64;
+$hover-bg: #E0E9ED;
+$highlight-bg: #607D8B;
+$accent-bg: #009688;
+$popup-bg: #FFFFFF;
+$font-color: #212121;
+$error-color: #F45D4C;
+
+.pushright {
+  float: right;
+}
+
+
+html, body {
+  background-color: $content-bg;
+  color: $font-color;
+  padding: 0px;
+  margin: 0px;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  min-height: 500px;
+  min-width: 500px;
+  font-family: Verdana, Geneva, sans-serif;
+  overflow: hidden;
+}
+
+#leftbar {
+  position: absolute;
+  top: 0px;
+  bottom: $footer-size;
+  left: 0px;
+  width: $leftbar-size;
+  background-color: $content-bg;
+}
+
+#leftbar_buttons {
+  position: absolute;
+  top: 0px;
+  left: $default-margin;
+  right: $default-margin;
+  height: $buttonbox-size;
+  line-height: $buttonbox-size;
+  text-align: center;
+  /*border-bottom: 1px solid #fff;*/
+}
+
+#data_header {
+  position: absolute;
+  top: $buttonbox-size + $default-margin;
+  left: $default-margin;
+  right: $default-margin;
+}
+
+#data_header .fa-plus {
+  font-size: 22px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.box-header {
+  height: 36px;
+  line-height: 36px;
+  font-size: 16px;
+  padding: 0px 10px;
+  color: #fff;
+  background-color: $header-bg;
+  border-radius: 2px 2px 0px 0px;
+}
+
+.layer-box {
+  background-color: $box-bg;
+  padding: 5px;
+  font-size: 14px;
+  overflow: auto;
+  border-radius: 0px 0px 2px 2px;
+  box-sizing: border-box;
+}
+
+#data_sources {
+  position: absolute;
+  top: $default-margin + $buttonbox-size + $boxheader-size;
+  left: $default-margin;
+  right: $default-margin;
+  bottom: $bottombar-size
+}
+
+.file-row {
+  height: 22px;
+  line-height: 22px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.file-row.selected {
+  background-color: $highlight-bg;
+  color: $box-bg;
+}
+.file-row:hover {
+  background-color: $hover-bg;
+  color: $font-color;
+}
+
+.file-row .fa-remove, #out_cancel .fa-remove {
+  font-size: 18px;
+  vertical-align: middle;
+  color: $error-color;
+}
+.file-row .fa-remove:hover, #out_cancel .fa-remove:hover {
+  color: #FBC2BC;
+}
+
+#props_header {
+  position: absolute;
+  bottom: $bottom-box-top;
+  left: $default-margin;
+  right: $default-margin;
+}
+
+#data_props {
+  position: absolute;
+  left: $default-margin;
+  right: $default-margin;
+  bottom: $default-margin;
+  height: $bottom-box-top - $default-margin;
+  font-size: 12px;
+}
+
+
+#left_bar .layer-name {
+  padding: 5px;
+}
+#left_bar .layer-name:hover {
+  background-color: #ddd;
+}
+
+#map {
+  position: absolute;
+  top: $default-margin;
+  bottom: $bottombar-size + $footer-size;
+  left: $leftbar-size;
+  right: $default-margin;
+}
+
+#logo_div {
+  /*background-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  font-size: 10px;*/
+  position: absolute;
+  right: $default-margin;
+  bottom: $bottombar-size + $default-margin + $footer-size;
+  padding: 2px;
+  /*border: 1px solid rgba(255, 255, 255, 0.6);*/
+}
+
+#footer {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  height: $footer-size;
+  box-sizing: border-box;
+  padding-right: $default-margin;
+  background-color: $header-bg;
+  color: #fff;
+  text-align: right;
+  line-height: $footer-size;
+  font-size: 14px;
+}
+
+#footer .error-msg {
+  background-color: $error-color;
+  padding: 1px 4px;
+}
+
+#bottombar {
+  position: absolute;
+  left: $leftbar-size;
+  right: 0px;
+  bottom: $footer-size;
+  height: $bottombar-size;
+  background-color: $content-bg;
+}
+
+#output_header {
+  position: absolute;
+  top: $default-margin;
+  left: 0px;
+  right: $default-margin + $btnout-size + $default-margin;
+}
+
+#output_props {
+  position: absolute;
+  top: $default-margin + $boxheader-size;
+  left: 0px;
+  right: $default-margin + $btnout-size + $default-margin;
+  bottom: $default-margin;
+  overflow: visible;
+  z-index: 99;
+}
+
+
+.flat-button {
+  border: 0 none;
+  border-radius: 2px;
+  color: #fff;
+  background-color: $header-bg;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 20px;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  /*transition: all 0.05s ease 0s;
+  -moz-transition: all 0.05s ease 0s;
+  -webkit-transition: all 0.05s ease 0s;*/
+}
+.flat-button:hover {
+  background-color: $accent-bg;
+}
+
+#destination_button.flat-button {
+  line-height: 14px;
+  font-size:14px;
+  padding: 4px 12px;
+}
+
+#extents_button.flat-button {
+  line-height: 14px;
+  font-size:14px;
+  padding: 4px 8px;
+}
+
+/*
+#load_button {
+  width: 100%;
+  line-height: $buttonbox-size - 40px;
+  background-color: #6792AB;
+}
+#load_button:hover {
+  background-color: #073E5B;
+}
+*/
+
+/*#output_props > div {
+  line-height: 40px;
+  height: 40px;
+  font-size: 14px;
+}*/
+#output_props input[type="text"] {
+  width: 60px;
+}
+
+
+
+#destination_box {
+  padding: 15px 0px 0px 10px;
+}
+
+#out_button {
+  position: absolute;
+  top: $default-margin;
+  bottom: $default-margin;
+  right: $default-margin;
+  width: $btnout-size;
+  padding-top: ($bottombar-size - (2.0 * $default-margin) - 40px) / 2.0;
+}
+
+#out_button .fa {
+  font-size: 30px;
+}
+
+.table {
+  display: table;
+  width: 100%;
+}
+
+#destination_table.table {
+  width: 50%;
+  min-width: 400px;
+}
+
+.table-row {
+  display: table-row;
+  padding: 10px;
+}
+
+.table-cell {
+  display: table-cell;
+  padding: 15px 10px 0px;
+  width: 25%;
+}
+.table-cell.short {
+  width: 1px;
+}
+.table-cell.long {
+  width: 100%;
+}
+
+.table-cell span {
+  margin-top: 6px;
+}
+
+#output_props .table-cell.long input[type="text"] {
+  width: 100%;
+}
+
+.extent-input.inerror, .zoom-input.inerror, #output_destination.inerror {
+  background-color: $error-color;
+}
+
+.accent-mark {
+  color: $accent-bg;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+#destination_button.flat-button {
+  line-height: 14px;
+  font-size:14px;
+  padding: 4px 12px;
+}
+
+.tooltipped .tooltip {
+  z-index: 100;
+  display: none;
+}
+
+.tooltipped:hover .tooltip {
+  display: inline;
+  float: right;
+  background-color: $popup-bg;
+  color: $font-color;
+  font-size: 14px;
+  padding: 0px 10px;
+  border: 1px solid $font-color;
+  position: absolute;
+  border-radius: 2px;
+}
+
+#format_trigger .tooltip {
+  width: 360px;
+  margin-top: -60px;
+  margin-left: -150px;
+  padding: 0px 10px;
+}
+
+#out_progress {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #B6B6B6;
+  cursor: default;
+  line-height: $bottombar-size;
+  display: none;
+}
+
+#out_cancel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px;
+  cursor: pointer;
+  line-height: 24px;
+  z-index: 11;
+}
+#out_cancel .fa-remove {
+  font-size: 24px;
+}
+
+#out_textwrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 10;
+}
+
+#out_progressbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0%;
+  background-color: #00FF00;
+  z-index: 5;
+} 
+
+
+.leaflet-container {
+    background: #000;
+}

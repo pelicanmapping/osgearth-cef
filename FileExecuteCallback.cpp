@@ -53,9 +53,10 @@ ExecuteCallback::ReturnVal* FileExecuteCallback::execute( int64 query_id, const 
 
         std::vector<CefString> filters;
         std::string filterString = args["filters"];
+
         while (filterString.length() > 0)
         {
-          unsigned int pos = filterString.find_first_of(", ");
+          std::string::size_type pos = filterString.find_first_of(", ");
           if (pos == std::string::npos)
           {
               filters.push_back(filterString);

@@ -10,7 +10,7 @@
     <script type="text/javascript" src="js/packager.js"></script>
 
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
 
     <!-- Optional theme -->
     <link rel="stylesheet" href="css/bootstrap-theme.min.css">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
 
     <!-- Latest compiled and minified JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap.js"></script>
 
     <script src="../../js/osgearth.js"></script>
 
@@ -152,26 +152,29 @@
         }
 
         function addFile(filename) {
-            var file = gdal.open(filename);
-            if (file) {
-                var row = '<tr class="file-row" data-filename="' + filename + '">' +
-                          '<td>' + 
-                          '<button type="button" class="del-button btn btn-danger btn-sm">' +
-                          '    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
-                          '</button>' +
-                          '</td>' +
-                          '<td>' + filename + '</td>' +
-                          '<td>' + file.bands + '</td>' +
-                          '<td>' + file.size[0] + "x" + file.size[1] + '</td>' +
-                          '</tr>';
+            var files = filename.split(",");
+            $.each(files, function(index, value) {
+                var file = gdal.open(value);
+                if (file) {
+                    var row = '<tr class="file-row" data-filename="' + value + '">' +
+                              '<td>' + 
+                              '<button type="button" class="del-button btn btn-danger btn-sm">' +
+                              '    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
+                              '</button>' +
+                              '</td>' +
+                              '<td>' + value + '</td>' +
+                              '<td>' + file.bands + '</td>' +
+                              '<td>' + file.size[0] + "x" + file.size[1] + '</td>' +
+                              '</tr>';
 
-                $("#file-table").append(row);
+                    $("#file-table").append(row);
 
-                $("#files-error").hide();
-            }
-            else {
-                alert("Failed to open " + filename);
-            }
+                    $("#files-error").hide();
+                }
+                else {
+                    alert("Failed to open " + value);
+                }
+            });
         }
 
         function getFilenames() {
@@ -200,39 +203,35 @@
 
         var extensions = 
         [
-            ".sid",
-            "*.ecw",
-            "*.vrt",
-            "*.jp2",
-            "*.j2k",
-            "*.tiff",
-            "*.png",
-            "*.jpg",
-            "*.jpeg",
-            "*.dem",
-            "*.dt0",
-            "*.dt1",
-            "*.dt2",
-            "*.adf",
-            "*.blx",
-            "*.xlb",
-            "*.bag",
-            "*.bmp",
-            "*.bt",
-            "*.doq",
-            "*.hdr",
-            "*.n1",
-            "*.ers",
-            "*.fits",
-            "*.gif",
-            "*.img",
-            "*.nitf",
-            "*.ntf",
-            "*.toc",
-            "*.kap"
+            "MrSID|.sid",
+            "ECW|.ecw",
+            "VRT|.vrt",
+            "JPEG2000|.jp2;.j2k",
+            "GeoTIFF/TIFF|.tif;.tiff",
+            "Image Types|.png;.jpg;.jpeg;.gif",
+            ".dem",
+            ".dt0",
+            ".dt1",
+            ".dt2",
+            ".adf",
+            ".blx",
+            ".xlb",
+            ".bag",
+            ".bmp",
+            ".bt",
+            ".doq",
+            ".hdr",
+            ".n1",
+            ".ers",
+            ".fits",
+            ".img",
+            ".nitf",
+            ".ntf",
+            ".toc",
+            ".kap"
         ];
 
-        var extensions_string = extensions.join(";");
+        var extensions_string = extensions.join(",");
 
         var map = null;
         var exportBoundsPolygon = null;
@@ -266,7 +265,7 @@
 
                     }
                 },
-                false,
+                true,
                 extensions_string);
             });     
 

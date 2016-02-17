@@ -102,7 +102,7 @@ public:
         std::vector< std::string > filenames;
         if (opt->HasValue("filenames")) {
             CefRefPtr< CefV8Value > v8filenames = opt->GetValue("filenames");
-            for (unsigned int i = 0; i < v8filenames->GetArrayLength(); i++)
+            for (int i = 0; i < v8filenames->GetArrayLength(); i++)
             {
                 std::string filename = v8filenames->GetValue(i)->GetStringValue().ToString();
                 filenames.push_back( filename );
@@ -202,8 +202,55 @@ public:
         }
         packager.setDestination( destination );
 
+        packager.setApplyAlphaMask(true);
+
         // create a folder for the output
         osgDB::makeDirectory( destination );
+
+
+        std::string output;
+        if (opt->HasValue("output"))
+        {
+            output = opt->GetValue("output")->GetStringValue().ToString();
+            if (output == "mbtiles")
+            {
+                Config outConf;
+                outConf.set("driver", "mbtiles");
+                outConf.set("format", packager.getExtension());
+                outConf.set("filename", osgDB::concatPaths(destination, "package.db"));
+
+                // set the output profile.
+                osg::ref_ptr<const osgEarth::Profile> outputProfile = osgEarth::Profile::create(
+                "epsg:4326",
+                 -180, -90, 180, 90,
+                "",
+                2, 1 );
+                ProfileOptions profileOptions =  outputProfile->toProfileOptions();
+                outConf.add("profile", profileOptions.getConfig());
+
+                TileSourceOptions outOptions(outConf);
+                osg::ref_ptr<TileSource> output = TileSourceFactory::create(outOptions);
+                if ( output.valid() )
+                {
+                    TileSource::Status outputStatus = output->open(
+                        TileSource::MODE_WRITE | TileSource::MODE_CREATE );
+
+                    if ( !outputStatus.isError() )
+                    {
+                        packager.setTileSource(output);
+                    }
+                    else
+                    {
+                        OE_WARN << "Failed to initialize output TileSource: " << outputStatus.message() << std::endl;
+                    }
+                }
+                else
+                {
+                    OE_WARN << "Failed to create output TileSource" << std::endl;
+                }
+            }
+        }
+
 
         CompositeTileSourceOptions compositeOpt;
 
@@ -238,9 +285,10 @@ public:
 
 
         if (opt->HasValue("progress")) {
-            visitor->setProgressCallback( new V8ProgressCallback(_context,
-                                                                 opt->GetValue("progress"),
-                                                                 _taskRunner));                                 
+            _progress = new V8ProgressCallback(_context,
+                                               opt->GetValue("progress"),
+                                               _taskRunner);
+            visitor->setProgressCallback( _progress.get() );                                 
         }
 
         if (opt->HasValue("complete")) {
@@ -258,11 +306,20 @@ public:
         {
             _taskRunner->PostTask( new RunCallbackTask( _context, _completeCallback, 0, 0, 0, 0, ""));
         }
+
+        _progress = 0L;
+    }
+
+    void cancelPackager()
+    {
+        if (_progress.valid())
+            _progress->cancel();
     }
 
     volatile bool _done;
 
     TMSPackager packager;
+    osg::ref_ptr< V8ProgressCallback > _progress;
 
     osg::ref_ptr< TerrainLayer > _layer;
     osg::ref_ptr< Map > _map;
@@ -302,6 +359,23 @@ bool PackagerV8Handler::Execute(const CefString& name,
         //CefRefPtr<ProgressHandler> progressHandler = new ProgressHandler();
         //retval->SetValue("cancel", CefV8Value::CreateFunction("cancel", progressHandler), V8_PROPERTY_ATTRIBUTE_NONE);   
         return true;
+    }
+    else if (name == "CancelPackage")
+    {
+        CefRefPtr< CefV8Value > opt = arguments[0];
+        CefRefPtr< PackagerUserData > userData = dynamic_cast< PackagerUserData* >(opt->GetUserData().get());
+        if (userData.get())
+        {
+            if (!userData->getDone())
+            {
+                userData->cancelPackager();
+            }
+
+            return true;
+        }
+
+        return true;
+
     }
     else if (name == "Estimate")
     {
@@ -358,6 +432,10 @@ namespace
         "    osgearth.estimate = function(options) {"
         "        native function Estimate();"
         "        return Estimate(options);"
+        "    };"
+        "    osgearth.cancelPackage = function(options) {"
+        "        native function CancelPackage();"
+        "        return CancelPackage(options);"
         "    };"
         "})();";
 }

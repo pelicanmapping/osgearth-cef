@@ -12,6 +12,7 @@
 #include <osg/TexMat>
 #include <osg/TextureRectangle>
 #include <osgDB/ReadFile>
+#include <osgDB/WriteFile>
 #include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/api/Win32/GraphicsWindowWin32>
@@ -131,13 +132,20 @@ namespace
             switch (ea.getEventType())
             {
                 case(osgGA::GUIEventAdapter::DOUBLECLICK):
-                    return true;
+                    {
+                        CefMouseEvent mouse_event;
+                        mouse_event.x = (int)ea.getX();
+                        mouse_event.y = ea.getWindowHeight() - (int)ea.getY();
+                        mouse_event.modifiers = _keyAdapter.getCefModifiers(ea.getModKeyMask());
+                        _browser->GetHost()->SendMouseClickEvent(mouse_event, getCefMouseButton(ea.getButton()), false, 2);
+                        return true;
+                    }
 
                 case osgGA::GUIEventAdapter::PUSH:
                     {
-        				if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
-        					_mouseLMBdown = true;
-        				}
+        				        if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
+        					        _mouseLMBdown = true;
+        				        }
                         
                         CefMouseEvent mouse_event;
                         mouse_event.x = (int)ea.getX();
@@ -294,6 +302,38 @@ namespace
         }
 
         osg::ref_ptr<osgGA::GUIEventHandler> _handler;
+    };
+
+    struct PrintScreenOp : public osg::Operation
+    {
+        int _x;
+        int _y;
+        int _width;
+        int _height;
+        std::string _filename;
+
+        PrintScreenOp(int x, int y, int width, int height, const std::string& filename)
+            : osg::Operation("printscreen", false), _x(x), _y(y), _width(width), _height(height), _filename(filename) { }
+
+        void operator()(osg::Object* obj)
+        {
+            osg::GraphicsContext* gc = dynamic_cast<osg::GraphicsContext*>(obj);
+
+            GLenum format = gc->getTraits()->alpha ? GL_RGBA : GL_RGB;
+
+            if (_x < 0) _x = 0;
+            if (_y < 0) _y = 0;
+
+            if (_width < 0)
+                _width = gc->getTraits()->width;
+
+            if (_height < 0)
+                _height = gc->getTraits()->height;
+
+            osg::Image* image = new osg::Image();
+            image->readPixels(_x, _y, _width, _height, format, GL_UNSIGNED_BYTE);
+            osgDB::writeImageFile(*image, _filename);
+        }
     };
 }
 
@@ -530,6 +570,45 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                              CefProcessId source_process,
                                              CefRefPtr<CefProcessMessage> message)
 {
+    std::string name = message->GetName();
+    CefRefPtr<CefListValue> arguments = message->GetArgumentList();
+
+    if  (name == "capture_screen")
+    {
+        int numArgs = arguments->GetSize();
+
+        if (arguments->GetSize() < 1)
+            return false;
+
+        std::string filename = arguments->GetString(0).ToString();
+        if (filename.length() == 0)
+          return false;
+
+        int x = 0;
+        int y = 0;
+        int width = -1;
+        int height = -1;
+
+        if (numArgs > 1)
+        {
+            std::string id = arguments->GetString(1).ToString();
+            if (id.length() > 0 && _mapViews.find(id) != _mapViews.end())
+            {
+                osg::ref_ptr<osgViewer::View> mapView = _mapViews[id];
+                osg::ref_ptr<osg::Viewport> mapViewport = mapView->getCamera()->getViewport();
+
+                x = mapViewport->x();
+                y = mapViewport->y();
+                width = mapViewport->width();
+                height = mapViewport->height();
+            }
+        }
+        
+        _mainView->getCamera()->getGraphicsContext()->add(new PrintScreenOp(x, y, width, height, filename));
+        
+        return true;
+    }
+
     if (_messageRouter->OnProcessMessageReceived(browser, source_process, message))
         return true;
 
@@ -682,6 +761,7 @@ bool BrowserClient::GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& re
 {
   osgViewer::Viewer::Windows windows;
   _viewer->getWindows(windows);
+
   if (windows.size() > 0)
   {
       int x, y, width, height;
@@ -747,6 +827,12 @@ void BrowserClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type
 {
     if (type == PET_VIEW && dirtyRects.size() > 0)
     {
+        if (_width != width || _height != height)
+        {
+            OE_DEBUG << LC << "[OnPaint] Dimensions do not match: " << width << " x " << height << " vs. " << _width << " x " << _height << std::endl;
+            return;
+        }
+
         _image->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, (unsigned char*)(buffer), osg::Image::NO_DELETE );
     }
     else if (type == PET_POPUP)

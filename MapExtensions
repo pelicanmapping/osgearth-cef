@@ -1,0 +1,30 @@
+#ifndef OSGEARTH_CEF_MAP_EXTENSIONS
+#define OSGEARTH_CEF_MAP_EXTENSIONS 1
+
+
+#include "include/cef_v8.h"
+
+
+namespace osgEarth { namespace Cef
+{
+    class MapV8Handler : public CefV8Handler {
+    public:
+        MapV8Handler();
+
+        virtual bool Execute(const CefString& name,
+            CefRefPtr<CefV8Value> object,
+            const CefV8ValueList& arguments,
+            CefRefPtr<CefV8Value>& retval,
+            CefString& exception) OVERRIDE;
+
+        // Provide the reference counting implementation for this class.
+        IMPLEMENT_REFCOUNTING(MapV8Handler);
+    };
+
+    struct MapAPI
+    {
+        static void AddExtensions(CefRefPtr<CefV8Value> global);
+    };
+} }
+
+#endif

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>ReadyMap Packager</title>
+
+<link rel="icon" type="image/x-icon" href="img/favicon.ico" />
+
+<link rel="stylesheet" href="ext/leaflet/leaflet.css" />
+<link rel="stylesheet" href="ext/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+
+<script src="ext/leaflet/leaflet-src.js"></script>
+<script src="ext/Proj4Leaflet/proj4-compressed.js"></script>
+<script src="ext/Proj4Leaflet/proj4leaflet.js"></script>
+<script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript" src="../../js/osgearth.js"></script>
+
+<script language="javascript" type="text/javascript">
+
+var extensions = 
+        [
+            "GeoTIFF/TIFF|.tif;.tiff",
+            "MrSID|.sid",
+            "ECW|.ecw",
+            "VRT|.vrt",
+            "JPEG2000|.jp2;.j2k",
+            "Image Types|.png;.jpg;.jpeg;.gif",
+            ".dem",
+            ".dt0",
+            ".dt1",
+            ".dt2",
+            ".adf",
+            ".blx",
+            ".xlb",
+            ".bag",
+            ".bmp",
+            ".bt",
+            ".doq",
+            ".hdr",
+            ".n1",
+            ".ers",
+            ".fits",
+            ".img",
+            ".nitf",
+            ".ntf",
+            ".toc",
+            ".kap"
+        ];
+
+var extensions_string = extensions.join(",");
+
+var map;
+var activeFiles = [];
+var activePolygons = [];
+var extentPoly;
+var startTime;
+var completedTiles = 0;
+var packager = undefined;
+
+function addFile(filenames) {
+    var files = filenames.split(",");
+    $.each(files, function(index, value) {
+        var file = gdal.open(value);
+        if (file) {
+            file.name = value;
+            file.id = activeFiles.length;
+            activeFiles.push(file);
+            var row = '<div class="file-row" data-filename="' + value + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + value + "</div>";
+
+            $("#data_sources").append(row);
+
+            var poly = L.polygon([
+                [file.minLat, file.minLon],
+                [file.minLat, file.maxLon],
+                [file.maxLat, file.maxLon],
+                [file.maxLat, file.minLon]
+            ], { color: '#0000FF', fillColor: '#0000FF', zIndex: file.id }).addTo( map );
+
+            poly.bringToBack();
+
+            activePolygons.push(poly);
+
+            //$("#files-error").hide();
+        }
+        else {
+            alert("Failed to open " + value);
+        }
+    });
+
+    updateEstimate();
+}
+
+function removeFile(fileid) {
+    if (isNaN(fileid) || fileid < 0 || fileid >= activeFiles.length) {
+        return;
+    }
+
+    $('#data_sources > .file-row[data-fileid="' + fileid + '"').remove();
+
+    map.removeLayer(activePolygons[fileid]);
+
+    activeFiles[fileid] = null;
+    activePolygons[fileid] = null;
+
+    setProperties();
+}
+
+function setProperties(file) {
+    if (file === undefined) {
+        $('#data_props').empty();
+    }
+    else {
+        $('#data_props').html('<b>' + file.name + '</b>' + '<br><br>' +
+                              '<b>Projection:</b> ' + file.projection + '<br><br>' +
+                              '<b>Bounds:</b><br><span class="nowrap">' + file.minLat + ', ' + file.minLon + '</span><br><span class="nowrap">' + file.maxLat + ', ' + file.maxLon + '</span><br><br>' +
+                              '<b>Bands:</b> ' + file.bands + '<br>' +
+                              '<b>Size:</b> ' + file.size[0] + ' x ' + file.size[1]);
+                              //'<b>Origin:</b> ' + file.origin[0] + ', ' + file.origin[1] + '<br>' +
+                              //'<b>Pixel Size:</b>: ' + file.pixelsize[0] + ' x ' + file.pixelsize[1]);
+    }
+}
+
+function setError(msg) {
+    $('#footer').html('<span class="error-msg">' + msg + "</span>");
+}
+
+function validateExtents() {
+    $('.extent-input').removeClass("inerror");
+
+    var minLat = parseFloat($('#output_minLat').val());
+    var minLon = parseFloat($('#output_minLon').val());
+    var maxLat = parseFloat($('#output_maxLat').val());
+    var maxLon = parseFloat($('#output_maxLon').val());
+
+    if (isNaN(minLat) || minLat < -90.0 ||
+        isNaN(minLon) || minLon < -180.0 ||
+        isNaN(maxLat) || maxLat > 90.0 ||
+        isNaN(maxLon) || maxLon > 180.0) {
+
+        $('.extent-input').addClass("inerror");
+        setError("Invalid extents");
+
+        return undefined;
+    }
+
+    return { minLat: minLat, minLon: minLon, maxLat: maxLat, maxLon: maxLon };
+}
+
+function validateDestination() {
+    $('#output_destination').removeClass("inerror");
+    var path = $('#output_destination').val();
+
+    //TODO: actually validate that the path is an existing folder
+    if (path === undefined || path.length === 0) {
+        $('#output_destination').addClass("inerror");
+        setError("Invalid destination");
+        return undefined;
+    }
+
+    return path;
+}
+
+function validateZoomLevels() {
+    $('.zoom-input').removeClass("inerror");
+
+    var min = parseInt($('#output_minzoom').val());
+    var max = parseInt($('#output_maxzoom').val());
+
+    if (isNaN(min) || isNaN(max) || min < 0 || min > max) {
+        $('.zoom-input').addClass("inerror");
+        setError("Invalid zoom levels");
+        return undefined;
+    }
+
+    return {minLevel: min, maxLevel: max};
+}
+
+function validateNumCores() {
+    $('#output_cores').removeClass("inerror");
+    var cores = parseInt($('#output_cores').val());
+    if (isNaN(cores) || cores < 1) {
+        $('#output_cores').addClass("inerror");
+        setError("Invalid number of cores");
+        return undefined;
+    }
+
+    return cores;
+}
+
+function onLoadClick() {
+    osgearth.openFileDialog({
+        onSuccess: function(files) {
+           addFile( files );
+        },
+        onFailure: function(error_code, error_message) {
+            if (error_message) {
+                setError(error_message);
+            }
+        }
+    },
+    true,
+    extensions_string);
+}
+
+function onDestinationClick() {
+    osgearth.openFolderDialog({
+        onSuccess: function(file) {
+           $("#output_destination").val(file);
+           //$("#destination-error").hide();
+        },
+        onFailure: function(error_code, error_message) {
+
+        }
+    });
+}
+
+function onExtentsClick() {
+    var minLat = undefined;
+    var minLon = undefined;
+    var maxLat = undefined;
+    var maxLon = undefined;
+
+    $.each(activeFiles, function(index, file) {
+        if (file) {
+            if (minLat === undefined || file.minLat < minLat) {
+                minLat = file.minLat;
+            }
+            if (minLon === undefined || file.minLon < minLon) {
+                minLon = file.minLon;
+            }
+            if (maxLat === undefined || file.maxLat > maxLat) {
+                maxLat = file.maxLat;
+            }
+            if (maxLon === undefined || file.maxLon > maxLon) {
+                maxLon = file.maxLon;
+            }
+        }
+    });
+
+    if (minLat !== undefined && minLon !== undefined && maxLat !== undefined && maxLon !== undefined) {
+        $('#output_minLat').val(minLat);
+        $('#output_minLon').val(minLon);
+        $('#output_maxLat').val(maxLat);
+        $('#output_maxLon').val(maxLon);
+
+        updateExtents();
+    }
+}
+
+function onPackageClick() {
+    var filenames = [];
+    $.each(activeFiles, function(index, file) {
+        if (file) {
+            filenames.push(file.name);
+        }
+    });
+
+    if (filenames.length === 0) {
+        setError("No files have been selected for packaging");
+        return false;
+    }
+
+    var extents = validateExtents();
+    if (extents === undefined) {
+        return false;
+    }
+
+    var path = validateDestination();
+    if (path === undefined) {
+        return false;
+    }
+
+    var zoom = validateZoomLevels();
+    if (zoom === undefined) {
+        return false;
+    }
+
+    var cores = validateNumCores();
+    if (cores === undefined) {
+        return false;
+    }
+
+    var ext = $( "input:radio[name=format]:checked" ).val();
+
+    var output = $( "input:radio[name=output]:checked" ).val();
+
+    $('#out_progress').show();
+
+    startTime = new Date();
+    packager = osgearth.package({
+        filenames: filenames,
+        destination: path,
+        extension: ext,
+        output: output,
+        min_level: zoom.minLevel,
+        max_level: zoom.maxLevel,
+        cores: cores,
+        extents: [extents.minLon, extents.minLat, extents.maxLon, extents.maxLat],
+        progress: function( current, total, currentStage, totalStages, msg) {
+            var message = "Completed " + current + " of " + total + " tiles...";
+            var percentComplete = ((current / total) * 100.0).toFixed();
+            $('#out_progressbar').css({"height": percentComplete + "%"});
+            $('#out_text').html(percentComplete + "%");
+            $('#footer').html(message);
+            completedTiles = current;
+        },
+        complete: function() {
+            var endTime = new Date();
+            var seconds = (endTime.getTime() - startTime.getTime())/1000.0;
+
+            $('#out_progressbar').css({"height": "100%"});
+            $('#out_text').html("100%");
+
+            var message = "Packaging complete!\n\n" +
+                          "Created " + completedTiles + " tiles in " + prettyPrintTime( seconds );
+
+            alert(message);
+
+            $('#out_progressbar').css({"height": "0%"});
+            $('#out_progress').hide();
+            completedTiles = 0;
+
+            updateEstimate();
+        }
+    });
+}
+
+function onPackageCanceled(){
+    if (packager) {
+        osgearth.cancelPackage(packager);
+    }
+}
+
+function updateExtents() {
+    var extents = validateExtents();
+
+    if (extents !== undefined) {
+        map.removeLayer(extentPoly);
+
+        extentPoly = L.polyline([
+            [extents.minLat, extents.minLon],
+            [extents.minLat, extents.maxLon],
+            [extents.maxLat, extents.maxLon],
+            [extents.maxLat, extents.minLon],
+            [extents.minLat, extents.minLon]
+        ], { color: '#FF0000', zIndex: -9999 }).addTo( map );
+
+        extentPoly.bringToFront();
+
+        updateEstimate();
+    }
+}
+
+function prettyPrintTime(seconds) {
+
+    var s = seconds;
+
+    var days = Math.floor(s / 86400);
+    s = s - (days * 86400);
+    var hours = Math.floor(s / 3600);
+    s = s - (hours * 3600);
+    var minutes = Math.floor(s / 60);
+    s = s - (minutes * 60);
+
+    var result = "";
+    if (days > 0) {
+        result = result + days.toFixed().toString() + " days ";
+    }
+
+    if (hours > 0) {
+        result = result + hours.toFixed().toString() + " hours ";
+    }
+
+    if (minutes > 0) {
+        result = result + minutes.toFixed().toString() + " min ";
+    }
+
+    if (seconds > 0) {
+        result = result + s.toFixed().toString() + " s";
+    }
+
+    return result;
+}
+
+/**
+ * Prints a nice representation of a file size given the size in bytes
+ **/
+function prettyFileSize(bytes) {
+    var units = ["B", "KB", "MB", "GB"];
+    var value = bytes;
+    var i = 0;
+    for (i = 0; i < units.length; i++) {
+        if (value > 1024) {
+            value /= 1024;
+        } else {
+            break;
+        }
+    }
+    //return value.toFixed(2) + units[i];
+    return Math.floor(value) + units[i];
+}
+
+function updateEstimate() {
+    var extents = validateExtents();
+    if (extents === undefined) {
+        return false;
+    }
+
+    var zoom = validateZoomLevels();
+    if (zoom === undefined) {
+        return false;
+    }
+
+    var cores = validateNumCores();
+    if (cores === undefined) {
+        return false;
+    }
+
+    var est = osgearth.estimate({
+        min_level: zoom.minLevel,
+        max_level: zoom.maxLevel,
+        extents: [extents.minLon, extents.minLat, extents.maxLon, extents.maxLat]
+    });          
+
+    var message = "Package estimate: ~" + est.tiles + " tiles in " + prettyPrintTime(est.seconds / cores) + " and use " + prettyFileSize(est.size * 1000000);
+
+    $('#footer').html(message);
+}
+
+function setSelectedRow(thisrow) {
+    $('#data_sources > .file-row').not(thisrow).each(function() {
+        $(this).removeClass("selected");
+    });
+
+    $.each(activePolygons, function(index, value) {
+        if (value) {
+            value.setStyle({color: '#0000FF', fillColor: '#0000FF'});
+        }
+    });
+
+    setProperties();
+
+    if (thisrow !== undefined) {
+        $(thisrow).addClass("selected");
+
+        var fileid = $(thisrow).data("fileid");
+        activePolygons[fileid].setStyle({color: '#FF00FF', fillColor: '#FF00FF'});
+
+        setProperties(activeFiles[$(thisrow).data("fileid")]);
+    }
+}
+
+$(function() {
+    /*var crs = new L.Proj.CRS('EPSG:4326', 
+        "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+        { 
+                resolutions: [ 
+                    0.7031250000000000000000000, 
+                    0.3515625000000000000000000, 
+                    0.1757812500000000000000000, 
+                    0.0878906250000000000000000, 
+                    0.0439453125000000000000000, 
+                    0.0219726562500000000000000, 
+                    0.0109863281250000000000000, 
+                    0.0054931640625000000000000, 
+                    0.0027465820312500000000000, 
+                    0.0013732910156250000000000, 
+                    0.0006866455078125000000000         
+                ],
+                origin: [-180.0, -90.0],
+                bounds: L.bounds([-180.0, -90.0], [180.0, 90.0])
+        });
+
+    map = L.map('map',  { crs: crs, zoom: 1, center: [0.0, 0.0] });
+    L.tileLayer('http://readymap.org/readymap/tiles/1.0.0/7/{z}/{x}/{y}.png', {
+      continuousWorld: false,
+      noWrap: true,
+      minZoom: 1,
+      maxZoom: 14,
+      tms: true
+    }).addTo(map);*/
+
+    map = L.map('map', {attributionControl: false}).setView(new L.LatLng(0.0, 0.0),0);
+
+    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    var osm = new L.TileLayer(osmUrl, {minZoom: 0, maxZoom: 14, continuousWorld: false, noWrap: true});
+
+    map.addLayer(osm);
+
+    //osm.addTo(map);
+
+    //L.imageOverlay("data/world.tif", [[-90.0, -180.0], [90.0, 180.0]]).addTo(map);
+
+    //map.attributionControl.setPrefix('');
+
+    extentPoly = L.polyline([
+        [-90.0, -180.0],
+        [-90.0, 180.0],
+        [90.0, 180.0],
+        [90.0, -180.0],
+        [-90.0, -180.0]
+    ], { color: '#FF0000', zIndex: -9999 }).addTo( map );
+
+    extentPoly.bringToFront();
+
+    // set up event bindings 
+    $('#load_button').click(onLoadClick);
+
+    $('#destination_button').click(onDestinationClick);
+
+    $('.extent-input').change(function() {
+        updateExtents();
+    });
+
+    $('.zoom-input').change(function() {
+        updateEstimate();
+    });
+
+    $('#extents_button').click(onExtentsClick);
+
+    $('#out_button').click(onPackageClick);
+
+    $('#out_cancel').click(onPackageCanceled);
+
+    $('#out_progress').click(function(event) {
+        event.stopPropagation();
+    })
+
+    $('#data_sources').on('click', '.file-row', function() {
+        event.stopPropagation();
+        setSelectedRow(this);
+    });
+
+    $('#data_sources').click(function(event) {
+        if ($(event.target).is('#data_sources')) {
+            setSelectedRow();
+        }
+    })
+
+    $('#data_sources').on('dblclick', '.file-row', function() {
+        var file = activeFiles[$(this).data("fileid")];
+        if (file !== undefined) {
+            map.fitBounds([
+                [file.minLat, file.minLon],
+                [file.maxLat, file.maxLon]
+            ]);
+        }
+    });
+
+    $('#data_sources').on('click', '.file-remove', function(event) {
+        event.stopPropagation();
+        removeFile($(this).parent().data("fileid"));
+    });
+});
+
+
+</script>
+
+</head>
+
+<body>
+    <div id="leftbar">
+        <!--<div id="leftbar_buttons">
+            <input type="button" id="load_button" class="flat-button" value="ADD DATA" onClick="onLoadClick()"/>
+        </div>-->
+        <div id="data_header" class="box-header">
+            Data Sources<span class="pushright"><i id="load_button" class="fa fa-plus"></i></span>
+        </div>
+        <div id="data_sources" class="layer-box"></div>
+        <div id="props_header" class="box-header">
+            Properties
+        </div>
+        <div id="data_props" class="layer-box"></div>
+    </div>
+
+    <div id="map"></div>
+    <div id="bottombar">
+        <div id="output_header" class="box-header">
+            Package Options
+        </div>
+        <div id="output_props" class="layer-box">
+            <div class="table">
+                <div class="table-row">
+                    <div class="table-cell nowrap">
+                        <b>Extents:</b>
+                        <p>min <input id="output_minLon" class="extent-input" type="text" value="-180.0"/> <input id="output_minLat" class="extent-input" type="text" value="-90.0"/></p>
+                        <p>
+                            max <input id="output_maxLon" class="extent-input" type="text" value="180.0"/> <input id="output_maxLat" class="extent-input" type="text" value="90.0"/>
+                            &nbsp<span id="extents_button" class="flat-button" title="Set to data bounds"><i class="fa fa-arrows-alt"></i></span>
+                        </p>
+                    </div>
+                    <div class="table-cell">
+                        <b>File Format:</b>&nbsp<i id="format_trigger" class="fa fa-question-circle accent-mark tooltipped">
+                            <div class="tooltip">
+                                <p><b>PNG</b> - Used for imagery that will contain transparency</p>
+                                <p><b>JPEG</b> - Used for imagery that will cover the entire globe. Does not support trnasparency</p>
+                                <p><b>TIFF (16-bit)</b> - Used for elevation data. Produces smaller files than 32-bit TIFF</p>
+                                <p><b>TIFF (32-bit)</b> - Used for elevation data. Produces larger files but will be more accurate for data with sub-meter resolution</p>
+                            </div>
+                        </i><br>
+                        <form action="">
+                            <input type="radio" name="format" value="png"> PNG<br>
+                            <input type="radio" name="format" value="jpg" checked="checked"> JPEG<br>
+                            <input type="radio" name="format" value="tif16"> TIFF (16-bit)<br>
+                            <input type="radio" name="format" value="tif32"> TIFF (32-bit)
+                        </form>
+                    </div>
+                    <div class="table-cell">
+                        <b>Package Type:</b><br>
+                        <form action="">
+                            <input type="radio" name="output" value="tms" checked="checked"> TMS<br>
+                            <input type="radio" name="output" value="mbtiles"> MBTiles<br>
+                        </form>
+                    </div>
+                    <div class="table-cell"></div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell nowrap">
+                        <b>Zoom levels:</b> <input id="output_minzoom" class="zoom-input" type="text" value="0"/> to <input id="output_maxzoom" class="zoom-input" type="text" value="10"/>
+                    </div>
+                    <div class="table-cell nowrap">
+                        <b># of cores to use:</b> <input id="output_cores" type="text" value="1"/>
+                    </div>
+                    <div class="table-cell"></div>
+                    <div class="table-cell"></div>
+                </div>
+            </div>
+
+            <div id="destination_table" class="table">
+                <div class="table-cell short">
+                    <b>Destination:</b> 
+                </div>
+                <div class="table-cell long">
+                    <input id="output_destination" type="text" value=""/>
+                </div>
+                <div class="table-cell short">
+                    <div id="destination_button" class="flat-button"><i class="fa fa-folder-open"></i></div>
+                </div>
+            </div>            
+        </div>
+        <div id="out_button" class="flat-button">
+            <div id="out_progress">
+                <div id="out_progressbar"></div>
+                <div id="out_cancel"><i class="fa fa-remove"></i></div>
+                <div id="out_textwrap"><span id="out_text">0%</span></div>
+            </div>
+            <i class="fa fa-share"></i><br>
+            Package
+        </div>
+    </div>
+    <div id="footer">Add data sources to get started</div>
+    
+    <div id="logo_div"><img src="./img/pelican.png" title="Pelican Mapping"></div>
+
+</body>
+
+</html>

@@ -81,6 +81,14 @@ function onSelectChange() {
     alert("You selected: " + $('#testSelect').val());
 }
 
+function onCaptureAllClick() {
+    osgearth.captureScreen({ filename: "C:\\out\\capture_all.jpg" });
+}
+
+function onCaptureMapClick() {
+    osgearth.captureScreen({ filename: "capture_map.jpg", id: "map1"});
+}
+
 $(function() {
     // Testing custom execute calls
     $('#customExecuteButton').click(function() {
@@ -143,6 +151,8 @@ $(function() {
         <div id="test_controls">
             <input type="button" id="addLayerButton" value="Add Test Layer" onClick="addTestLayer()"/>
             <input type="button" id="loadMapButton" value="Load new .earth file" onClick="loadNewMap()"/>
+            <input type="button" id="captureAllButton" value="Screencap All" onClick="onCaptureAllClick()"/>
+            <input type="button" id="captureMapButton" value="Screencap Map" onClick="onCaptureMapClick()"/>
             <input type="button" id="customExecuteButton" value="Moo"/>
             <select id="testSelect" onchange="onSelectChange()">
                 <option value="" disabled="disabled" selected="selected">Please select a name</option>
