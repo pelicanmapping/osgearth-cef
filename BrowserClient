@@ -151,6 +151,7 @@ protected:
     unsigned int _width;
     unsigned int _height;
     osg::ref_ptr<osg::Image> _image;
+    osg::ref_ptr<osg::Geode> _imageGeode;
     osg::ref_ptr<osg::Image> _popupImage;
     osg::ref_ptr<osg::Vec3Array> _popupVerts;
     osg::ref_ptr<osg::Geode> _popupNode;

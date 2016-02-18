@@ -20,6 +20,7 @@
 #include <osgearth/ImageUtils>
 #include <osgearth/Notify>
 #include <osgearth/StringUtils>
+#include <osgEarthUtil/Controls>
 #include <osgEarthUtil/ExampleResources>
 
 using namespace osgEarth;
@@ -311,9 +312,12 @@ namespace
         int _width;
         int _height;
         std::string _filename;
+        osg::ref_ptr<osgViewer::CompositeViewer> _viewer;
+        osg::ref_ptr<osgViewer::View> _mapView;
+        osg::ref_ptr<osg::Node> _overlayNode;
 
-        PrintScreenOp(int x, int y, int width, int height, const std::string& filename)
-            : osg::Operation("printscreen", false), _x(x), _y(y), _width(width), _height(height), _filename(filename) { }
+        PrintScreenOp(int x, int y, int width, int height, const std::string& filename, osgViewer::CompositeViewer* viewer, osgViewer::View* mapView=0L, osg::Node* overlayNode=0L)
+            : osg::Operation("printscreen", false), _x(x), _y(y), _width(width), _height(height), _filename(filename), _viewer(viewer), _mapView(mapView), _overlayNode(overlayNode) { }
 
         void operator()(osg::Object* obj)
         {
@@ -331,7 +335,33 @@ namespace
                 _height = gc->getTraits()->height;
 
             osg::Image* image = new osg::Image();
+
+            osgEarth::Util::ControlCanvas* cs = 0L;
+
+            if (_viewer.valid() && _mapView.valid())
+            {
+                cs = osgEarth::Util::ControlCanvas::get( _mapView.get() );
+                if (cs)
+                    cs->setNodeMask(0);
+
+                if (_overlayNode.valid())
+                  _overlayNode->setNodeMask(0);
+
+                _viewer->frame();
+                gc->swapBuffers();
+            }
+
             image->readPixels(_x, _y, _width, _height, format, GL_UNSIGNED_BYTE);
+
+            if (_viewer.valid() && _mapView.valid())
+            {
+                if (cs)
+                    cs->setNodeMask(~0);
+
+                if (_overlayNode.valid())
+                    _overlayNode->setNodeMask(~0);
+            }
+
             osgDB::writeImageFile(*image, _filename);
         }
     };
@@ -445,18 +475,19 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     geometry->setDataVariance(osg::Object::DYNAMIC);
     geometry->setName("CEFGeometry");
 
-    osg::Geode* geode = new osg::Geode;
-    geode->addDrawable(geometry);
-    geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-    geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
-    geode->getOrCreateStateSet()->setMode( GL_BLEND, osg::StateAttribute::ON );
-    geode->getOrCreateStateSet()->setAttributeAndModes( new osg::BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA), osg::StateAttribute::ON );
-    geode->setDataVariance(osg::Object::DYNAMIC);
+    _imageGeode = new osg::Geode;
+    _imageGeode->addDrawable(geometry);
+    _imageGeode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+    _imageGeode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+    _imageGeode->getOrCreateStateSet()->setMode( GL_BLEND, osg::StateAttribute::ON );
+    _imageGeode->getOrCreateStateSet()->setAttributeAndModes( new osg::BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA), osg::StateAttribute::ON );
+    _imageGeode->setDataVariance(osg::Object::DYNAMIC);
+    //_imageGeode->setNodeMask(0);
 
     osg::MatrixTransform* modelViewMat = new osg::MatrixTransform;
     //modelViewMat->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
     modelViewMat->setMatrix(osg::Matrix::identity());
-    modelViewMat->addChild(geode);
+    modelViewMat->addChild(_imageGeode);
 
     
     // setup popup
@@ -589,12 +620,14 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
         int width = -1;
         int height = -1;
 
+        osg::ref_ptr<osgViewer::View> mapView = 0L;
+
         if (numArgs > 1)
         {
             std::string id = arguments->GetString(1).ToString();
             if (id.length() > 0 && _mapViews.find(id) != _mapViews.end())
             {
-                osg::ref_ptr<osgViewer::View> mapView = _mapViews[id];
+                mapView = _mapViews[id];
                 osg::ref_ptr<osg::Viewport> mapViewport = mapView->getCamera()->getViewport();
 
                 x = mapViewport->x();
@@ -604,7 +637,7 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
             }
         }
         
-        _mainView->getCamera()->getGraphicsContext()->add(new PrintScreenOp(x, y, width, height, filename));
+        _mainView->getCamera()->getGraphicsContext()->add(new PrintScreenOp(x, y, width, height, filename, _viewer, mapView, _imageGeode));
         
         return true;
     }
