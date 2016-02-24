@@ -89,6 +89,10 @@ function onCaptureMapClick() {
     osgearth.captureScreen({ filename: "capture_map.jpg", id: "map1"});
 }
 
+function onCaptureBigMapClick() {
+    osgearth.captureScreen({ filename: "capture_big_map.jpg", id: "map1", width: 1920, height: 1080});
+}
+
 $(function() {
     // Testing custom execute calls
     $('#customExecuteButton').click(function() {
@@ -153,6 +157,7 @@ $(function() {
             <input type="button" id="loadMapButton" value="Load new .earth file" onClick="loadNewMap()"/>
             <input type="button" id="captureAllButton" value="Screencap All" onClick="onCaptureAllClick()"/>
             <input type="button" id="captureMapButton" value="Screencap Map" onClick="onCaptureMapClick()"/>
+            <input type="button" id="captureMapButton" value="Screencap Map (1920x1080)" onClick="onCaptureBigMapClick()"/>
             <input type="button" id="customExecuteButton" value="Moo"/>
             <select id="testSelect" onchange="onSelectChange()">
                 <option value="" disabled="disabled" selected="selected">Please select a name</option>

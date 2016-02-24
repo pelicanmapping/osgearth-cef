@@ -307,17 +307,10 @@ namespace
 
     struct PrintScreenOp : public osg::Operation
     {
-        int _x;
-        int _y;
-        int _width;
-        int _height;
         std::string _filename;
-        osg::ref_ptr<osgViewer::CompositeViewer> _viewer;
-        osg::ref_ptr<osgViewer::View> _mapView;
-        osg::ref_ptr<osg::Node> _overlayNode;
 
-        PrintScreenOp(int x, int y, int width, int height, const std::string& filename, osgViewer::CompositeViewer* viewer, osgViewer::View* mapView=0L, osg::Node* overlayNode=0L)
-            : osg::Operation("printscreen", false), _x(x), _y(y), _width(width), _height(height), _filename(filename), _viewer(viewer), _mapView(mapView), _overlayNode(overlayNode) { }
+        PrintScreenOp(const std::string& filename)
+            : osg::Operation("printscreen", false), _filename(filename) { }
 
         void operator()(osg::Object* obj)
         {
@@ -325,44 +318,33 @@ namespace
 
             GLenum format = gc->getTraits()->alpha ? GL_RGBA : GL_RGB;
 
-            if (_x < 0) _x = 0;
-            if (_y < 0) _y = 0;
-
-            if (_width < 0)
-                _width = gc->getTraits()->width;
-
-            if (_height < 0)
-                _height = gc->getTraits()->height;
+            int width = gc->getTraits()->width;
+            int height = gc->getTraits()->height;
 
             osg::Image* image = new osg::Image();
-
-            osgEarth::Util::ControlCanvas* cs = 0L;
-
-            if (_viewer.valid() && _mapView.valid())
-            {
-                cs = osgEarth::Util::ControlCanvas::get( _mapView.get() );
-                if (cs)
-                    cs->setNodeMask(0);
-
-                if (_overlayNode.valid())
-                  _overlayNode->setNodeMask(0);
-
-                _viewer->frame();
-                gc->swapBuffers();
-            }
-
-            image->readPixels(_x, _y, _width, _height, format, GL_UNSIGNED_BYTE);
-
-            if (_viewer.valid() && _mapView.valid())
-            {
-                if (cs)
-                    cs->setNodeMask(~0);
-
-                if (_overlayNode.valid())
-                    _overlayNode->setNodeMask(~0);
-            }
+            image->readPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE);
 
             osgDB::writeImageFile(*image, _filename);
+        }
+    };
+
+    struct RTTPrintScreenOp : public osg::Operation
+    {
+        std::string _filename;
+        osg::ref_ptr<osg::Camera> _camera;
+        osg::ref_ptr<osg::Image> _image;
+        osg::ref_ptr<osgViewer::View> _mapView;
+
+        RTTPrintScreenOp(const std::string& filename, osg::Camera* camera, osg::Image* image, osgViewer::View* mapView)
+            : osg::Operation("printscreen", false), _filename(filename), _camera(camera), _image(image), _mapView(mapView) { }
+
+        void operator()(osg::Object* obj)
+        {
+            osgDB::writeImageFile(*_image.get(), _filename);
+
+            osg::Group* group = dynamic_cast<osg::Group*>(_mapView->getSceneData());
+            group->removeChild(_camera);
+            _camera->removeChild(0, 1);
         }
     };
 }
@@ -390,6 +372,9 @@ void BrowserClient::initBrowser(const std::string& url)
     //Setup our main view that will show the cef ui
     setupMainView( _width, _height );
     _viewer->addView( _mainView );
+
+    //Setup RTT camera for screen capture
+    setupRTTCamera();
 
     {
         CefWindowInfo windowInfo;
@@ -546,6 +531,25 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     _mainView->setSceneData(modelViewMat);
 }
 
+void BrowserClient::setupRTTCamera()
+{
+    _rttImage = new osg::Image();
+    _rttImage->allocateImage( 1024, 768, 1, GL_RGB, GL_UNSIGNED_BYTE );
+
+    _rttCamera = new osg::Camera();
+
+    _rttCamera->setClearMask( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    _rttCamera->setViewMatrix(osg::Matrixd::identity());
+    _rttCamera->setViewport( 0, 0, 1024, 768 );
+    _rttCamera->setProjectionMatrixAsPerspective(30.0, double(1024) / double(768), 1.0, 1000.0);
+    _rttCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+    _rttCamera->setRenderOrder( osg::Camera::POST_RENDER );
+    _rttCamera->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER_OBJECT );
+    //_rttCamera->setProjectionResizePolicy( osg::Camera::FIXED );
+
+    _rttCamera->attach( osg::Camera::COLOR_BUFFER, _rttImage );
+}
+
 void BrowserClient::addMapView(const std::string &id, osgViewer::View *mapView)
 {
     std::map<std::string, osg::ref_ptr<osgViewer::View>>::iterator it = _mapViews.find(id);
@@ -615,31 +619,55 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
         if (filename.length() == 0)
           return false;
 
-        int x = 0;
-        int y = 0;
-        int width = -1;
-        int height = -1;
-
-        osg::ref_ptr<osgViewer::View> mapView = 0L;
-
         if (numArgs > 1)
         {
             std::string id = arguments->GetString(1).ToString();
             if (id.length() > 0 && _mapViews.find(id) != _mapViews.end())
             {
-                mapView = _mapViews[id];
+                osg::ref_ptr<osgViewer::View> mapView = _mapViews[id];
                 osg::ref_ptr<osg::Viewport> mapViewport = mapView->getCamera()->getViewport();
 
-                x = mapViewport->x();
-                y = mapViewport->y();
-                width = mapViewport->width();
-                height = mapViewport->height();
+                int width = -1;
+                int height = -1;
+
+                if (numArgs == 4)
+                {
+                    width = arguments->GetInt(2);
+                    height = arguments->GetInt(3);
+                }
+                else
+                {
+                    width = mapViewport->width();
+                    height = mapViewport->height();
+                }
+
+                width = osg::maximum(width, 1);
+                height = osg::maximum(height, 1);
+            
+                // set rtt image and camera to the appropriate size
+                _rttImage->allocateImage( width, height, 1, GL_RGB, GL_UNSIGNED_BYTE );
+                _rttCamera->setViewport( 0, 0, width, height );
+                _rttCamera->setProjectionMatrixAsPerspective(30.0, double(width) / double(height), 1.0, 1000.0);
+                _rttCamera->setClearColor(mapView->getCamera()->getClearColor());
+
+                osg::Group* group = dynamic_cast<osg::Group*>(mapView->getSceneData());
+                _rttCamera->addChild(group->getChild(0));
+                group->addChild(_rttCamera);
+
+                _rttCamera->setViewMatrix(mapView->getCamera()->getViewMatrix());
+
+                mapView->getCamera()->getGraphicsContext()->add(new RTTPrintScreenOp(filename, _rttCamera, _rttImage, mapView));
+
+                return true;
             }
         }
+        else
+        {
+            _mainView->getCamera()->getGraphicsContext()->add(new PrintScreenOp(filename));
+            return true;
+        }
         
-        _mainView->getCamera()->getGraphicsContext()->add(new PrintScreenOp(x, y, width, height, filename, _viewer, mapView, _imageGeode));
-        
-        return true;
+        return false;
     }
 
     if (_messageRouter->OnProcessMessageReceived(browser, source_process, message))

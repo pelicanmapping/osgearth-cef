@@ -125,6 +125,7 @@ protected:
 
     void initBrowser(const std::string& url);
     void setupMainView(unsigned int width, unsigned int height);
+    void setupRTTCamera();
 
     void addMapView(const std::string& id, osgViewer::View* mapView);
 
@@ -157,6 +158,9 @@ protected:
     osg::ref_ptr<osg::Geode> _popupNode;
     osg::ref_ptr<osg::Geometry> _popupGeom;
     bool _inFocus;
+
+    osg::ref_ptr<osg::Image> _rttImage;
+    osg::ref_ptr<osg::Camera> _rttCamera;
 
     IMPLEMENT_REFCOUNTING(BrowserClient);
 };
