@@ -40,10 +40,17 @@ html, body {
   left: 10px;
   right: 10px; }
 
-#data_header .fa-plus {
+#data_header .fa {
   font-size: 22px;
   vertical-align: middle;
-  cursor: pointer; }
+  cursor: pointer;
+  margin-left: 6px; }
+
+#data_header .file-act {
+  color: #728f9d; }
+
+#data_header .file-act.active {
+  color: inherit; }
 
 .box-header {
   height: 36px;
@@ -167,7 +174,7 @@ html, body {
   left: 0px;
   right: 180px;
   bottom: 10px;
-  overflow: visible;
+  /*overflow: visible;*/
   z-index: 99; }
 
 .flat-button {
@@ -291,7 +298,7 @@ html, body {
 
 #format_trigger .tooltip {
   width: 360px;
-  margin-top: -60px;
+  margin-top: -10px;
   margin-left: -150px;
   padding: 0px 10px; }
 

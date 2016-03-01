@@ -59,6 +59,17 @@ var startTime;
 var completedTiles = 0;
 var packager = undefined;
 
+function getFileCount() {
+    var count = 0;
+    $.each(activeFiles, function(index, file) {
+        if (file) {
+            count++;
+        }
+    });
+
+    return count;
+}
+
 function addFile(filenames) {
     var files = filenames.split(",");
     $.each(files, function(index, value) {
@@ -67,7 +78,7 @@ function addFile(filenames) {
             file.name = value;
             file.id = activeFiles.length;
             activeFiles.push(file);
-            var row = '<div class="file-row" data-filename="' + value + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + value + "</div>";
+            var row = '<div class="file-row" data-filename="' + value + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + value + '</div>';
 
             $("#data_sources").append(row);
 
@@ -105,6 +116,19 @@ function removeFile(fileid) {
     activePolygons[fileid] = null;
 
     setProperties();
+
+    updateEstimate();
+}
+
+function updateFiles(selectedIndex) {
+    $("#data_sources").empty();
+    $.each(activeFiles, function(index, file) {
+        if (file) {
+            var row = '<div class="file-row' + (index === selectedIndex ? ' selected' : '') + '" data-filename="' + file.name + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + file.name + '</div>';
+
+            $("#data_sources").append(row);
+        }
+    });
 }
 
 function setProperties(file) {
@@ -204,6 +228,37 @@ function onLoadClick() {
     extensions_string);
 }
 
+function onMoveFileClick(dirInc) {
+    var selectedRow = $('#data_sources > .file-row.selected')[0];
+    if (selectedRow !== undefined) {
+        var fileid = $(selectedRow).data("fileid");
+
+        var swapId = -1;
+        for (var i=fileid + dirInc; i >= 0 && i < activeFiles.length; i += dirInc) {
+            var file = activeFiles[i];
+            if (file) {
+                swapId = i;
+                break;
+            }
+        }
+
+        if (swapId >= 0) {
+            var selectedFile = activeFiles[fileid];
+            var selectedPoly = activePolygons[fileid];
+
+            activeFiles[fileid] = activeFiles[swapId];
+            activeFiles[fileid].id = fileid;
+            activePolygons[fileid] = activePolygons[swapId];
+
+            selectedFile.id = swapId;
+            activeFiles[swapId] = selectedFile;
+            activePolygons[swapId] = selectedPoly;
+
+            updateFiles(swapId);
+        }
+    }
+}
+
 function onDestinationClick() {
     osgearth.openFolderDialog({
         onSuccess: function(file) {
@@ -299,7 +354,7 @@ function onPackageClick() {
         cores: cores,
         extents: [extents.minLon, extents.minLat, extents.maxLon, extents.maxLat],
         progress: function( current, total, currentStage, totalStages, msg) {
-            var message = "Completed " + current + " of " + total + " tiles...";
+            var message = "Completed " + current + " tiles...";
             var percentComplete = ((current / total) * 100.0).toFixed();
             $('#out_progressbar').css({"height": percentComplete + "%"});
             $('#out_text').html(percentComplete + "%");
@@ -403,6 +458,7 @@ function prettyFileSize(bytes) {
 }
 
 function updateEstimate() {
+    /*
     var extents = validateExtents();
     if (extents === undefined) {
         return false;
@@ -425,6 +481,14 @@ function updateEstimate() {
     });          
 
     var message = "Package estimate: ~" + est.tiles + " tiles in " + prettyPrintTime(est.seconds / cores) + " and use " + prettyFileSize(est.size * 1000000);
+    */
+
+    var message = "Add data sources to get started";
+
+    var count = getFileCount();
+    if (count > 0) {
+        message = "Click the Package button to begin tile generation";
+    }
 
     $('#footer').html(message);
 }
@@ -440,6 +504,8 @@ function setSelectedRow(thisrow) {
         }
     });
 
+    $('#data_header .file-act').removeClass("active");
+
     setProperties();
 
     if (thisrow !== undefined) {
@@ -448,12 +514,14 @@ function setSelectedRow(thisrow) {
         var fileid = $(thisrow).data("fileid");
         activePolygons[fileid].setStyle({color: '#FF00FF', fillColor: '#FF00FF'});
 
+        $('#data_header .file-act').addClass("active");
+
         setProperties(activeFiles[$(thisrow).data("fileid")]);
     }
 }
 
 $(function() {
-    /*var crs = new L.Proj.CRS('EPSG:4326', 
+    var crs = new L.Proj.CRS('EPSG:4326', 
         "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
         { 
                 resolutions: [ 
@@ -469,12 +537,13 @@ $(function() {
                     0.0013732910156250000000000, 
                     0.0006866455078125000000000         
                 ],
-                origin: [-180.0, -90.0],
+                origin: [-180.0, 90.0],
                 bounds: L.bounds([-180.0, -90.0], [180.0, 90.0])
         });
 
-    map = L.map('map',  { crs: crs, zoom: 1, center: [0.0, 0.0] });
-    L.tileLayer('http://readymap.org/readymap/tiles/1.0.0/7/{z}/{x}/{y}.png', {
+    map = L.map('map',  { crs: crs, attributionControl: false, zoom: 1, center: [0.0, 0.0] });
+
+    /*L.tileLayer('http://readymap.org/readymap/tiles/1.0.0/7/{z}/{x}/{y}.png', {
       continuousWorld: false,
       noWrap: true,
       minZoom: 1,
@@ -482,18 +551,18 @@ $(function() {
       tms: true
     }).addTo(map);*/
 
-    map = L.map('map', {attributionControl: false}).setView(new L.LatLng(0.0, 0.0),0);
+    var options = {
+        minZoom: 0,
+        maxZoom: 7,
+        maxNativeZoom: 3,
+        opacity: 1.0,
+        tms: true,
+        continuousWorld: false,
+        noWrap: true
+    };
 
-    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    var osm = new L.TileLayer(osmUrl, {minZoom: 0, maxZoom: 14, continuousWorld: false, noWrap: true});
-
-    map.addLayer(osm);
-
-    //osm.addTo(map);
-
-    //L.imageOverlay("data/world.tif", [[-90.0, -180.0], [90.0, 180.0]]).addTo(map);
-
-    //map.attributionControl.setPrefix('');
+    var world = new L.TileLayer("data/world/{z}/{x}/{y}.jpg", options);
+    map.addLayer(world);
 
     extentPoly = L.polyline([
         [-90.0, -180.0],
@@ -507,6 +576,14 @@ $(function() {
 
     // set up event bindings 
     $('#load_button').click(onLoadClick);
+
+    $('#filedown_button').click(function() {
+        onMoveFileClick(1);
+    });
+
+    $('#fileup_button').click(function() {
+        onMoveFileClick(-1);
+    });
 
     $('#destination_button').click(onDestinationClick);
 
@@ -566,7 +643,7 @@ $(function() {
             <input type="button" id="load_button" class="flat-button" value="ADD DATA" onClick="onLoadClick()"/>
         </div>-->
         <div id="data_header" class="box-header">
-            Data Sources<span class="pushright"><i id="load_button" class="fa fa-plus"></i></span>
+            Data Sources<span class="pushright"><i id="filedown_button" class="fa fa-chevron-circle-down file-act"></i><i id="fileup_button" class="fa fa-chevron-circle-up file-act"></i><i id="load_button" class="fa fa-plus-circle"></i></span>
         </div>
         <div id="data_sources" class="layer-box"></div>
         <div id="props_header" class="box-header">

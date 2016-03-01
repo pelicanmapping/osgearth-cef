@@ -134,6 +134,9 @@ public:
         packager.setVisitor( visitor );
 
 
+        // set the KeepEmpties flag to true
+        packager.setKeepEmpties(true);
+
         std::string extension;
         // Get the extension
         if (opt->HasValue("extension"))
@@ -202,7 +205,7 @@ public:
         }
         packager.setDestination( destination );
 
-        packager.setApplyAlphaMask(true);
+        //packager.setApplyAlphaMask(true);
 
         // create a folder for the output
         osgDB::makeDirectory( destination );
@@ -222,7 +225,7 @@ public:
                 // set the output profile.
                 osg::ref_ptr<const osgEarth::Profile> outputProfile = osgEarth::Profile::create(
                 "epsg:4326",
-                 -180, -90, 180, 90,
+                -180.0, -90.0, 180.0, 90.0,
                 "",
                 2, 1 );
                 ProfileOptions profileOptions =  outputProfile->toProfileOptions();

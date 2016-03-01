@@ -65,10 +65,18 @@ html, body {
   right: $default-margin;
 }
 
-#data_header .fa-plus {
+#data_header .fa {
   font-size: 22px;
   vertical-align: middle;
   cursor: pointer;
+  margin-left: 6px;
+}
+
+#data_header .file-act {
+  color: lighten($header-bg, 20%);
+}
+#data_header .file-act.active {
+  color: inherit;
 }
 
 .box-header {
@@ -208,7 +216,7 @@ html, body {
   left: 0px;
   right: $default-margin + $btnout-size + $default-margin;
   bottom: $default-margin;
-  overflow: visible;
+  /*overflow: visible;*/
   z-index: 99;
 }
 
@@ -356,7 +364,7 @@ html, body {
 
 #format_trigger .tooltip {
   width: 360px;
-  margin-top: -60px;
+  margin-top: -10px;
   margin-left: -150px;
   padding: 0px 10px;
 }

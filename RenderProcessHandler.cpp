@@ -1,4 +1,6 @@
 #include "RenderProcessHandler"
+#include "GDALLayer"
+#include "PackagerExtensions"
 #include "MapExtensions"
 
 #include <osg/Camera>
@@ -27,6 +29,8 @@ void RenderProcessHandler::OnWebKitInitialized()
     CefMessageRouterConfig config;
     _messageRouter = CefMessageRouterRendererSide::Create(config);
 
+    GDALAPI::AddGDALExtensions(0);
+    PackagerAPI::AddExtensions(0);
     MapAPI::AddExtensions(0);
 }
 
