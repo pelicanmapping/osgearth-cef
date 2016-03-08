@@ -15,7 +15,7 @@
 <script src="ext/Proj4Leaflet/proj4-compressed.js"></script>
 <script src="ext/Proj4Leaflet/proj4leaflet.js"></script>
 <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
-<script type="text/javascript" src="../../js/osgearth.js"></script>
+<script type="text/javascript" src="js/osgearth.js"></script>
 
 <script language="javascript" type="text/javascript">
 
@@ -71,6 +71,8 @@ function getFileCount() {
 }
 
 function addFile(filenames) {
+    setSelectedRow();
+
     var files = filenames.split(",");
     $.each(files, function(index, value) {
         var file = gdal.open(value);
@@ -78,9 +80,6 @@ function addFile(filenames) {
             file.name = value;
             file.id = activeFiles.length;
             activeFiles.push(file);
-            var row = '<div class="file-row" data-filename="' + value + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + value + '</div>';
-
-            $("#data_sources").append(row);
 
             var poly = L.polygon([
                 [file.minLat, file.minLon],
@@ -100,6 +99,7 @@ function addFile(filenames) {
         }
     });
 
+    updateFiles();
     updateEstimate();
 }
 
@@ -122,13 +122,15 @@ function removeFile(fileid) {
 
 function updateFiles(selectedIndex) {
     $("#data_sources").empty();
-    $.each(activeFiles, function(index, file) {
+
+    for (var i=activeFiles.length; i >= 0; i--) {
+        var file = activeFiles[i];
         if (file) {
-            var row = '<div class="file-row' + (index === selectedIndex ? ' selected' : '') + '" data-filename="' + file.name + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + file.name + '</div>';
+            var row = '<div class="file-row' + (i === selectedIndex ? ' selected' : '') + '" data-filename="' + file.name + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + file.name + '</div>';
 
             $("#data_sources").append(row);
         }
-    });
+    }
 }
 
 function setProperties(file) {
@@ -578,11 +580,11 @@ $(function() {
     $('#load_button').click(onLoadClick);
 
     $('#filedown_button').click(function() {
-        onMoveFileClick(1);
+        onMoveFileClick(-1);
     });
 
     $('#fileup_button').click(function() {
-        onMoveFileClick(-1);
+        onMoveFileClick(1);
     });
 
     $('#destination_button').click(onDestinationClick);
