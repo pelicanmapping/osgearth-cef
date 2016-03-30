@@ -1,6 +1,9 @@
 .pushright {
   float: right; }
 
+.pushleft {
+  float: left; }
+
 html, body {
   background-color: #607D8B;
   color: #212121;
@@ -174,7 +177,8 @@ html, body {
   left: 0px;
   right: 180px;
   bottom: 10px;
-  /*overflow: visible;*/
+  overflow: auto;
+  white-space: nowrap;
   z-index: 99; }
 
 .flat-button {
@@ -222,7 +226,8 @@ html, body {
   font-size: 14px;
 }*/
 #output_props input[type="text"] {
-  width: 60px; }
+  width: 48px;
+  padding-left: 2px; }
 
 #destination_box {
   padding: 15px 0px 0px 10px; }
@@ -239,30 +244,32 @@ html, body {
   font-size: 30px; }
 
 .table {
-  display: table;
-  width: 100%; }
-
-#destination_table.table {
-  width: 50%;
-  min-width: 400px; }
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 10px; }
 
 .table-row {
-  display: table-row;
-  padding: 10px; }
+  display: table-row; }
 
 .table-cell {
   display: table-cell;
-  padding: 15px 10px 0px;
-  width: 25%; }
+  padding: 5px 15px 5px; }
 
-.table-cell.short {
-  width: 1px; }
+.table-cell:not(:first-child), .table:not(:first-child) {
+  border-left: 1px solid #ccc; }
 
-.table-cell.long {
-  width: 100%; }
+.table-cell .table {
+  margin-top: 0px; }
+
+.table-cell .table-cell {
+  padding: 0px 5px 5px;
+  border: none; }
 
 .table-cell span {
   margin-top: 6px; }
+
+.table-cell.border-clear {
+  border: none; }
 
 #output_props .table-cell.long input[type="text"] {
   width: 100%; }
@@ -294,13 +301,19 @@ html, body {
   padding: 0px 10px;
   border: 1px solid #212121;
   position: absolute;
-  border-radius: 2px; }
+  border-radius: 2px;
+  white-space: normal; }
 
 #format_trigger .tooltip {
   width: 360px;
   margin-top: -10px;
   margin-left: -150px;
   padding: 0px 10px; }
+
+#cores_div {
+  margin: 30px 10px 0px;
+  padding: 10px 0px 0px;
+  /*border-top: 1px dashed #ccc;*/ }
 
 #out_progress {
   position: absolute;

@@ -21,6 +21,10 @@ $error-color: #F45D4C;
   float: right;
 }
 
+.pushleft {
+  float: left;
+}
+
 
 html, body {
   background-color: $content-bg;
@@ -216,7 +220,8 @@ html, body {
   left: 0px;
   right: $default-margin + $btnout-size + $default-margin;
   bottom: $default-margin;
-  /*overflow: visible;*/
+  overflow: auto;
+  white-space: nowrap;
   z-index: 99;
 }
 
@@ -270,7 +275,8 @@ html, body {
   font-size: 14px;
 }*/
 #output_props input[type="text"] {
-  width: 60px;
+  width: 48px;
+  padding-left: 2px;
 }
 
 
@@ -293,34 +299,38 @@ html, body {
 }
 
 .table {
-  display: table;
-  width: 100%;
-}
-
-#destination_table.table {
-  width: 50%;
-  min-width: 400px;
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 10px;
 }
 
 .table-row {
   display: table-row;
-  padding: 10px;
 }
 
 .table-cell {
   display: table-cell;
-  padding: 15px 10px 0px;
-  width: 25%;
+  padding: 5px 15px 5px;
 }
-.table-cell.short {
-  width: 1px;
+
+.table-cell:not(:first-child), .table:not(:first-child) {
+  border-left: 1px solid #ccc;
 }
-.table-cell.long {
-  width: 100%;
+
+.table-cell .table {
+  margin-top: 0px;
+}
+.table-cell .table-cell {
+  padding: 0px 5px 5px;
+  border: none;
 }
 
 .table-cell span {
   margin-top: 6px;
+}
+
+.table-cell.border-clear {
+  border: none;
 }
 
 #output_props .table-cell.long input[type="text"] {
@@ -360,6 +370,7 @@ html, body {
   border: 1px solid $font-color;
   position: absolute;
   border-radius: 2px;
+  white-space: normal;
 }
 
 #format_trigger .tooltip {
@@ -367,6 +378,12 @@ html, body {
   margin-top: -10px;
   margin-left: -150px;
   padding: 0px 10px;
+}
+
+#cores_div {
+  margin: 30px 10px 0px;
+  padding: 10px 0px 0px;
+  /*border-top: 1px dashed #ccc;*/
 }
 
 #out_progress {

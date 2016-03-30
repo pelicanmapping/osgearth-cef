@@ -163,6 +163,11 @@ public:
         }
         else
         {
+            if (extension == "png")
+            {
+                packager.setApplyAlphaMask(true);
+            }
+
             packager.setExtension( extension  );
         }
 
@@ -196,31 +201,23 @@ public:
 
         visitor->addExtent(GeoExtent(SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
 
-
-
-        std::string destination = "tiles";
-        if ( opt->HasValue("destination"))
-        {
-            destination = opt->GetValue("destination")->GetStringValue().ToString();
-        }
-        packager.setDestination( destination );
-
-        //packager.setApplyAlphaMask(true);
-
-        // create a folder for the output
-        osgDB::makeDirectory( destination );
-
-
         std::string output;
         if (opt->HasValue("output"))
         {
             output = opt->GetValue("output")->GetStringValue().ToString();
             if (output == "mbtiles")
             {
+                std::string destination = "package.db";
+                if ( opt->HasValue("destination"))
+                    destination = opt->GetValue("destination")->GetStringValue().ToString();
+
+                if (osgDB::getFileExtension(destination) == "")
+                    destination += ".db";
+
                 Config outConf;
                 outConf.set("driver", "mbtiles");
                 outConf.set("format", packager.getExtension());
-                outConf.set("filename", osgDB::concatPaths(destination, "package.db"));
+                outConf.set("filename", destination);
 
                 // set the output profile.
                 osg::ref_ptr<const osgEarth::Profile> outputProfile = osgEarth::Profile::create(
@@ -252,10 +249,23 @@ public:
                     OE_WARN << "Failed to create output TileSource" << std::endl;
                 }
             }
+            else
+            {
+                std::string destination = "tiles";
+                if ( opt->HasValue("destination"))
+                {
+                    destination = opt->GetValue("destination")->GetStringValue().ToString();
+                }
+                packager.setDestination( destination );
+
+                // create a folder for the output
+                osgDB::makeDirectory( destination );
+            }
         }
 
 
         CompositeTileSourceOptions compositeOpt;
+        compositeOpt.profile() = ProfileOptions("global-geodetic");
 
         for (unsigned int i = 0; i < filenames.size(); i++)
         {

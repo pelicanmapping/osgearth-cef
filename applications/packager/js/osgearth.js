@@ -76,6 +76,10 @@
         this.execute("_OE_open_folder_dialog", { }, options);
     }
 
+    this.osgearth.saveFileDialog = function(options, extensions) {
+        this.execute("_OE_save_file_dialog", { filters: extensions }, options);
+    }
+
 })();
 
 

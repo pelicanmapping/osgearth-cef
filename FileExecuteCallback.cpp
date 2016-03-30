@@ -83,6 +83,42 @@ ExecuteCallback::ReturnVal* FileExecuteCallback::execute( int64 query_id, const 
 
         return new ReturnVal(true);
     }
+    else if (command == "_OE_save_file_dialog")
+    {
+        CefString path = args["path"];
+
+        std::vector<CefString> filters;
+        std::string filterString = args["filters"];
+
+        while (filterString.length() > 0)
+        {
+          std::string::size_type pos = filterString.find_first_of(", ");
+          if (pos == std::string::npos)
+          {
+              filters.push_back(filterString);
+              filterString = "";
+          }
+          else
+          {
+              if (pos > 0)
+              {
+                filters.push_back(filterString.substr(0, pos));
+              }
+
+              filterString = filterString.substr(pos + 1);
+          }
+        }
+
+        _client->getBrowser()->GetHost()->RunFileDialog(
+            CefBrowserHost::FileDialogMode::FILE_DIALOG_SAVE,
+            "", // title
+            path, // default_file_path
+            filters,  // accept_filters
+            0,  // selected_accept_filter
+            new LocalFileDialogCallback(callback));
+
+        return new ReturnVal(true);
+    }
 
     return 0L;
 }

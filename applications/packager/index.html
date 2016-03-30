@@ -261,16 +261,28 @@ function onMoveFileClick(dirInc) {
     }
 }
 
-function onDestinationClick() {
-    osgearth.openFolderDialog({
-        onSuccess: function(file) {
-           $("#output_destination").val(file);
-           //$("#destination-error").hide();
-        },
-        onFailure: function(error_code, error_message) {
+function getPackageDestination() {
+    var output = $( "input:radio[name=output]:checked" ).val();
 
-        }
-    });
+    if (output === "mbtiles") {
+        osgearth.saveFileDialog({
+            onSuccess: function(file) {
+               doPackage(file);
+            },
+            onFailure: function(error_code, error_message) {
+            }
+        },
+        "MBTiles|.db");
+    }
+    else {
+        osgearth.openFolderDialog({
+            onSuccess: function(file) {
+               doPackage(file);
+            },
+            onFailure: function(error_code, error_message) {
+            }
+        });
+    }
 }
 
 function onExtentsClick() {
@@ -324,8 +336,38 @@ function onPackageClick() {
         return false;
     }
 
-    var path = validateDestination();
+    var zoom = validateZoomLevels();
+    if (zoom === undefined) {
+        return false;
+    }
+
+    var cores = validateNumCores();
+    if (cores === undefined) {
+        return false;
+    }
+
+    getPackageDestination();
+}
+
+function doPackage(path) {
     if (path === undefined) {
+        return false;
+    }
+
+    var filenames = [];
+    $.each(activeFiles, function(index, file) {
+        if (file) {
+            filenames.push(file.name);
+        }
+    });
+
+    if (filenames.length === 0) {
+        setError("No files have been selected for packaging");
+        return false;
+    }
+
+    var extents = validateExtents();
+    if (extents === undefined) {
         return false;
     }
 
@@ -357,7 +399,7 @@ function onPackageClick() {
         extents: [extents.minLon, extents.minLat, extents.maxLon, extents.maxLat],
         progress: function( current, total, currentStage, totalStages, msg) {
             var message = "Completed " + current + " tiles...";
-            var percentComplete = ((current / total) * 100.0).toFixed();
+            var percentComplete = Math.min((current / total) * 100.0, 98.0).toFixed();
             $('#out_progressbar').css({"height": percentComplete + "%"});
             $('#out_text').html(percentComplete + "%");
             $('#footer').html(message);
@@ -387,6 +429,20 @@ function onPackageClick() {
 function onPackageCanceled(){
     if (packager) {
         osgearth.cancelPackage(packager);
+    }
+}
+
+function updateDatasetOptions() {
+    var type = $( "input:radio[name=dataset_type]:checked" ).val();
+    if (type === "image") {
+        $('input.img-type').attr("disabled", false);
+        $('input.elev-type').attr("disabled", true);
+        $('input[name=format][value="png"]').prop('checked', true);
+    }
+    else {
+        $('input.elev-type').attr("disabled", false);
+        $('input.img-type').attr("disabled", true);
+        $('input[name=format][value="tif16"]').prop('checked', true);
     }
 }
 
@@ -587,7 +643,9 @@ $(function() {
         onMoveFileClick(1);
     });
 
-    $('#destination_button').click(onDestinationClick);
+    $('input[name="dataset_type"]').change(function() {
+        updateDatasetOptions();
+    });
 
     $('.extent-input').change(function() {
         updateExtents();
@@ -596,8 +654,6 @@ $(function() {
     $('.zoom-input').change(function() {
         updateEstimate();
     });
-
-    $('#extents_button').click(onExtentsClick);
 
     $('#out_button').click(onPackageClick);
 
@@ -660,54 +716,97 @@ $(function() {
             Package Options
         </div>
         <div id="output_props" class="layer-box">
+
             <div class="table">
                 <div class="table-row">
-                    <div class="table-cell nowrap">
-                        <b>Extents:</b>
-                        <p>min <input id="output_minLon" class="extent-input" type="text" value="-180.0"/> <input id="output_minLat" class="extent-input" type="text" value="-90.0"/></p>
-                        <p>
-                            max <input id="output_maxLon" class="extent-input" type="text" value="180.0"/> <input id="output_maxLat" class="extent-input" type="text" value="90.0"/>
-                            &nbsp<span id="extents_button" class="flat-button" title="Set to data bounds"><i class="fa fa-arrows-alt"></i></span>
-                        </p>
-                    </div>
                     <div class="table-cell">
-                        <b>File Format:</b>&nbsp<i id="format_trigger" class="fa fa-question-circle accent-mark tooltipped">
+                    </div>
+                    <div class="table-cell border-clear">
+                        <b>File Format</b>&nbsp<i id="format_trigger" class="fa fa-question-circle accent-mark tooltipped">
                             <div class="tooltip">
                                 <p><b>PNG</b> - Used for imagery that will contain transparency</p>
                                 <p><b>JPEG</b> - Used for imagery that will cover the entire globe. Does not support trnasparency</p>
                                 <p><b>TIFF (16-bit)</b> - Used for elevation data. Produces smaller files than 32-bit TIFF</p>
                                 <p><b>TIFF (32-bit)</b> - Used for elevation data. Produces larger files but will be more accurate for data with sub-meter resolution</p>
                             </div>
-                        </i><br>
-                        <form action="">
-                            <input type="radio" name="format" value="png"> PNG<br>
-                            <input type="radio" name="format" value="jpg" checked="checked"> JPEG<br>
-                            <input type="radio" name="format" value="tif16"> TIFF (16-bit)<br>
-                            <input type="radio" name="format" value="tif32"> TIFF (32-bit)
-                        </form>
+                        </i>
                     </div>
                     <div class="table-cell">
-                        <b>Package Type:</b><br>
-                        <form action="">
-                            <input type="radio" name="output" value="tms" checked="checked"> TMS<br>
-                            <input type="radio" name="output" value="mbtiles"> MBTiles<br>
-                        </form>
+                        <b>Package Type</b>
                     </div>
-                    <div class="table-cell"></div>
                 </div>
                 <div class="table-row">
-                    <div class="table-cell nowrap">
-                        <b>Zoom levels:</b> <input id="output_minzoom" class="zoom-input" type="text" value="0"/> to <input id="output_maxzoom" class="zoom-input" type="text" value="10"/>
+                    <div class="table-cell">
+                        <input type="radio" name="dataset_type" value="image" checked="checked"> Imagery
                     </div>
-                    <div class="table-cell nowrap">
-                        <b># of cores to use:</b> <input id="output_cores" type="text" value="1"/>
+                    <div class="table-cell border-clear">
+                        <input type="radio" name="format" value="png" class="img-type" checked="checked"> PNG<br>
+                        <input type="radio" name="format" value="jpg" class="img-type"> JPEG<br>
                     </div>
-                    <div class="table-cell"></div>
-                    <div class="table-cell"></div>
+                    <div class="table-cell">
+                        <input type="radio" name="output" value="tms" checked="checked"> TMS<br>
+                        <input type="radio" name="output" value="mbtiles"> MBTiles<br>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell">
+                        <input type="radio" name="dataset_type" value="elevation"> Elevation
+                    </div>
+                    <div class="table-cell border-clear">
+                        <input type="radio" name="format" value="tif16" class="elev-type" disabled> TIFF (16-bit)<br>
+                        <input type="radio" name="format" value="tif32" class="elev-type" disabled> TIFF (32-bit)
+                    </div>
+                    <div class="table-cell">
+                    </div>
                 </div>
             </div>
 
-            <div id="destination_table" class="table">
+            <div id="output_left" class="table">
+                <div class="table-row">
+                    <div class="table-cell">
+                        <b>Extents</b>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell nowrap">
+                        <div class="table">
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    min 
+                                </div>
+                                <div class="table-cell">
+                                    <input id="output_minLon" class="extent-input" type="text" value="-180.0"/>
+                                </div>
+                                <div class="table-cell">
+                                    <input id="output_minLat" class="extent-input" type="text" value="-90.0"/>
+                                </div>
+                            </div>
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    max
+                                </div>
+                                <div class="table-cell">
+                                    <input id="output_maxLon" class="extent-input" type="text" value="180.0"/>
+                                </div>
+                                <div class="table-cell">
+                                    <input id="output_maxLat" class="extent-input" type="text" value="90.0"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell nowrap">
+                        <b>Zoom Levels</b> <input id="output_minzoom" class="zoom-input" type="text" value="0"/> to <input id="output_maxzoom" class="zoom-input" type="text" value="10"/>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cores_div">
+                Number of processor cores to use during packaging <input id="output_cores" type="text" value="1"/>
+            </div>
+
+            <!--<div id="destination_table" class="table">
                 <div class="table-cell short">
                     <b>Destination:</b> 
                 </div>
@@ -717,7 +816,7 @@ $(function() {
                 <div class="table-cell short">
                     <div id="destination_button" class="flat-button"><i class="fa fa-folder-open"></i></div>
                 </div>
-            </div>            
+            </div>-->            
         </div>
         <div id="out_button" class="flat-button">
             <div id="out_progress">
