@@ -207,12 +207,12 @@ public:
             output = opt->GetValue("output")->GetStringValue().ToString();
             if (output == "mbtiles")
             {
-                std::string destination = "package.db";
+                std::string destination = "package.mbtiles";
                 if ( opt->HasValue("destination"))
                     destination = opt->GetValue("destination")->GetStringValue().ToString();
 
                 if (osgDB::getFileExtension(destination) == "")
-                    destination += ".db";
+                    destination += ".mbtiles";
 
                 Config outConf;
                 outConf.set("driver", "mbtiles");
