@@ -8,6 +8,8 @@
 
 #include <osgEarth/SpatialReference>
 #include <osgEarth/GeoData>
+#include <osgEarthDrivers/gdal/GDALOptions>
+#include <osgEarth/ImageLayer>
 
 using namespace osgEarth::Cef;
 
@@ -108,6 +110,23 @@ bool GDALV8Handler::Execute(const CefString& name,
 
         // Close the dataset.
         GDALClose( ds );
+
+        // Use the TileSource to determine the max lod level
+        osgEarth::Drivers::GDALOptions fileOpt;
+        fileOpt.url() = filename;
+        osg::ref_ptr<osgEarth::ImageLayer> imageLayer = new ImageLayer( ImageLayerOptions("image", fileOpt) );
+
+        unsigned int maxLevel = 0;
+        for (osgEarth::DataExtentList::iterator it = imageLayer->getTileSource()->getDataExtents().begin(); it != imageLayer->getTileSource()->getDataExtents().end(); ++it)
+        {
+          if (it->maxLevel().isSet() && it->maxLevel().value() > maxLevel)
+          {
+              maxLevel = it->maxLevel().value();
+          }
+        }
+
+        retval->SetValue("maxLevel", CefV8Value::CreateInt(maxLevel), V8_PROPERTY_ATTRIBUTE_NONE);
+
         return true;
     }
     return false;

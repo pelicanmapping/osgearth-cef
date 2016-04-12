@@ -70,11 +70,16 @@ html, body {
 }
 
 #data_header .fa {
-  font-size: 22px;
+  font-size: 24px;
   vertical-align: middle;
   cursor: pointer;
-  margin-left: 6px;
+  margin-left: 8px;
 }
+
+#data_header #load_button.fa {
+  font-size: 18px;
+}
+
 
 #data_header .file-act {
   color: lighten($header-bg, 20%);
@@ -252,22 +257,21 @@ html, body {
   padding: 4px 12px;
 }
 
-#extents_button.flat-button {
+#output_props .flat-button {
   line-height: 14px;
   font-size:14px;
   padding: 4px 8px;
 }
 
-/*
-#load_button {
-  width: 100%;
-  line-height: $buttonbox-size - 40px;
-  background-color: #6792AB;
+.font-button {
+  color: $header-bg;
+  cursor: pointer;
+  margin: 8px;
 }
-#load_button:hover {
-  background-color: #073E5B;
+.font-button:hover {
+  color: $accent-bg;
 }
-*/
+
 
 /*#output_props > div {
   line-height: 40px;
@@ -275,8 +279,11 @@ html, body {
   font-size: 14px;
 }*/
 #output_props input[type="text"] {
-  width: 48px;
+  width: 22px;
   padding-left: 2px;
+}
+#output_props input.extent-input[type="text"] {
+  width: 44px;
 }
 
 

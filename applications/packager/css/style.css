@@ -44,10 +44,13 @@ html, body {
   right: 10px; }
 
 #data_header .fa {
-  font-size: 22px;
+  font-size: 24px;
   vertical-align: middle;
   cursor: pointer;
-  margin-left: 6px; }
+  margin-left: 8px; }
+
+#data_header #load_button.fa {
+  font-size: 18px; }
 
 #data_header .file-act {
   color: #728f9d; }
@@ -205,29 +208,30 @@ html, body {
   font-size: 14px;
   padding: 4px 12px; }
 
-#extents_button.flat-button {
+#output_props .flat-button {
   line-height: 14px;
   font-size: 14px;
   padding: 4px 8px; }
 
-/*
-#load_button {
-  width: 100%;
-  line-height: $buttonbox-size - 40px;
-  background-color: #6792AB;
-}
-#load_button:hover {
-  background-color: #073E5B;
-}
-*/
+.font-button {
+  color: #455A64;
+  cursor: pointer;
+  margin: 8px; }
+
+.font-button:hover {
+  color: #009688; }
+
 /*#output_props > div {
   line-height: 40px;
   height: 40px;
   font-size: 14px;
 }*/
 #output_props input[type="text"] {
-  width: 48px;
+  width: 22px;
   padding-left: 2px; }
+
+#output_props input.extent-input[type="text"] {
+  width: 44px; }
 
 #destination_box {
   padding: 15px 0px 0px 10px; }

@@ -21,6 +21,7 @@
 
 var extensions = 
         [
+            "Common|.tif;.tiff;.sid;.ecw;.vrt;.jp2;.j2k;.png;.jpg;.jpeg;.gif;.dem;.dt0;.dt1;.dt2;.adf;.blx;.xlb;.bag;.bmp;.bt;.doq;.hdr;.n1;.ers;.fits;.img;.nitf;.ntf;.toc;.kap",
             "GeoTIFF/TIFF|.tif;.tiff",
             "MrSID|.sid",
             "ECW|.ecw",
@@ -100,6 +101,7 @@ function addFile(filenames) {
     });
 
     updateFiles();
+    updateZoomLevels();
     updateEstimate();
 }
 
@@ -117,6 +119,7 @@ function removeFile(fileid) {
 
     setProperties();
 
+    updateZoomLevels();
     updateEstimate();
 }
 
@@ -146,6 +149,23 @@ function setProperties(file) {
                               //'<b>Origin:</b> ' + file.origin[0] + ', ' + file.origin[1] + '<br>' +
                               //'<b>Pixel Size:</b>: ' + file.pixelsize[0] + ' x ' + file.pixelsize[1]);
     }
+}
+
+function updateZoomLevels() {
+    var groupMax = 0;
+    for (var i=activeFiles.length; i >= 0; i--) {
+        var file = activeFiles[i];
+        if (file) {
+            //var minSpan = Math.min(file.size[0], file.size[1]);
+            //var tileSize = 256;
+            //var maxZoom = Math.ceil(Math.log2((minSpan / tileSize) + 1));
+
+            groupMax = Math.max(groupMax, file.maxLevel);
+        }
+    }
+
+    $('#output_minzoom').val(0);
+    $('#output_maxzoom').val(groupMax >= 0 ? groupMax : 0);
 }
 
 function setError(msg) {
@@ -257,6 +277,54 @@ function onMoveFileClick(dirInc) {
             activePolygons[swapId] = selectedPoly;
 
             updateFiles(swapId);
+        }
+    }
+}
+
+function moveFileToTop() {
+    var selectedRow = $('#data_sources > .file-row.selected')[0];
+    if (selectedRow !== undefined) {
+        var fileid = $(selectedRow).data("fileid");
+        var finalIndex = activeFiles.length - 1;
+        if (fileid >= 0 && fileid < finalIndex) {
+            var selectedFile = activeFiles[fileid];
+            var selectedPoly = activePolygons[fileid];
+
+            for (var i=fileid; i < finalIndex; i += 1) {
+                activeFiles[i] = activeFiles[i + 1];
+                if (activeFiles[i]) activeFiles[i].id = i;
+                activePolygons[i] = activePolygons[i + 1];
+            }
+
+            activeFiles[finalIndex] = selectedFile;
+            activeFiles[finalIndex].id = finalIndex;
+            activePolygons[finalIndex] = selectedPoly;
+            
+            updateFiles(finalIndex);
+        }
+    }
+}
+
+function moveFileToBottom() {
+    var selectedRow = $('#data_sources > .file-row.selected')[0];
+    if (selectedRow !== undefined) {
+        var fileid = $(selectedRow).data("fileid");
+        var finalIndex = 0;
+        if (fileid < activeFiles.length && fileid > finalIndex) {
+            var selectedFile = activeFiles[fileid];
+            var selectedPoly = activePolygons[fileid];
+
+            for (var i=fileid; i > finalIndex; i -= 1) {
+                activeFiles[i] = activeFiles[i - 1];
+                if (activeFiles[i]) activeFiles[i].id = i;
+                activePolygons[i] = activePolygons[i - 1];
+            }
+
+            activeFiles[finalIndex] = selectedFile;
+            activeFiles[finalIndex].id = finalIndex;
+            activePolygons[finalIndex] = selectedPoly;
+            
+            updateFiles(finalIndex);
         }
     }
 }
@@ -384,6 +452,8 @@ function doPackage(path) {
     var ext = $( "input:radio[name=format]:checked" ).val();
 
     var output = $( "input:radio[name=output]:checked" ).val();
+
+    $('#out_text').html("0%");
 
     $('#out_progress').show();
 
@@ -643,6 +713,18 @@ $(function() {
         onMoveFileClick(1);
     });
 
+    $('#filetop_button').click(function() {
+        moveFileToTop();
+    });
+
+    $('#filebottom_button').click(function() {
+        moveFileToBottom();
+    });    
+
+    $('#zoom_button').click(function() {
+        updateZoomLevels();
+    });
+
     $('input[name="dataset_type"]').change(function() {
         updateDatasetOptions();
     });
@@ -701,7 +783,7 @@ $(function() {
             <input type="button" id="load_button" class="flat-button" value="ADD DATA" onClick="onLoadClick()"/>
         </div>-->
         <div id="data_header" class="box-header">
-            Data Sources<span class="pushright"><i id="filedown_button" class="fa fa-chevron-circle-down file-act"></i><i id="fileup_button" class="fa fa-chevron-circle-up file-act"></i><i id="load_button" class="fa fa-plus-circle"></i></span>
+            Data Sources<span class="pushright"><i id="filebottom_button" class="fa fa-angle-double-down file-act" title="Move to bottom"></i><i id="filedown_button" class="fa fa-angle-down file-act" title="Move down"></i><i id="fileup_button" class="fa fa-angle-up file-act" title="Move up"></i><i id="filetop_button" class="fa fa-angle-double-up file-act" title="Move to top"></i><i id="load_button" class="fa fa-plus" title="Add data source"></i></span>
         </div>
         <div id="data_sources" class="layer-box"></div>
         <div id="props_header" class="box-header">
@@ -797,7 +879,7 @@ $(function() {
                 </div>
                 <div class="table-row">
                     <div class="table-cell nowrap">
-                        <b>Zoom Levels</b> <input id="output_minzoom" class="zoom-input" type="text" value="0"/> to <input id="output_maxzoom" class="zoom-input" type="text" value="10"/>
+                        <b>Zoom Levels</b> <input id="output_minzoom" class="zoom-input" type="text" value="0"/> to <input id="output_maxzoom" class="zoom-input" type="text" value="0"/><span id="zoom_button" class="font-button" title="Reset to data range"><i class="fa fa-refresh"></i></span>
                     </div>
                 </div>
             </div>
@@ -805,18 +887,6 @@ $(function() {
             <div id="cores_div">
                 Number of processor cores to use during packaging <input id="output_cores" type="text" value="1"/>
             </div>
-
-            <!--<div id="destination_table" class="table">
-                <div class="table-cell short">
-                    <b>Destination:</b> 
-                </div>
-                <div class="table-cell long">
-                    <input id="output_destination" type="text" value=""/>
-                </div>
-                <div class="table-cell short">
-                    <div id="destination_button" class="flat-button"><i class="fa fa-folder-open"></i></div>
-                </div>
-            </div>-->            
         </div>
         <div id="out_button" class="flat-button">
             <div id="out_progress">

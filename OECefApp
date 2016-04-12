@@ -13,6 +13,17 @@ class OECefApp : public CefApp
 public:
   OECefApp() { _renderProcHandler = new RenderProcessHandler(); }
 
+  virtual void OnBeforeCommandLineProcessing(
+      const CefString& process_type,
+      CefRefPtr<CefCommandLine> command_line)
+  {
+      //command_line->AppendSwitch( "disable-gpu" );
+      //command_line->AppendSwitch( "disable-gpu-compositing" );
+      //command_line->AppendSwitch( "disable-webgl" );
+      //command_line->AppendSwitch( "disable-3d-apis" );
+      command_line->AppendSwitch( "enable-begin-frame-scheduling" ); 
+  }
+
 public:
   CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() { return _renderProcHandler; }
 
