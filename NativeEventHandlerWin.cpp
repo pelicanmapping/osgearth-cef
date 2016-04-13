@@ -167,6 +167,12 @@ LRESULT CALLBACK NativeEventHandlerWin::WndProc(HWND hWnd, UINT message, WPARAM 
 
         break;
       }
+      case WM_EXITSIZEMOVE:
+      {
+        // fix for the white screen after a window drag (causes a flicker, should investigate more)
+        handler->_browser->GetHost()->Invalidate(PET_VIEW);
+        break;
+      }
     }
   }
 
