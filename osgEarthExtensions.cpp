@@ -163,6 +163,18 @@ bool LayerV8Handler::Execute(const CefString& name,
         retval = CefV8Value::CreateDouble(imageLayer->getOpacity());               
         return true;
     }
+    else if (name == "getVisible")
+    {
+        osg::ref_ptr< TerrainLayer > layer = dynamic_cast< TerrainLayer*>(dynamic_cast< ReferencedUserData*>(object->GetUserData().get())->_ref.get());
+        retval = CefV8Value::CreateBool(layer->getVisible());
+        return true;
+    }
+    else if (name == "setVisible")
+    {
+        osg::ref_ptr< TerrainLayer > layer = dynamic_cast< TerrainLayer*>(dynamic_cast< ReferencedUserData*>(object->GetUserData().get())->_ref.get());
+        layer->setVisible(arguments[0]->GetBoolValue());
+        return true;
+    }
     return false;
 }
 
@@ -186,18 +198,26 @@ namespace
         "    osgearth = {};"
         "}"
         "(function() {"        
+        "    native function getVisible();"
+        "    native function setVisible();"
+
         "    osgearth.ImageLayer = function(tilesource, options) {"
-        "        native function ImageLayer();"
+        "        native function ImageLayer();\n"
         "        native function getOpacity();"
         "        native function setOpacity();"
+
         "        var ret = ImageLayer(tilesource, options);"
         "        ret.getOpacity = getOpacity;\n"
-        "        ret.setOpacity = setOpacity;\n"
+        "        ret.setOpacity = setOpacity;\n"        
+        "        ret.getVisible = getVisible;\n"
+        "        ret.setVisible = setVisible;\n"
         "        return ret;\n"
         "    };"
         "    osgearth.ElevationLayer = function(tilesource, options) {"
-        "        native function ElevationLayer();"
-        "        return ElevationLayer(tilesource, options);"
+        "        var ret = ElevationLayer(tilesource, options);"
+        "        ret.getVisible = getVisible;\n"
+        "        ret.setVisible = setVisible;\n"        
+        "        return ret;\n"
         "    };"
         "})();";
 
