@@ -1,4 +1,5 @@
 #include "PackagerExtensions"
+#include "osgEarthExtensions"
 
 #include <osg/Notify>
 #include <osgDB/FileUtils>
@@ -106,6 +107,21 @@ public:
             {
                 std::string filename = v8filenames->GetValue(i)->GetStringValue().ToString();
                 filenames.push_back( filename );
+            }
+        }
+
+        // The list of TileSources to process
+        std::vector< osg::ref_ptr< TileSource > > tileSources;
+        if (opt->HasValue("tilesources"))
+        {
+            CefRefPtr< CefV8Value > v8tilesources = opt->GetValue("tilesources");
+            for (int i = 0; i < v8tilesources->GetArrayLength(); i++)
+            {
+                osg::ref_ptr< TileSource > tileSource = dynamic_cast< TileSource*>(dynamic_cast< ReferencedUserData*>(v8tilesources->GetValue(i)->GetUserData().get())->_ref.get());
+                if (tileSource.valid())
+                {
+                    tileSources.push_back( tileSource );
+                }
             }
         }
 
@@ -282,13 +298,28 @@ public:
             }
         }
 
+        osgEarth::CompositeTileSource* compositeSource = new osgEarth::CompositeTileSource( compositeOpt );
+        
+        // Add any explicit TileSources
+        for (unsigned int i = 0; i < tileSources.size(); i++)
+        {
+            if (elevation)
+            {                
+                compositeSource->add(new ElevationLayer(ImageLayerOptions(), tileSources[i].get()));             
+            }
+            else
+            {
+                compositeSource->add(new ImageLayer(ImageLayerOptions(), tileSources[i].get()));             
+            }
+        }
+
         if (elevation)
         {
-            _layer = new osgEarth::ElevationLayer( ElevationLayerOptions("layer", compositeOpt) );
+            _layer = new osgEarth::ElevationLayer(ElevationLayerOptions(), compositeSource);
         }
         else
         {
-            _layer = new osgEarth::ImageLayer( ImageLayerOptions("layer", compositeOpt) );
+            _layer = new osgEarth::ImageLayer( ImageLayerOptions(), compositeSource );
         }     
 
         _map = new Map();

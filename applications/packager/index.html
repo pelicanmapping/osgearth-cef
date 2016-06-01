@@ -434,6 +434,28 @@ function doPackage(path) {
         return false;
     }
 
+    var tileSources = [];
+    $.each(filenames, function(index, file) {
+        // Use the GDAL driver by default.
+        var driver = "gdal";
+        // If we are loading a DB file use the DB driver.
+        if (file.endsWith(".db")) {
+            driver = "db";
+        }
+        // Create a TileSource from each filename.
+        var tileSource = osgearth.TileSource(driver, {
+            "url": file
+         });
+
+        /*
+        // Example of packaging ReadyMap from a TMS source.
+        var tileSource = new osgearth.TileSource("tms", {
+            "url": "http://www.readymap.org/readymap/tiles/1.0.0/22/"
+        })
+        */
+        tileSources.push(tileSource);
+    });
+
     var extents = validateExtents();
     if (extents === undefined) {
         return false;
@@ -459,7 +481,8 @@ function doPackage(path) {
 
     startTime = new Date();
     packager = osgearth.package({
-        filenames: filenames,
+        //filenames: filenames,
+        tilesources: tileSources,
         destination: path,
         extension: ext,
         output: output,
