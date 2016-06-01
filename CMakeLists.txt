@@ -85,6 +85,7 @@ set(APP_SRCS
     GDALResourceHandler.cpp
     JsonArguments.cpp
     KeyboardEventAdapter.cpp
+	osgEarthExtensions.cpp
     MapExecuteCallback.cpp
     MapExtensions.cpp
     PackagerExtensions.cpp
@@ -105,6 +106,7 @@ set(APP_HDRS
     KeyboardEventAdapter
     MapExecuteCallback
     MapExtensions
+	osgEarthExtensions
     OECefApp
     PackagerExtensions
     RenderProcessHandler

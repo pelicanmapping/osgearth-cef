@@ -1,0 +1,61 @@
+#ifndef OSGEARTH_CEF_OSGEARTH_EXTENSIONS
+#define OSGEARTH_CEF_OSGEARTH_EXTENSIONS 1
+
+
+#include "include/cef_v8.h"
+#include <osg/Referenced>
+#include <osg/ref_ptr>
+
+namespace osgEarth { namespace Cef
+{
+
+    class ReferencedUserData : public CefBase
+    {
+    public:
+        ReferencedUserData(osg::Referenced* ref):
+          _ref(ref)
+          {
+          }           
+
+          osg::ref_ptr< osg::Referenced > _ref;
+          IMPLEMENT_REFCOUNTING(ReferencedUserData);
+    };
+
+
+    class TileSourceV8Handler : public CefV8Handler {
+    public:
+        TileSourceV8Handler();
+
+        virtual bool Execute(const CefString& name,
+            CefRefPtr<CefV8Value> object,
+            const CefV8ValueList& arguments,
+            CefRefPtr<CefV8Value>& retval,
+            CefString& exception) OVERRIDE;
+
+        // Provide the reference counting implementation for this class.
+        IMPLEMENT_REFCOUNTING(TileSourceV8Handler);
+    };
+
+    class LayerV8Handler : public CefV8Handler {
+    public:
+        LayerV8Handler();
+
+        virtual bool Execute(const CefString& name,
+            CefRefPtr<CefV8Value> object,
+            const CefV8ValueList& arguments,
+            CefRefPtr<CefV8Value>& retval,
+            CefString& exception) OVERRIDE;
+
+        // Provide the reference counting implementation for this class.
+        IMPLEMENT_REFCOUNTING(LayerV8Handler);
+    };
+
+
+
+    struct osgEarthAPI
+    {
+        static void AddExtensions(CefRefPtr<CefV8Value> global);
+    };
+} }
+
+#endif
