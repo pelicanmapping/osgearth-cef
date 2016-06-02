@@ -298,7 +298,8 @@ public:
             }
         }
 
-        osgEarth::CompositeTileSource* compositeSource = new osgEarth::CompositeTileSource( compositeOpt );
+        //osgEarth::CompositeTileSource* compositeSource = new osgEarth::CompositeTileSource( compositeOpt );
+        osgEarth::CompositeTileSource* compositeSource = static_cast<osgEarth::CompositeTileSource*>(TileSourceFactory::create( compositeOpt ));
         
         // Add any explicit TileSources
         for (unsigned int i = 0; i < tileSources.size(); i++)
