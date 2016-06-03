@@ -334,17 +334,25 @@ namespace
         osg::ref_ptr<osg::Camera> _camera;
         osg::ref_ptr<osg::Image> _image;
         osg::ref_ptr<osgViewer::View> _mapView;
+        int _frameCount;
 
         RTTPrintScreenOp(const std::string& filename, osg::Camera* camera, osg::Image* image, osgViewer::View* mapView)
-            : osg::Operation("printscreen", false), _filename(filename), _camera(camera), _image(image), _mapView(mapView) { }
+            : osg::Operation("printscreen", true), _filename(filename), _camera(camera), _image(image), _mapView(mapView), _frameCount(0) { }
 
         void operator()(osg::Object* obj)
         {
-            osgDB::writeImageFile(*_image.get(), _filename);
+            if (_frameCount == 1)
+            {
+                osgDB::writeImageFile(*_image.get(), _filename);
 
-            osg::Group* group = dynamic_cast<osg::Group*>(_mapView->getSceneData());
-            group->removeChild(_camera);
-            _camera->removeChild(0, 1);
+                osg::Group* group = dynamic_cast<osg::Group*>(_mapView->getSceneData());
+                group->removeChild(_camera);
+                _camera->removeChild(0, 1);
+
+                setKeep(false);
+            }
+
+            _frameCount++;
         }
     };
 }
@@ -1192,3 +1200,4 @@ void BrowserClient::OnFaviconURLChange(CefRefPtr<CefBrowser> browser, const std:
     }
 #endif
 }
+
