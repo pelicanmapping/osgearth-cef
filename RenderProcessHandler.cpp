@@ -2,6 +2,7 @@
 #include "GDALLayer"
 #include "PackagerExtensions"
 #include "MapExtensions"
+#include "osgEarthExtensions"
 
 #include <osg/Camera>
 #include <osgDB/ReadFile>
@@ -29,9 +30,11 @@ void RenderProcessHandler::OnWebKitInitialized()
     CefMessageRouterConfig config;
     _messageRouter = CefMessageRouterRendererSide::Create(config);
 
+    osgEarthAPI::AddExtensions(0);
     GDALAPI::AddGDALExtensions(0);
     PackagerAPI::AddExtensions(0);
     MapAPI::AddExtensions(0);
+
 }
 
 void RenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)

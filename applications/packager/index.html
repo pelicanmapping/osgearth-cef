@@ -21,7 +21,7 @@
 
 var extensions = 
         [
-            "Common|.tif;.tiff;.sid;.ecw;.vrt;.jp2;.j2k;.png;.jpg;.jpeg;.gif;.dem;.dt0;.dt1;.dt2;.adf;.blx;.xlb;.bag;.bmp;.bt;.doq;.hdr;.n1;.ers;.fits;.img;.nitf;.ntf;.toc;.kap",
+            "Common|.tif;.tiff;.sid;.ecw;.vrt;.jp2;.j2k;.png;.jpg;.jpeg;.gif;.dem;.dt0;.dt1;.dt2;.adf;.blx;.xlb;.bag;.bmp;.bt;.doq;.hdr;.n1;.ers;.fits;.img;.nitf;.ntf;.toc;.kap;.db;.mbtiles",
             "GeoTIFF/TIFF|.tif;.tiff",
             "MrSID|.sid",
             "ECW|.ecw",
@@ -47,7 +47,9 @@ var extensions =
             ".nitf",
             ".ntf",
             ".toc",
-            ".kap"
+            ".kap",
+            "SIMDIS DB|.db",
+            "MBTiles|.mbtiles"
         ];
 
 var extensions_string = extensions.join(",");
@@ -96,7 +98,12 @@ function addFile(filenames) {
             //$("#files-error").hide();
         }
         else {
-            alert("Failed to open " + value);
+            //alert("Failed to open " + value);
+            // Just add it to the list for now, don't pick bad files :)
+            var file = {};
+            file.name = value;
+            file.id = activeFiles.length;
+            activeFiles.push(file);            
         }
     });
 
@@ -434,6 +441,39 @@ function doPackage(path) {
         return false;
     }
 
+    var tileSources = [];
+    $.each(filenames, function(index, file) {
+
+        var tileSource = null;
+
+        // Use the GDAL driver by default.
+        var driver = "gdal";
+        // If we are loading a DB file use the DB driver.
+        if (file.endsWith(".db")) {
+            tileSource = new osgearth.TileSource("db", {
+                "url": file
+            });
+        }
+        else if (file.endsWith(".mbtiles")) {
+            tileSource = new osgearth.TileSource("mbtiles", {
+                "filename": file
+            });
+        }
+        else {
+            tileSource = new osgearth.TileSource("gdal", {
+                "url": file
+            });
+        }
+        
+        /*
+        // Example of packaging ReadyMap from a TMS source.
+        var tileSource = new osgearth.TileSource("tms", {
+            "url": "http://www.readymap.org/readymap/tiles/1.0.0/22/"
+        })
+        */
+        tileSources.push(tileSource);
+    });
+
     var extents = validateExtents();
     if (extents === undefined) {
         return false;
@@ -459,7 +499,8 @@ function doPackage(path) {
 
     startTime = new Date();
     packager = osgearth.package({
-        filenames: filenames,
+        //filenames: filenames,
+        tilesources: tileSources,
         destination: path,
         extension: ext,
         output: output,
