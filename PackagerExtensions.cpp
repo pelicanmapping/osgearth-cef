@@ -347,6 +347,11 @@ public:
     virtual void run()
     {
         packager.run( _layer, _map );
+        // TODO:  This is terrible but is the best way to distinguish between an MBtiles and TMS output.
+        if (!packager.getTileSource())
+        {
+            packager.writeXML(_layer, _map);
+        }
         if (_completeCallback)
         {
             _taskRunner->PostTask( new RunCallbackTask( _context, _completeCallback, 0, 0, 0, 0, ""));
