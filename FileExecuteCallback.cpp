@@ -74,7 +74,7 @@ ExecuteCallback::ReturnVal* FileExecuteCallback::execute( int64 query_id, const 
         }
 
         _client->getBrowser()->GetHost()->RunFileDialog(
-            (multiple ? CefBrowserHost::FileDialogMode::FILE_DIALOG_OPEN_MULTIPLE : folder ? CefBrowserHost::FileDialogMode::FILE_DIALOG_OPEN_FOLDER : CefBrowserHost::FileDialogMode::FILE_DIALOG_OPEN),
+            (multiple ? FILE_DIALOG_OPEN_MULTIPLE : folder ? FILE_DIALOG_OPEN_FOLDER :FILE_DIALOG_OPEN),
             "", // title
             path, // default_file_path
             filters,  // accept_filters
@@ -110,7 +110,7 @@ ExecuteCallback::ReturnVal* FileExecuteCallback::execute( int64 query_id, const 
         }
 
         _client->getBrowser()->GetHost()->RunFileDialog(
-            CefBrowserHost::FileDialogMode::FILE_DIALOG_SAVE,
+            FILE_DIALOG_SAVE,
             "", // title
             path, // default_file_path
             filters,  // accept_filters

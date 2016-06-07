@@ -920,22 +920,22 @@ void BrowserClient::OnCursorChange( CefRefPtr<CefBrowser> browser, CefCursorHand
     
     switch( type ) {
         case CT_POINTER: 
-            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::LeftArrowCursor );
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::LeftArrowCursor );
             break;
         case CT_HAND:             
-            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::HandCursor );
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::HandCursor );
             break;
         case CT_WAIT: 
-            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::WaitCursor );
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::WaitCursor );
             break;
         case CT_CROSS:
-            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::CrosshairCursor );
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::CrosshairCursor );
             break;
         case CT_IBEAM:
-            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::TextCursor);
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::TextCursor);
             break;
         default:
-            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::MouseCursor::LeftArrowCursor );
+            graphicsWindowWin32->setCursor( osgViewer::GraphicsWindowWin32::LeftArrowCursor );
             break;
     }
 #endif
