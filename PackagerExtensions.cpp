@@ -9,6 +9,7 @@
 #include <osgEarth/CompositeTileSource>
 #include <osgEarth/CacheEstimator>
 #include <osgEarthUtil/TMSPackager>
+#include <osgEarth/Registry>
 
 using namespace osgEarth::Cef;
 using namespace osgEarth;
@@ -215,7 +216,16 @@ public:
             maxLat = extents->GetValue(3)->GetIntValue();
         }
 
-        visitor->addExtent(GeoExtent(SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
+        std::string profileString = "global-geodetic";
+        if (opt->HasValue("profile"))
+        {
+            profileString = opt->GetValue("profile")->GetStringValue().ToString();
+        }
+
+        ProfileOptions profileOptions(profileString);
+        osg::ref_ptr< const Profile > profile = Profile::create( profileOptions );
+        GeoExtent ext = profile->clampAndTransformExtent( GeoExtent(SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
+        visitor->addExtent( ext );
 
         std::string output;
         if (opt->HasValue("output"))
@@ -235,13 +245,7 @@ public:
                 outConf.set("format", packager.getExtension());
                 outConf.set("filename", destination);
 
-                // set the output profile.
-                osg::ref_ptr<const osgEarth::Profile> outputProfile = osgEarth::Profile::create(
-                "epsg:4326",
-                -180.0, -90.0, 180.0, 90.0,
-                "",
-                2, 1 );
-                ProfileOptions profileOptions =  outputProfile->toProfileOptions();
+                // set the output profile.                
                 outConf.add("profile", profileOptions.getConfig());
 
                 TileSourceOptions outOptions(outConf);
@@ -281,7 +285,8 @@ public:
 
 
         CompositeTileSourceOptions compositeOpt;
-        compositeOpt.profile() = ProfileOptions("global-geodetic");
+
+        compositeOpt.profile() = profileOptions;
 
         for (unsigned int i = 0; i < filenames.size(); i++)
         {
@@ -298,7 +303,6 @@ public:
             }
         }
 
-        //osgEarth::CompositeTileSource* compositeSource = new osgEarth::CompositeTileSource( compositeOpt );
         osgEarth::CompositeTileSource* compositeSource = static_cast<osgEarth::CompositeTileSource*>(TileSourceFactory::create( compositeOpt ));
         
         // Add any explicit TileSources
@@ -323,7 +327,13 @@ public:
             _layer = new osgEarth::ImageLayer( ImageLayerOptions(), compositeSource );
         }     
 
-        _map = new Map();
+        MapOptions mapOpt;
+        if (profile->getSRS()->isMercator())
+        {
+            mapOpt.coordSysType() = MapOptions::CSTYPE_PROJECTED;
+        }
+        mapOpt.profile() = profileOptions;
+        _map = new Map(mapOpt);
 
         _context = CefV8Context::GetCurrentContext();
         _taskRunner = CefTaskRunner::GetForCurrentThread();
