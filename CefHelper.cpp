@@ -99,7 +99,7 @@ CefRefPtr<BrowserClient> CefHelper::load(osg::ArgumentParser& args, const std::s
     
 
     // Create the BrowserClient
-    CefRefPtr<BrowserClient> browserClient = new BrowserClient(viewer.get(), fullPath, 1280, 800);
+    CefRefPtr<BrowserClient> browserClient = new BrowserClient(viewer.get(), fullPath, 1440, 800);
 
 
     return browserClient;
