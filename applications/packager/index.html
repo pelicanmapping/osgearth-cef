@@ -493,6 +493,8 @@ function doPackage(path) {
 
     var output = $( "input:radio[name=output]:checked" ).val();
 
+    var profile = $( "input:radio[name=profile]:checked" ).val();
+
     $('#out_text').html("0%");
 
     $('#out_progress').show();
@@ -504,6 +506,7 @@ function doPackage(path) {
         destination: path,
         extension: ext,
         output: output,
+        profile: profile,
         min_level: zoom.minLevel,
         max_level: zoom.maxLevel,
         cores: cores,
@@ -857,6 +860,9 @@ $(function() {
                     <div class="table-cell">
                         <b>Package Type</b>
                     </div>
+                    <div class="table-cell">
+                        <b>Profile</b>
+                    </div>
                 </div>
                 <div class="table-row">
                     <div class="table-cell">
@@ -870,6 +876,11 @@ $(function() {
                         <input type="radio" name="output" value="tms" checked="checked"> TMS<br>
                         <input type="radio" name="output" value="mbtiles"> MBTiles<br>
                     </div>
+                    <div class="table-cell">
+                        <input type="radio" name="profile" value="global-geodetic" checked="checked">Global Geodetic<br>
+                        <input type="radio" name="profile" value="spherical-mercator">Spherical Mercator<br>
+                    </div>
+
                 </div>
                 <div class="table-row">
                     <div class="table-cell">
