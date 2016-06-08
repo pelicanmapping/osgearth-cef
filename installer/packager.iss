@@ -11,10 +11,11 @@ DefaultGroupName=ReadyMap Packager
 UninstallDisplayIcon={app}\packager.exe
 Compression=lzma2
 SolidCompression=no
-OutputDir=c:\out
+OutputDir=.
+OutputBaseFilename=ReadyMapPackager
 
 [Files]
-Source: "*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "build\*"; DestDir: "{app}"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\ReadyMap Packager"; Filename: "{app}\packager.exe"; IconFilename: "{app}\img\favicon.ico"
