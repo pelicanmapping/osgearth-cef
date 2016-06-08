@@ -1,21 +1,7 @@
 # ReadyMap Packager Build Process
 
-Instructions for building the ReadyMap Packager installer:
+The BUILD.bat script is used to copy over all the dependencies to a temporary build directory and package it into an installer.
 
-1. Create an empty build folder and copy the packager.iss (InnoSetup install script) file into
-it.
-2. Copy all osg, osgEarth, GDAL, etc. dependencies into the build folder.
-NOTE:​Be sure to preserve osgPlugins subfolder structure to avoid conflicts with other
-files on your local machine
-3. Copy the CEF .pak files into the build folder.
-4. Copy the osgearth_cef.exe executable into the build folder and rename it packager.exe
-5. Copy everything from the osgearth­cef/applications/packager folder into the build folder,
-preserving the folder structure.
-NOTE:​the index.html file should be in the same location as the packager.exe
-executable
-6. Run InnoSetup and open the packager.iss file.
-7. Change the OutputDir value to your desired location.
-8. Click the Compile button.
-For convenience the osgearth.js file is already in the osgearth­cef/applications/packager/js
-folder. If any changes are made to the original osgearth.js file (osgearth­cef/js/osgearth.js), the
-updated file should be copied ove
+1.  Install [InnoSetup](http://www.jrsoftware.org/isinfo.php) and make sure it's binaries are in your PATH
+2.  If you need to override any of the environment variables, create a setenv.bat file in this directory and change any of the directory locations.
+3.  Run BUILD.bat from this directory.  If all goes well it will copy over all of the dependencies to a "build" directory and generate an installer called ReadyMapPackager.exe
