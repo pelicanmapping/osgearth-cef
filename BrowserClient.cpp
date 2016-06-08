@@ -909,11 +909,6 @@ void BrowserClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type
         
     if (type == PET_VIEW && dirtyRects.size() > 0)
     {
-        // TODO:  This check/warning probably isn't necessary
-        if (_width != width || _height != height)
-        {
-            OE_NOTICE << LC << "[OnPaint] Dimensions do not match: " << width << " x " << height << " vs. " << _width << " x " << _height << std::endl;
-        }
         _width = width;
         _height = height;
         _image->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE );
