@@ -45,6 +45,8 @@ public:
     bool getInFocus() { return _inFocus; }
     void setInFocus(bool focus) { _inFocus = focus; }
 
+    OpenThreads::Mutex& getMutex() { return _mutex;}
+
 
 // CefClient methods
 public:
@@ -161,6 +163,8 @@ protected:
 
     osg::ref_ptr<osg::Image> _rttImage;
     osg::ref_ptr<osg::Camera> _rttCamera;
+
+    OpenThreads::Mutex _mutex;
 
     IMPLEMENT_REFCOUNTING(BrowserClient);
 };

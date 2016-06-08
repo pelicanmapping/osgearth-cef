@@ -13,6 +13,7 @@
 #include "OECefApp"
 #include "BrowserClient"
 #include "GDALResourceHandler"
+#include <osgEarth/ThreadingUtils>
 
 using namespace osgEarth::Cef;
 
@@ -115,7 +116,12 @@ int CefHelper::run(osg::ArgumentParser& args, const std::string& htmlFile)
     {
         while (!browserClient->getViewer()->done())
         {
-            browserClient->getViewer()->frame();
+            {
+                // We lock the BrowserClient mutex here to protect access to shard resources like
+                // the internal osg::Image for the browser canvas
+                OpenThreads::ScopedLock< OpenThreads::Mutex > lk(browserClient->getMutex());
+                browserClient->getViewer()->frame();
+            }
             CefDoMessageLoopWork();
         }
     }

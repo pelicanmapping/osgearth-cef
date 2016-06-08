@@ -86,7 +86,8 @@ namespace
 
         bool transparentPixel(osgViewer::View* view, const osgGA::GUIEventAdapter& ea) const
         {
-            osg::Image* image = _browserClient->getImage();
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lk( _browserClient->getMutex() );
+            osg::ref_ptr< osg::Image > image = _browserClient->getImage();
             if (image && image->getPixelFormat())
             {
                 int x = ea.getX();
@@ -96,7 +97,6 @@ namespace
                 {
                     ImageUtils::PixelReader ia(image);
                     osg::Vec4 color = ia(x, y);
-
                     return color.a() == 0.0;
                 }
             }
@@ -116,14 +116,14 @@ namespace
                 case(osgGA::GUIEventAdapter::DOUBLECLICK):
                 case(osgGA::GUIEventAdapter::SCROLL):
                 {
-                    if (transparentPixel(_view, ea) && !_mouseLMBdown)
+                    bool trans = transparentPixel(_view, ea) && !_mouseLMBdown;
+                    if (trans)
                     {
                         if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE || ea.getEventType() == osgGA::GUIEventAdapter::DOUBLECLICK)
                         {
                             _browser->GetHost()->SendFocusEvent(false);
                             _browserClient->setInFocus(false);
                         }
-
                         return false;
                     }
                     break;
@@ -270,8 +270,10 @@ namespace
                     break;
 
                 case osgGA::GUIEventAdapter::RESIZE:
-                    _browserClient->setSize(ea.getWindowWidth(), ea.getWindowHeight());
-                    _browser->GetHost()->WasResized();
+                    {
+                        _browserClient->setSize(ea.getWindowWidth(), ea.getWindowHeight());
+                        _browser->GetHost()->WasResized();
+                    }
                     break;
             }
 
@@ -413,6 +415,8 @@ void BrowserClient::initBrowser(const std::string& url)
     _mainView->addEventHandler(_mainEventHandler);
 }
 
+#define USE_PBO
+
 void BrowserClient::setupMainView(unsigned int width, unsigned int height)
 {
     //setup view
@@ -427,10 +431,12 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
 
     //create image and texture to render to
     _image = new osg::Image();
-     osg::PixelBufferObject* pbo = new osg::PixelBufferObject(_image.get());
+#ifdef USE_PBO
+    osg::PixelBufferObject* pbo = new osg::PixelBufferObject(_image.get());
     pbo->setCopyDataAndReleaseGLBufferObject(true);
     pbo->setUsage(GL_DYNAMIC_DRAW_ARB);
     _image->setPixelBufferObject(pbo);
+#endif
  
     osg::Texture2D* tex = new osg::Texture2D(_image);
     tex->setResizeNonPowerOfTwoHint(false);
@@ -485,10 +491,12 @@ void BrowserClient::setupMainView(unsigned int width, unsigned int height)
     
     // setup popup
     _popupImage = new osg::Image();
+#ifdef USE_PBO
     pbo = new osg::PixelBufferObject(_popupImage.get());
     pbo->setCopyDataAndReleaseGLBufferObject(true);
     pbo->setUsage(GL_DYNAMIC_DRAW_ARB);
     _popupImage->setPixelBufferObject(pbo);
+#endif
 
     tex = new osg::Texture2D(_popupImage);
     tex->setResizeNonPowerOfTwoHint(false);
@@ -598,9 +606,6 @@ void BrowserClient::setSize(unsigned int width, unsigned int height)
 {
     _width = osg::maximum(0U, width);
     _height = osg::maximum(0U, height);
-
-	static unsigned char s_empty;
-	_image->setImage(0, 0, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, (unsigned char*)(&s_empty), osg::Image::NO_DELETE);
 }
 
 void BrowserClient::addExecuteCallback( ExecuteCallback* callback )
@@ -894,19 +899,28 @@ void BrowserClient::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& re
 
 void BrowserClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height)
 {
+    // Note: OnPaint and other browser functions will run on a different thread than the main frame loop, so it's important to lock access to shared resources.
+
+    OpenThreads::ScopedLock< OpenThreads::Mutex > lk(_mutex);
+
+    // Clone the incoming buffer.  CEF uses that buffer pointer internally so it's not safe just to keep a pointer around to it.
+    unsigned char* data = new unsigned char[width * height * 4];
+    memcpy(data, buffer, width * height * 4 * sizeof(unsigned char));
+        
     if (type == PET_VIEW && dirtyRects.size() > 0)
     {
+        // TODO:  This check/warning probably isn't necessary
         if (_width != width || _height != height)
         {
-            OE_DEBUG << LC << "[OnPaint] Dimensions do not match: " << width << " x " << height << " vs. " << _width << " x " << _height << std::endl;
-            return;
+            OE_NOTICE << LC << "[OnPaint] Dimensions do not match: " << width << " x " << height << " vs. " << _width << " x " << _height << std::endl;
         }
-
-        _image->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, (unsigned char*)(buffer), osg::Image::NO_DELETE );
+        _width = width;
+        _height = height;
+        _image->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE );
     }
     else if (type == PET_POPUP)
     {
-        _popupImage->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, (unsigned char*)(buffer), osg::Image::NO_DELETE );
+        _popupImage->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE,  data, osg::Image::USE_NEW_DELETE );
     }
 }
 
