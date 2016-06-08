@@ -1,5 +1,6 @@
 @echo off
 
+REM set the default environment variables
 set OSG=D:\dev\Installs\OpenSceneGraph-3.4.0\vs2010\x64\bin
 set OSG_DEPS=D:\dev\3rdParty\vs2010\x64\bin
 set OSGEARTH=D:\dev\Installs\OSGEARTH\OpenSceneGraph-3.4.0\vs2010\x64\bin
@@ -12,6 +13,12 @@ set CEF=D:\dev\cef_binary_3.2272.32.gbda8dc7_windows64\Release
 set CEF_RESOURCES=D:\dev\cef_binary_3.2272.32.gbda8dc7_windows64\Resources
 set GDAL=D:\dev\gdal\release-1600-x64\bin
 set SIMDIS=D:\dev\Installs\SIMDIS_SDK\bin
+
+REM Call the setenv.bat file if it exists to override the env var locations.
+if exist setenv.bat (
+	echo "Calling setenv.bat"
+	call setenv.bat
+)
 
 set BUILD_DIR=build
 
