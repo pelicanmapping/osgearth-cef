@@ -107,7 +107,7 @@ html, body {
 
 #props_header {
   position: absolute;
-  bottom: 234px;
+  bottom: 254px;
   left: 10px;
   right: 10px; }
 
@@ -116,7 +116,7 @@ html, body {
   left: 10px;
   right: 10px;
   bottom: 10px;
-  height: 224px;
+  height: 244px;
   font-size: 12px; }
 
 #left_bar .layer-name {
@@ -165,7 +165,7 @@ html, body {
   left: 400px;
   right: 0px;
   bottom: 25px;
-  height: 280px;
+  height: 300px;
   background-color: #607D8B; }
 
 #output_header {
@@ -361,5 +361,9 @@ html, body {
 
 .leaflet-container {
   background: #000; }
+
+#layer-name {
+  width: 200px !important;
+}
 
 /*# sourceMappingURL=style.css.map */

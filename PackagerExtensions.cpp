@@ -200,6 +200,12 @@ public:
             visitor->setMaxLevel( opt->GetValue("max_level")->GetIntValue() );
         }
 
+        std::string layername = "layer";
+        if (opt->HasValue("layer"))
+        {
+            layername = opt->GetValue("layer")->GetStringValue().ToString();
+        }
+
 
         // Get the extents
         double minLon = -180.0;
@@ -326,6 +332,7 @@ public:
         {
             _layer = new osgEarth::ImageLayer( ImageLayerOptions(), compositeSource );
         }     
+        _layer->setName(layername);
 
         MapOptions mapOpt;
         if (profile->getSRS()->isMercator())

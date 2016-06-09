@@ -242,6 +242,17 @@ function validateNumCores() {
     return cores;
 }
 
+function validateLayerName() {
+    $('#layer-name').removeClass("inerror");
+    var layerName = $("#layer-name").val().trim();
+    if (layerName.length == 0) {
+        $("#layer-name").addClass("inerror");
+        setError("Invalid layer name");
+        return undefined;
+    }
+    return layerName;
+}
+
 function onLoadClick() {
     osgearth.openFileDialog({
         onSuccess: function(files) {
@@ -421,6 +432,11 @@ function onPackageClick() {
         return false;
     }
 
+    var layerName = validateLayerName();
+    if (layerName === undefined) {
+        return false;
+    }
+
     getPackageDestination();
 }
 
@@ -489,6 +505,11 @@ function doPackage(path) {
         return false;
     }
 
+    var layerName = validateLayerName();
+    if (layerName === undefined) {
+        return false;
+    }
+
     var ext = $( "input:radio[name=format]:checked" ).val();
 
     var output = $( "input:radio[name=output]:checked" ).val();
@@ -503,6 +524,7 @@ function doPackage(path) {
     packager = osgearth.package({
         //filenames: filenames,
         tilesources: tileSources,
+        layer: layerName,
         destination: path,
         extension: ext,
         output: output,
@@ -842,6 +864,9 @@ $(function() {
             Package Options
         </div>
         <div id="output_props" class="layer-box">
+            <div>
+                <label for="layer-name">Layer name:</label><input type="text" id="layer-name" value="layer"></input>
+            </div>
 
             <div class="table">
                 <div class="table-row">
