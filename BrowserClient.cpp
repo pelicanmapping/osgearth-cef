@@ -832,14 +832,14 @@ bool BrowserClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
 
 
 bool BrowserClient::GetRootScreenRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
-{
+{    
   osgViewer::Viewer::Windows windows;
   _viewer->getWindows(windows);
 
   if (windows.size() > 0)
   {
       int x, y, width, height;
-      windows[0]->getWindowRectangle(x, y, width, height);
+      windows[0]->getWindowRectangle(x, y, width, height);      
       rect = CefRect(x, y, width, height);
 
       return true;
@@ -909,8 +909,6 @@ void BrowserClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type
         
     if (type == PET_VIEW && dirtyRects.size() > 0)
     {
-        _width = width;
-        _height = height;
         _image->setImage( width, height, 1, 4, GL_BGRA, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE );
     }
     else if (type == PET_POPUP)
