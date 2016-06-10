@@ -23,7 +23,7 @@ class NativeEventHandlerWin;
 
 
 // for manual render handler
-class BrowserClient : public CefClient, public CefRenderHandler, public CefRequestHandler, public CefLifeSpanHandler, public CefMessageRouterBrowserSide::Handler, public CefDisplayHandler
+class BrowserClient : public CefClient, public CefRenderHandler, public CefRequestHandler, public CefLifeSpanHandler, public CefMessageRouterBrowserSide::Handler, public CefDisplayHandler, public CefContextMenuHandler
 {
 public:
     BrowserClient(osgViewer::CompositeViewer* viewer, const std::string& url, int width, int height);
@@ -53,6 +53,25 @@ public:
     virtual CefRefPtr<CefRenderHandler> GetRenderHandler() { return this; }
     virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() { return this; }
     virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() { return this; }
+        // CefClient methods
+    CefRefPtr<CefContextMenuHandler> GetContextMenuHandler() { return this; }
+
+    virtual void OnBeforeContextMenu(
+        CefRefPtr<CefBrowser> browser,
+        CefRefPtr<CefFrame> frame,
+        CefRefPtr<CefContextMenuParams> params,
+        CefRefPtr<CefMenuModel> model) OVERRIDE;
+
+    /*
+    bool OnContextMenuCommand(
+        CefRefPtr<CefBrowser> browser,
+        CefRefPtr<CefFrame> frame,
+        CefRefPtr<CefContextMenuParams> params,
+        int command_id,
+        EventFlags event_flags);
+        */
+
+
 
     virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                           CefProcessId source_process,
@@ -78,7 +97,7 @@ public:
     virtual bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
                                 CefRefPtr<CefFrame> frame,
                                 CefRefPtr<CefRequest> request,
-                                bool is_redirect) OVERRIDE;
+                                bool is_redirect) OVERRIDE;   
 
     virtual void OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, TerminationStatus status) OVERRIDE;
 
@@ -120,7 +139,6 @@ public:
 
     void OnFaviconURLChange(CefRefPtr<CefBrowser> browser,
                             const std::vector<CefString>& icon_urls) OVERRIDE;
-
 
 protected:
     friend class MapExecuteCallback;

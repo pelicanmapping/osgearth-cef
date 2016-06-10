@@ -959,6 +959,28 @@ bool BrowserClient::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
     return false;
 }
 
+void BrowserClient::OnBeforeContextMenu(
+        CefRefPtr<CefBrowser> browser,
+        CefRefPtr<CefFrame> frame,
+        CefRefPtr<CefContextMenuParams> params,
+        CefRefPtr<CefMenuModel> model)
+{ 
+    model->Clear();
+}
+
+/*
+bool BrowserClient::OnContextMenuCommand(
+        CefRefPtr<CefBrowser> browser,
+        CefRefPtr<CefFrame> frame,
+        CefRefPtr<CefContextMenuParams> params,
+        int command_id,
+        EventFlags event_flags)
+{
+    OE_NOTICE << "OnContextMenuCommand" << std::endl;
+    return false;
+}
+*/
+
 void BrowserClient::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, TerminationStatus status)
 {
     _messageRouter->OnRenderProcessTerminated(browser);
