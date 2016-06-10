@@ -1,6 +1,8 @@
 #include "PackagerExtensions"
 #include "osgEarthExtensions"
 
+#include <algorithm>
+#include <iterator>
 #include <osg/Notify>
 #include <osgDB/FileUtils>
 #include <osgDB/FileNameUtils>
@@ -233,65 +235,7 @@ public:
         GeoExtent ext = profile->clampAndTransformExtent( GeoExtent(SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
         visitor->addExtent( ext );
 
-        std::string output;
-        if (opt->HasValue("output"))
-        {
-            output = opt->GetValue("output")->GetStringValue().ToString();
-            if (output == "mbtiles")
-            {
-                std::string destination = "package.mbtiles";
-                if ( opt->HasValue("destination"))
-                    destination = opt->GetValue("destination")->GetStringValue().ToString();
-
-                if (osgDB::getFileExtension(destination) == "")
-                    destination += ".mbtiles";
-
-                Config outConf;
-                outConf.set("driver", "mbtiles");
-                outConf.set("format", packager.getExtension());
-                outConf.set("filename", destination);
-
-                // set the output profile.                
-                outConf.add("profile", profileOptions.getConfig());
-
-                TileSourceOptions outOptions(outConf);
-                osg::ref_ptr<TileSource> output = TileSourceFactory::create(outOptions);
-                if ( output.valid() )
-                {
-                    TileSource::Status outputStatus = output->open(
-                        TileSource::MODE_WRITE | TileSource::MODE_CREATE );
-
-                    if ( !outputStatus.isError() )
-                    {
-                        packager.setTileSource(output);
-                    }
-                    else
-                    {
-                        OE_WARN << "Failed to initialize output TileSource: " << outputStatus.message() << std::endl;
-                    }
-                }
-                else
-                {
-                    OE_WARN << "Failed to create output TileSource" << std::endl;
-                }
-            }
-            else
-            {
-                std::string destination = "tiles";
-                if ( opt->HasValue("destination"))
-                {
-                    destination = opt->GetValue("destination")->GetStringValue().ToString();
-                }
-                packager.setDestination( destination );
-
-                // create a folder for the output
-                osgDB::makeDirectory( destination );
-            }
-        }
-
-
         CompositeTileSourceOptions compositeOpt;
-
         compositeOpt.profile() = profileOptions;
 
         for (unsigned int i = 0; i < filenames.size(); i++)
@@ -341,6 +285,72 @@ public:
         }
         mapOpt.profile() = profileOptions;
         _map = new Map(mapOpt);
+
+        std::string output;
+        if (opt->HasValue("output"))
+        {
+            output = opt->GetValue("output")->GetStringValue().ToString();
+            if (output == "mbtiles")
+            {
+                std::string destination = "package.mbtiles";
+                if ( opt->HasValue("destination"))
+                    destination = opt->GetValue("destination")->GetStringValue().ToString();
+
+                if (osgDB::getFileExtension(destination) == "")
+                    destination += ".mbtiles";
+
+                Config outConf;
+                outConf.set("driver", "mbtiles");
+                outConf.set("format", packager.getExtension());
+                outConf.set("filename", destination);
+
+                // set the output profile.                
+                outConf.add("profile", profileOptions.getConfig());
+
+                TileSourceOptions outOptions(outConf);
+                osg::ref_ptr<TileSource> output = TileSourceFactory::create(outOptions);
+                if ( output.valid() )
+                {
+
+                    // Set the data extents of the new tilesource so it will be written to the mbtiles database.
+                    // Note:  This needs to be reworked a bit so that we can write extents to TMS datasets as well.
+                    std::copy( _layer->getTileSource()->getDataExtents().begin(),
+                               _layer->getTileSource()->getDataExtents().end(),
+                               std::back_inserter(output->getDataExtents()) );                   
+
+                    TileSource::Status outputStatus = output->open(
+                        TileSource::MODE_WRITE | TileSource::MODE_CREATE );
+
+                    if ( !outputStatus.isError() )
+                    {
+                        packager.setTileSource(output);
+                    }
+                    else
+                    {
+                        OE_WARN << "Failed to initialize output TileSource: " << outputStatus.message() << std::endl;
+                    }
+                }
+                else
+                {
+                    OE_WARN << "Failed to create output TileSource" << std::endl;
+                }
+            }
+            else
+            {
+                std::string destination = "tiles";
+                if ( opt->HasValue("destination"))
+                {
+                    destination = opt->GetValue("destination")->GetStringValue().ToString();
+                }
+                packager.setDestination( destination );
+
+                // create a folder for the output
+                osgDB::makeDirectory( destination );
+            }
+        }
+
+
+        
 
         _context = CefV8Context::GetCurrentContext();
         _taskRunner = CefTaskRunner::GetForCurrentThread();
