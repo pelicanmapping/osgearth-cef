@@ -5,7 +5,7 @@
 
 [Setup]
 AppName=ReadyMap Packager
-AppVersion=0.5
+AppVersion=0.6
 DefaultDirName={pf64}\ReadyMap Packager
 DefaultGroupName=ReadyMap Packager
 UninstallDisplayIcon={app}\packager.exe
