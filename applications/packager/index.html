@@ -81,29 +81,33 @@ function addFile(filenames) {
         var file = gdal.open(value);
         if (file) {
             file.name = value;
-            file.id = activeFiles.length;
-            activeFiles.push(file);
+            //$("#files-error").hide();
+        }
+        // If you select a db file or an mbtiles file we will allow it.
+        else if (value.endsWith(".db") || value.endsWith(".mbtiles")) {            
+            file = {};
+            file.name = value;
+            file.minLat = -90.0;
+            file.minLon = -180.0;
+            file.maxLon = 180.0;
+            file.maxLat = 90.0;
+            file.maxLevel = 10;
+            file.projection = "Unknown";
+            file.bands = "Unknown";
+        }
 
+        if (file) {
+            file.id = activeFiles.length;
+
+            activeFiles.push(file);
             var poly = L.polygon([
                 [file.minLat, file.minLon],
                 [file.minLat, file.maxLon],
                 [file.maxLat, file.maxLon],
                 [file.maxLat, file.minLon]
             ], { color: '#0000FF', fillColor: '#0000FF', zIndex: file.id }).addTo( map );
-
             poly.bringToBack();
-
             activePolygons.push(poly);
-
-            //$("#files-error").hide();
-        }
-        else {
-            //alert("Failed to open " + value);
-            // Just add it to the list for now, don't pick bad files :)
-            var file = {};
-            file.name = value;
-            file.id = activeFiles.length;
-            activeFiles.push(file);            
         }
     });
 
@@ -148,13 +152,15 @@ function setProperties(file) {
         $('#data_props').empty();
     }
     else {
-        $('#data_props').html('<b>' + file.name + '</b>' + '<br><br>' +
+        var output = '<b>' + file.name + '</b>' + '<br><br>' +
                               '<b>Projection:</b> ' + file.projection + '<br><br>' +
                               '<b>Bounds:</b><br><span class="nowrap">' + file.minLat + ', ' + file.minLon + '</span><br><span class="nowrap">' + file.maxLat + ', ' + file.maxLon + '</span><br><br>' +
-                              '<b>Bands:</b> ' + file.bands + '<br>' +
-                              '<b>Size:</b> ' + file.size[0] + ' x ' + file.size[1]);
-                              //'<b>Origin:</b> ' + file.origin[0] + ', ' + file.origin[1] + '<br>' +
-                              //'<b>Pixel Size:</b>: ' + file.pixelsize[0] + ' x ' + file.pixelsize[1]);
+                              '<b>Bands:</b> ' + file.bands + '<br>';
+        if (file.size) {
+            output += '<b>Size:</b> ' + file.size[0] + ' x ' + file.size[1];
+        }
+
+        $('#data_props').html( output );                              
     }
 }
 
