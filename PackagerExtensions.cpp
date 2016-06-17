@@ -260,13 +260,18 @@ public:
         {
             if (elevation)
             {                
-                compositeSource->add(new ElevationLayer(ImageLayerOptions(), tileSources[i].get()));             
+                ElevationLayer* layer = new ElevationLayer(ImageLayerOptions(), tileSources[i].get());
+                layer->open();
+                compositeSource->add(layer);
             }
             else
             {
-                compositeSource->add(new ImageLayer(ImageLayerOptions(), tileSources[i].get()));             
+                ImageLayer* layer = new ImageLayer(ImageLayerOptions(), tileSources[i].get());
+                layer->open();
+                compositeSource->add(layer);
             }
         }
+        compositeSource->open();
 
         if (elevation)
         {
@@ -277,6 +282,7 @@ public:
             _layer = new osgEarth::ImageLayer( ImageLayerOptions(), compositeSource );
         }     
         _layer->setName(layername);
+        _layer->open();
 
         MapOptions mapOpt;
         if (profile->getSRS()->isMercator())

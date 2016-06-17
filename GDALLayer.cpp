@@ -115,6 +115,7 @@ bool GDALV8Handler::Execute(const CefString& name,
         osgEarth::Drivers::GDALOptions fileOpt;
         fileOpt.url() = filename;
         osg::ref_ptr<osgEarth::ImageLayer> imageLayer = new ImageLayer( ImageLayerOptions("image", fileOpt) );
+        imageLayer->open();
 
         unsigned int maxLevel = 0;
         for (osgEarth::DataExtentList::iterator it = imageLayer->getTileSource()->getDataExtents().begin(); it != imageLayer->getTileSource()->getDataExtents().end(); ++it)

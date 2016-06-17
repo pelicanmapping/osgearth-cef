@@ -128,6 +128,7 @@ bool LayerV8Handler::Execute(const CefString& name,
 
         osgEarth::ImageLayerOptions layerOptions( options );
         osg::ref_ptr< ImageLayer > layer = new ImageLayer(layerOptions, tileSource.get());
+        layer->open();
         retval = CefV8Value::CreateObject(0);   
 
         CefRefPtr< ReferencedUserData > userData = new ReferencedUserData( layer.get() );
@@ -145,6 +146,7 @@ bool LayerV8Handler::Execute(const CefString& name,
 
         osgEarth::ElevationLayerOptions layerOptions( options );
         osg::ref_ptr< ElevationLayer > layer = new ElevationLayer(layerOptions, tileSource.get());
+        layer->open();
         retval = CefV8Value::CreateObject(0);   
         CefRefPtr< ReferencedUserData > userData = new ReferencedUserData( layer.get() );
         retval->SetUserData( userData );
