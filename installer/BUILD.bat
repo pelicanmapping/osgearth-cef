@@ -85,4 +85,4 @@ del %BUILD_DIR%\*d.dll
 del %BUILD_DIR%\%OSG_PLUGINS_FOLDER%\*d.dll
 
 REM Actually build the installer
-REM compil32 /cc packager.iss
+compil32 /cc packager.iss
