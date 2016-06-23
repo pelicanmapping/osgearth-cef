@@ -44,7 +44,11 @@ REM Copy over the necessary plugins
 mkdir "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
 
 REM Copy over the simdis dlls
-xcopy /D /Y "%SIMDIS%\*.dll" %BUILD_DIR%
+copy "%SIMDIS%\SIMDIS_SDK*.dll" %BUILD_DIR%
+copy "%SIMDIS%\Qt5*.dll" %BUILD_DIR%
+
+REM Copy the SIMDIS DB plugin
+copy "%SIMDIS%\osgdb_osgearth_db.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
 
 xcopy /D /Y "%OSG_PLUGINS_DIR%\osgdb_*.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
 
