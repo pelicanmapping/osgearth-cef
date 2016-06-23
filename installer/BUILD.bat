@@ -38,7 +38,14 @@ REM Copy OSG deps
 xcopy /D /Y "%OSG_DEPS%\*.dll" %BUILD_DIR%
 
 REM Copy GDAL deps
-xcopy /S /D /Y "%GDAL%" %BUILD_DIR%
+xcopy /D /Y "%GDAL%\*.dll" %BUILD_DIR%
+
+mkdir "%BUILD_DIR%\gdal-data"
+xcopy /D /Y "%GDAL%\gdal-data" %BUILD_DIR%\gdal-data
+
+mkdir "%BUILD_DIR%\gdalplugins"
+xcopy /D /Y "%GDAL%\gdal\plugins" %BUILD_DIR%\gdalplugins
+
 
 REM Copy over the necessary plugins
 mkdir "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
@@ -78,4 +85,4 @@ del %BUILD_DIR%\*d.dll
 del %BUILD_DIR%\%OSG_PLUGINS_FOLDER%\*d.dll
 
 REM Actually build the installer
-compil32 /cc packager.iss
+REM compil32 /cc packager.iss
