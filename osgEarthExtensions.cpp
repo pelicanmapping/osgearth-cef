@@ -4,6 +4,7 @@
 #include <osgEarth/TileSource>
 #include <osgEarth/ImageLayer>
 #include <osgEarth/ElevationLayer>
+#include <osgEarth/Registry>
 
 
 using namespace osgEarth::Cef;
@@ -98,6 +99,47 @@ bool TileSourceV8Handler::Execute(const CefString& name,
         }
 
         retval = CefV8Value::CreateObject(0);   
+
+        // Set some metadata properties on the TileSource object.
+        const SpatialReference *wgs84 = SpatialReference::get("epsg:4326");
+        GeoExtent extent = GeoExtent(wgs84, -180.0, -90.0, 180.0, 90.0);
+        int maxLevel = -1;
+
+        if (!tileSource->getDataExtents().empty())
+        {
+            // Get the union of all the extents
+            extent = tileSource->getDataExtents()[0].transform(wgs84);
+            OE_NOTICE << "GeoExtent 0 " << extent.toString() << std::endl;
+            if (tileSource->getDataExtents()[0].maxLevel().isSet())
+            {
+                maxLevel = tileSource->getProfile()->getEquivalentLOD( osgEarth::Registry::instance()->getGlobalGeodeticProfile(),*tileSource->getDataExtents()[0].maxLevel());
+            }
+            for (unsigned int i = 1; i < tileSource->getDataExtents().size(); i++)
+            {
+                GeoExtent e(tileSource->getDataExtents()[i].transform(wgs84));
+                OE_NOTICE << "GeoExtent " << i << " " << e.toString() << std::endl;
+                extent.expandToInclude(e);
+                if (tileSource->getDataExtents()[i].maxLevel().isSet())
+                {
+                    unsigned int level = tileSource->getProfile()->getEquivalentLOD( osgEarth::Registry::instance()->getGlobalGeodeticProfile(),*tileSource->getDataExtents()[i].maxLevel());
+                    if (maxLevel < level)
+                    {
+                        maxLevel = level;
+                    }
+                }
+            }
+        }
+
+        if (maxLevel <= 0)
+        {
+            maxLevel = 99;
+        }
+
+        retval->SetValue("minLat", CefV8Value::CreateDouble(extent.yMin()), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("minLon", CefV8Value::CreateDouble(extent.xMin()), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("maxLat", CefV8Value::CreateDouble(extent.yMax()), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("maxLon", CefV8Value::CreateDouble(extent.xMax()), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("maxLevel", CefV8Value::CreateInt(maxLevel), V8_PROPERTY_ATTRIBUTE_NONE);
 
         CefRefPtr< ReferencedUserData > userData = new ReferencedUserData( tileSource.get() );
         retval->SetUserData( userData );
