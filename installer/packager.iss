@@ -5,7 +5,7 @@
 
 [Setup]
 AppName=ReadyMap Packager
-AppVersion=0.6
+AppVersion=0.7
 DefaultDirName={pf64}\ReadyMap Packager
 DefaultGroupName=ReadyMap Packager
 UninstallDisplayIcon={app}\img\favicon.ico
@@ -18,4 +18,4 @@ OutputBaseFilename=ReadyMapPackager
 Source: "build\*"; DestDir: "{app}"; Flags: recursesubdirs
 
 [Icons]
-Name: "{group}\ReadyMap Packager"; Filename: "{app}\packager.exe"; IconFilename: "{app}\img\favicon.ico"
+Name: "{group}\ReadyMap Packager"; Filename: "{app}\packager.bat"; IconFilename: "{app}\img\favicon.ico"

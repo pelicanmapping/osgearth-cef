@@ -28,6 +28,9 @@ RD /S /Q %BUILD_DIR%
 REM Create the build dir 
 mkdir %BUILD_DIR%
 
+REM Copy the packager batch file
+copy packager.bat %BUILD_DIR%
+
 REM Copy the OSG dlls 
 xcopy /D /Y "%OSG%\*.dll" %BUILD_DIR%
 
