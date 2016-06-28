@@ -5,7 +5,7 @@
 
 [Setup]
 AppName=ReadyMap Packager
-AppVersion=0.7
+AppVersion=0.8
 DefaultDirName={pf64}\ReadyMap Packager
 DefaultGroupName=ReadyMap Packager
 UninstallDisplayIcon={app}\img\favicon.ico

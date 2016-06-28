@@ -85,31 +85,36 @@ function addFile(filenames) {
         }
         // If you select a db file or an mbtiles file we will allow it.
         else if (value.endsWith(".db") || value.endsWith(".mbtiles")) {            
+            try {
 
-            var tileSource = null;
+                var tileSource = null;
 
-            if (value.endsWith(".db")) {
-                tileSource = new osgearth.TileSource("db", {
-                    "url": value
-                });
+                if (value.endsWith(".db")) {
+                    tileSource = new osgearth.TileSource("db", {
+                        "url": value
+                    });
+                }
+                else if (value.endsWith(".mbtiles")) {
+                    tileSource = new osgearth.TileSource("mbtiles", {
+                        "filename": value
+                    });
+                }                      
+
+                if (tileSource) {            
+                    file = {};
+                    file.name = value;
+                    file.minLat = tileSource.minLat;
+                    file.minLon = tileSource.minLon;
+                    file.maxLon = tileSource.maxLon;
+                    file.maxLat = tileSource.maxLat;
+                    file.maxLevel = tileSource.maxLevel;
+                    file.projection = tileSource.projection;
+                    file.bands = "Unknown";
+                    tileSource = null;
+                }
             }
-            else if (value.endsWith(".mbtiles")) {
-                tileSource = new osgearth.TileSource("mbtiles", {
-                    "filename": value
-                });
-            }                      
-
-            if (tileSource) {
-                file = {};
-                file.name = value;
-                file.minLat = tileSource.minLat;
-                file.minLon = tileSource.minLon;
-                file.maxLon = tileSource.maxLon;
-                file.maxLat = tileSource.maxLat;
-                file.maxLevel = tileSource.maxLevel;
-                file.projection = "Unknown";
-                file.bands = "Unknown";
-                tileSource = null;
+            catch(e) {
+                alert(e.toString());
             }
         }
 

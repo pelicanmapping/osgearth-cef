@@ -89,13 +89,13 @@ bool TileSourceV8Handler::Execute(const CefString& name,
             if (!status.isOK())
             {
                 exception = "Failed to open TileSource";
-                return false;
+                return true;
             }         
         }
         else
         {
             exception = "Failed to create tilesource";
-            return false;
+            return true;
         }
 
         retval = CefV8Value::CreateObject(0);   
@@ -109,7 +109,6 @@ bool TileSourceV8Handler::Execute(const CefString& name,
         {
             // Get the union of all the extents
             extent = tileSource->getDataExtents()[0].transform(wgs84);
-            OE_NOTICE << "GeoExtent 0 " << extent.toString() << std::endl;
             if (tileSource->getDataExtents()[0].maxLevel().isSet())
             {
                 maxLevel = tileSource->getProfile()->getEquivalentLOD( osgEarth::Registry::instance()->getGlobalGeodeticProfile(),*tileSource->getDataExtents()[0].maxLevel());
@@ -117,7 +116,6 @@ bool TileSourceV8Handler::Execute(const CefString& name,
             for (unsigned int i = 1; i < tileSource->getDataExtents().size(); i++)
             {
                 GeoExtent e(tileSource->getDataExtents()[i].transform(wgs84));
-                OE_NOTICE << "GeoExtent " << i << " " << e.toString() << std::endl;
                 extent.expandToInclude(e);
                 if (tileSource->getDataExtents()[i].maxLevel().isSet())
                 {
@@ -140,6 +138,7 @@ bool TileSourceV8Handler::Execute(const CefString& name,
         retval->SetValue("maxLat", CefV8Value::CreateDouble(extent.yMax()), V8_PROPERTY_ATTRIBUTE_NONE);
         retval->SetValue("maxLon", CefV8Value::CreateDouble(extent.xMax()), V8_PROPERTY_ATTRIBUTE_NONE);
         retval->SetValue("maxLevel", CefV8Value::CreateInt(maxLevel), V8_PROPERTY_ATTRIBUTE_NONE);
+        retval->SetValue("projection", CefV8Value::CreateString(tileSource->getProfile()->getSRS()->getName()), V8_PROPERTY_ATTRIBUTE_NONE );
 
         CefRefPtr< ReferencedUserData > userData = new ReferencedUserData( tileSource.get() );
         retval->SetUserData( userData );
