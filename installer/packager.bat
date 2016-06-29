@@ -1,2 +1,2 @@
 set GDAL_DATA=%CD%\gdal-data
-packager.exe
+start packager.exe
