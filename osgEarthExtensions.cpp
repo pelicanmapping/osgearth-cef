@@ -111,7 +111,7 @@ bool TileSourceV8Handler::Execute(const CefString& name,
             extent = tileSource->getDataExtents()[0].transform(wgs84);
             if (tileSource->getDataExtents()[0].maxLevel().isSet())
             {
-                maxLevel = tileSource->getProfile()->getEquivalentLOD( osgEarth::Registry::instance()->getGlobalGeodeticProfile(),*tileSource->getDataExtents()[0].maxLevel());
+                maxLevel = osgEarth::Registry::instance()->getGlobalGeodeticProfile()->getEquivalentLOD( tileSource->getProfile(), *tileSource->getDataExtents()[0].maxLevel());
             }
             for (unsigned int i = 1; i < tileSource->getDataExtents().size(); i++)
             {
@@ -119,7 +119,7 @@ bool TileSourceV8Handler::Execute(const CefString& name,
                 extent.expandToInclude(e);
                 if (tileSource->getDataExtents()[i].maxLevel().isSet())
                 {
-                    unsigned int level = tileSource->getProfile()->getEquivalentLOD( osgEarth::Registry::instance()->getGlobalGeodeticProfile(),*tileSource->getDataExtents()[i].maxLevel());
+                    unsigned int level = osgEarth::Registry::instance()->getGlobalGeodeticProfile()->getEquivalentLOD( tileSource->getProfile(), *tileSource->getDataExtents()[i].maxLevel());
                     if (maxLevel < level)
                     {
                         maxLevel = level;

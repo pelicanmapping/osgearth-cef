@@ -10,6 +10,7 @@
 #include <osgEarth/GeoData>
 #include <osgEarthDrivers/gdal/GDALOptions>
 #include <osgEarth/ImageLayer>
+#include <osgEarth/Registry>
 
 using namespace osgEarth::Cef;
 
@@ -117,13 +118,18 @@ bool GDALV8Handler::Execute(const CefString& name,
         osg::ref_ptr<osgEarth::ImageLayer> imageLayer = new ImageLayer( ImageLayerOptions("image", fileOpt) );
         imageLayer->open();
 
+
         unsigned int maxLevel = 0;
         for (osgEarth::DataExtentList::iterator it = imageLayer->getTileSource()->getDataExtents().begin(); it != imageLayer->getTileSource()->getDataExtents().end(); ++it)
-        {
-          if (it->maxLevel().isSet() && it->maxLevel().value() > maxLevel)
-          {
-              maxLevel = it->maxLevel().value();
-          }
+        {            
+            if (it->maxLevel().isSet())
+            {             
+                unsigned int level = osgEarth::Registry::instance()->getGlobalGeodeticProfile()->getEquivalentLOD(imageLayer->getTileSource()->getProfile() , it->maxLevel().value());
+                if (level > maxLevel)
+                {
+                    maxLevel = level;
+                }
+            }
         }
 
         retval->SetValue("maxLevel", CefV8Value::CreateInt(maxLevel), V8_PROPERTY_ATTRIBUTE_NONE);
