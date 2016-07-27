@@ -21,7 +21,7 @@
 
 var extensions = 
         [
-            "Common|.tif;.tiff;.sid;.ecw;.vrt;.jp2;.j2k;.png;.jpg;.jpeg;.gif;.dem;.dt0;.dt1;.dt2;.adf;.blx;.xlb;.bag;.bmp;.bt;.doq;.hdr;.n1;.ers;.fits;.img;.nitf;.ntf;.toc;.kap;.db;.mbtiles",
+            "Common|.tif;.tiff;.sid;.ecw;.vrt;.jp2;.j2k;.png;.jpg;.jpeg;.gif;.dem;.dt0;.dt1;.dt2;.adf;.blx;.xlb;.bag;.bmp;.bt;.doq;.hdr;.n1;.ers;.fits;.img;.nitf;.ntf;.toc;.kap;.db;.mbtiles;.xml",
             "GeoTIFF/TIFF|.tif;.tiff",
             "MrSID|.sid",
             "ECW|.ecw",
@@ -49,7 +49,8 @@ var extensions =
             ".toc",
             ".kap",
             "SIMDIS DB|.db",
-            "MBTiles|.mbtiles"
+            "MBTiles|.mbtiles",
+            "TMS|.xml"
         ];
 
 var extensions_string = extensions.join(",");
@@ -84,7 +85,7 @@ function addFile(filenames) {
             //$("#files-error").hide();
         }
         // If you select a db file or an mbtiles file we will allow it.
-        else if (value.endsWith(".db") || value.endsWith(".mbtiles")) {            
+        else if (value.endsWith(".db") || value.endsWith(".mbtiles") || value.endsWith(".xml")) {            
             try {
 
                 var tileSource = null;
@@ -99,6 +100,12 @@ function addFile(filenames) {
                         "filename": value
                     });
                 }                      
+                // Assume XML files are TMS repositories
+                else if (value.endsWith(".xml")) {
+                    tileSource = new osgearth.TileSource("tms", {
+                        "url": value
+                    });
+                }
 
                 if (tileSource) {            
                     file = {};
@@ -501,6 +508,12 @@ function doPackage(path) {
         else if (file.endsWith(".mbtiles")) {
             tileSource = new osgearth.TileSource("mbtiles", {
                 "filename": file
+            });
+        }
+        // Assume XML files are TMS repositories
+        else if (file.endsWith(".xml")) {
+            tileSource = new osgearth.TileSource("tms", {
+                "url": file
             });
         }
         else {
