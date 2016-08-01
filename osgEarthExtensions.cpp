@@ -85,7 +85,7 @@ bool TileSourceV8Handler::Execute(const CefString& name,
         osg::ref_ptr< TileSource > tileSource = TileSourceFactory::create( tileSourceOpt );
         if (tileSource.valid())
         {
-            TileSource::Status status = tileSource->open( osgEarth::TileSource::MODE_READ );        
+            Status status = tileSource->open( osgEarth::TileSource::MODE_READ );        
             if (!status.isOK())
             {
                 exception = "Failed to open TileSource";
