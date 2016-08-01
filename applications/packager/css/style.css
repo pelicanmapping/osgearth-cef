@@ -53,11 +53,18 @@ html, body {
   font-size: 18px; }
 
 #data_header .file-act {
-  color: #728f9d; }
+  color: #728f9d;
+}
 
 #data_header .file-act.active {
-  color: inherit; }
+  color: inherit;
+}
 
+.disabledbutton {
+    pointer-events: none;
+    color: #728f9d !important;
+}
+  
 .box-header {
   height: 36px;
   line-height: 36px;

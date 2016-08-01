@@ -60,7 +60,19 @@ copy "%SIMDIS%\Qt5*.dll" %BUILD_DIR%
 REM Copy the SIMDIS DB plugin
 copy "%SIMDIS%\osgdb_osgearth_db.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
 
-xcopy /D /Y "%OSG_PLUGINS_DIR%\osgdb_*.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+REM xcopy /D /Y "%OSG_PLUGINS_DIR%\osgdb_*.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+
+REM Copy over specific plugins
+copy "%OSG_PLUGINS_DIR%\osgdb_curl.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_dds.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_freetype.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_gif.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_jpeg.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_osgtgz.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_png.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_template.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_tiff.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
+copy "%OSG_PLUGINS_DIR%\osgdb_zip.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
 
 xcopy /D /Y "%OSGEARTH_PLUGINS%\*.dll" "%BUILD_DIR%\%OSG_PLUGINS_FOLDER%"
 
@@ -86,6 +98,22 @@ copy %CEF_EXE% %BUILD_DIR%\packager.exe
 REM Delete any debug dlls
 del %BUILD_DIR%\*d.dll
 del %BUILD_DIR%\%OSG_PLUGINS_FOLDER%\*d.dll
+
+REM Delete any dlls we know we don't need
+del %BUILD_DIR%\osgAnimation.dll
+del %BUILD_DIR%\osgEarthQT.dll
+del %BUILD_DIR%\osgEarthSilverlining.dll
+del %BUILD_DIR%\osgEarthSplat.dll
+del %BUILD_DIR%\osgEarthTriton.dll
+del %BUILD_DIR%\osgPresentation.dll
+del %BUILD_DIR%\osgQT.dll
+del %BUILD_DIR%\osgUI.dll
+del %BUILD_DIR%\osgVolume.dll
+
+REM Delete any osg plugins that we know we don't need
+del %BUILD_DIR%\%OSG_PLUGINS_FOLDER%\*deprecated*.dll
+del %BUILD_DIR%\%OSG_PLUGINS_FOLDER%\osgdb_osgearth_sky_simple.dll
+
 
 REM Actually build the installer
 compil32 /cc packager.iss

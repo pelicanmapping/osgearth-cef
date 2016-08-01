@@ -169,7 +169,7 @@ function updateFiles(selectedIndex) {
     for (var i=activeFiles.length; i >= 0; i--) {
         var file = activeFiles[i];
         if (file) {
-            var row = '<div class="file-row' + (i === selectedIndex ? ' selected' : '') + '" data-filename="' + file.name + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove"></i> ' + file.name + '</div>';
+            var row = '<div class="file-row' + (i === selectedIndex ? ' selected' : '') + '" data-filename="' + file.name + '" data-fileid="' + file.id + '"><i class="fa fa-remove file-remove action-button"></i> ' + file.name + '</div>';
 
             $("#data_sources").append(row);
         }
@@ -183,7 +183,8 @@ function setProperties(file) {
     else {
         var output = '<b>' + file.name + '</b>' + '<br><br>' +
                               '<b>Projection:</b> ' + file.projection + '<br><br>' +
-                              '<b>Bounds:</b><br><span class="nowrap">' + file.minLat + ', ' + file.minLon + '</span><br><span class="nowrap">' + file.maxLat + ', ' + file.maxLon + '</span><br><br>' +
+                              '<b>Min:</b><br><span class="nowrap">' + file.minLon + ', ' + file.minLat + '</span><br><br>' +
+                              '<b>Max:</b><br><span class="nowrap">' + file.maxLon + ', ' + file.maxLat + '</span><br><br>' + 
                               '<b>Bands:</b> ' + file.bands + '<br>';
         if (file.size) {
             output += '<b>Size:</b> ' + file.size[0] + ' x ' + file.size[1];
@@ -561,6 +562,10 @@ function doPackage(path) {
 
     $('#out_progress').show();
 
+    setSelectedRow();
+    updateFiles();
+    $(".action-button").addClass("disabledbutton");
+
     startTime = new Date();
     packager = osgearth.package({
         //filenames: filenames,
@@ -583,6 +588,7 @@ function doPackage(path) {
             completedTiles = current;
         },
         complete: function() {
+            $(".action-button").removeClass("disabledbutton");
             var endTime = new Date();
             var seconds = (endTime.getTime() - startTime.getTime())/1000.0;
 
@@ -604,7 +610,7 @@ function doPackage(path) {
 }
 
 function onPackageCanceled(){
-    if (packager) {
+    if (packager) { 
         osgearth.cancelPackage(packager);
     }
 }
@@ -890,7 +896,7 @@ $(function() {
             <input type="button" id="load_button" class="flat-button" value="ADD DATA" onClick="onLoadClick()"/>
         </div>-->
         <div id="data_header" class="box-header">
-            Data Sources<span class="pushright"><i id="filebottom_button" class="fa fa-angle-double-down file-act" title="Move to bottom"></i><i id="filedown_button" class="fa fa-angle-down file-act" title="Move down"></i><i id="fileup_button" class="fa fa-angle-up file-act" title="Move up"></i><i id="filetop_button" class="fa fa-angle-double-up file-act" title="Move to top"></i><i id="load_button" class="fa fa-plus" title="Add data source"></i></span>
+            Data Sources<span class="pushright"><i id="filebottom_button" class="action-button fa fa-angle-double-down file-act" title="Move to bottom"></i><i id="filedown_button" class="action-button fa fa-angle-down file-act" title="Move down"></i><i id="action-button fileup_button" class="action-button fa fa-angle-up file-act" title="Move up"></i><i id="filetop_button" class="action-button fa fa-angle-double-up file-act" title="Move to top"></i><i id="load_button" class="action-button fa fa-plus" title="Add data source"></i></span>
         </div>
         <div id="data_sources" class="layer-box"></div>
         <div id="props_header" class="box-header">
@@ -972,7 +978,7 @@ $(function() {
                         <div class="table">
                             <div class="table-row">
                                 <div class="table-cell">
-                                    min 
+                                    Min 
                                 </div>
                                 <div class="table-cell">
                                     <input id="output_minLon" class="extent-input" type="text" value="-180.0"/>
@@ -983,7 +989,7 @@ $(function() {
                             </div>
                             <div class="table-row">
                                 <div class="table-cell">
-                                    max
+                                    Max
                                 </div>
                                 <div class="table-cell">
                                     <input id="output_maxLon" class="extent-input" type="text" value="180.0"/>
