@@ -324,7 +324,7 @@ public:
                                _layer->getTileSource()->getDataExtents().end(),
                                std::back_inserter(output->getDataExtents()) );                   
 
-                    TileSource::Status outputStatus = output->open(
+                    Status outputStatus = output->open(
                         TileSource::MODE_WRITE | TileSource::MODE_CREATE );
 
                     if ( !outputStatus.isError() )
