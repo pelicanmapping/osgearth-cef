@@ -28,11 +28,9 @@
 
 
 // Hide the console window.  Start as a regular windows application.
-/*
 #ifdef _MSC_VER
 #    pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
-*/
 
 
 using namespace osgEarth::Cef;
