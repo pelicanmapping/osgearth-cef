@@ -242,6 +242,7 @@ public:
         {
             GDALOptions layerOpt;
             layerOpt.url() = filenames[i];
+            layerOpt.L2CacheSize() = 0;
 
             if (elevation)
             {

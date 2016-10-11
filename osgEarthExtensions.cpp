@@ -81,6 +81,9 @@ bool TileSourceV8Handler::Execute(const CefString& name,
         V8ObjectToConfig(options, driverOpt);
 
         TileSourceOptions tileSourceOpt( driverOpt );
+        // Set the l2 cache size to 0 b/c it will eventually going to a composite layer which 
+        // can eat up the memory if we use a large # of files.
+        tileSourceOpt.L2CacheSize() = 0;
 
         osg::ref_ptr< TileSource > tileSource = TileSourceFactory::create( tileSourceOpt );
         if (tileSource.valid())
