@@ -218,10 +218,10 @@ public:
         if (opt->HasValue("extents"))
         {
             CefRefPtr< CefV8Value > extents = opt->GetValue("extents");
-            minLon = extents->GetValue(0)->GetIntValue();
-            minLat = extents->GetValue(1)->GetIntValue();
-            maxLon = extents->GetValue(2)->GetIntValue();
-            maxLat = extents->GetValue(3)->GetIntValue();
+            minLon = extents->GetValue(0)->GetDoubleValue();
+            minLat = extents->GetValue(1)->GetDoubleValue();
+            maxLon = extents->GetValue(2)->GetDoubleValue();
+            maxLat = extents->GetValue(3)->GetDoubleValue();
         }
 
         std::string profileString = "global-geodetic";
@@ -484,10 +484,10 @@ bool PackagerV8Handler::Execute(const CefString& name,
         if (opt->HasValue("extents"))
         {
             CefRefPtr< CefV8Value > extents = opt->GetValue("extents");
-            minLon = extents->GetValue(0)->GetIntValue();
-            minLat = extents->GetValue(1)->GetIntValue();
-            maxLon = extents->GetValue(2)->GetIntValue();
-            maxLat = extents->GetValue(3)->GetIntValue();
+            minLon = extents->GetValue(0)->GetDoubleValue();
+            minLat = extents->GetValue(1)->GetDoubleValue();
+            maxLon = extents->GetValue(2)->GetDoubleValue();
+            maxLat = extents->GetValue(3)->GetDoubleValue();
         }
 
         est.addExtent(GeoExtent(osgEarth::SpatialReference::create("epsg:4326"), minLon, minLat, maxLon, maxLat));
