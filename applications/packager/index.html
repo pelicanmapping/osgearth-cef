@@ -19,7 +19,130 @@
 
 <script language="javascript" type="text/javascript">
 
-var extensions = 
+L.Map.mergeOptions({
+    drawExtent: true
+});
+
+L.Map.DrawExtent = L.Handler.extend({
+    initialize: function (map) {
+        this._map = map;
+        this._container = map._container;
+        this._pane = map._panes.overlayPane;
+        this._moved = false;
+    },
+
+    addHooks: function () {
+        L.DomEvent.on(this._container, 'mousedown', this._onMouseDown, this);
+    },
+
+    removeHooks: function () {
+        L.DomEvent.off(this._container, 'mousedown', this._onMouseDown);
+        this._moved = false;
+    },
+
+    moved: function () {
+        return this._moved;
+    },
+
+    _onMouseDown: function (e) {
+        this._moved = false;
+
+        if (!e.ctrlKey || ((e.which !== 1) && (e.button !== 1))) { return false; }
+
+        // Disable dragging.
+        this._map.dragging.disable();
+
+        L.DomUtil.disableTextSelection();
+        L.DomUtil.disableImageDrag();
+
+        this._startLayerPoint = this._map.mouseEventToLayerPoint(e);
+
+        L.DomEvent
+            .on(document, 'mousemove', this._onMouseMove, this)
+            .on(document, 'mouseup', this._onMouseUp, this)
+            .on(document, 'keydown', this._onKeyDown, this);
+    },
+
+    _onMouseMove: function (e) {
+        if (!this._moved) {
+            this._box = L.DomUtil.create('div', 'leaflet-zoom-box', this._pane);
+            L.DomUtil.setPosition(this._box, this._startLayerPoint);
+
+            //TODO refactor: move cursor to styles
+            this._container.style.cursor = 'crosshair';
+            this._map.fire('drawextentstart');
+        }
+
+        var startPoint = this._startLayerPoint,
+            box = this._box,
+
+            layerPoint = this._map.mouseEventToLayerPoint(e),
+            offset = layerPoint.subtract(startPoint),
+
+            newPos = new L.Point(
+                Math.min(layerPoint.x, startPoint.x),
+                Math.min(layerPoint.y, startPoint.y));
+
+        L.DomUtil.setPosition(box, newPos);
+
+        this._moved = true;
+
+        // TODO refactor: remove hardcoded 4 pixels
+        box.style.width  = (Math.max(0, Math.abs(offset.x) - 4)) + 'px';
+        box.style.height = (Math.max(0, Math.abs(offset.y) - 4)) + 'px';
+    },
+
+    _finish: function () {
+        if (this._moved) {
+            this._pane.removeChild(this._box);
+            this._container.style.cursor = '';
+        }
+
+        L.DomUtil.enableTextSelection();
+        L.DomUtil.enableImageDrag();
+
+        L.DomEvent
+            .off(document, 'mousemove', this._onMouseMove)
+            .off(document, 'mouseup', this._onMouseUp)
+            .off(document, 'keydown', this._onKeyDown);
+    },
+
+    _onMouseUp: function (e) {
+
+        this._finish();
+
+        var map = this._map,
+            layerPoint = map.mouseEventToLayerPoint(e);
+
+        if (this._startLayerPoint.equals(layerPoint)) { return; }
+
+        var bounds = new L.LatLngBounds(
+                map.layerPointToLatLng(this._startLayerPoint),
+                map.layerPointToLatLng(layerPoint));
+
+        map.fire('drawextentend', {
+            bounds: bounds
+        });
+
+        map.dragging.enable();
+    },
+
+    _onKeyDown: function (e) {
+        if (e.keyCode === 27) {
+            this._finish();
+        }
+    }
+});
+
+L.Map.addInitHook('addHandler', 'drawExtent', L.Map.DrawExtent);
+
+
+
+
+
+
+
+var extensions =
         [
             "Common|.tif;.tiff;.sid;.ecw;.vrt;.jp2;.j2k;.png;.jpg;.jpeg;.gif;.dem;.dt0;.dt1;.dt2;.adf;.blx;.xlb;.bag;.bmp;.bt;.doq;.hdr;.n1;.ers;.fits;.img;.nitf;.ntf;.toc;.kap;.db;.mbtiles;.xml",
             "GeoTIFF/TIFF|.tif;.tiff",
@@ -85,7 +208,7 @@ function addFile(filenames) {
             //$("#files-error").hide();
         }
         // If you select a db file or an mbtiles file we will allow it.
-        else if (value.endsWith(".db") || value.endsWith(".mbtiles") || value.endsWith(".xml")) {            
+        else if (value.endsWith(".db") || value.endsWith(".mbtiles") || value.endsWith(".xml")) {
             try {
 
                 var tileSource = null;
@@ -99,7 +222,7 @@ function addFile(filenames) {
                     tileSource = new osgearth.TileSource("mbtiles", {
                         "filename": value
                     });
-                }                      
+                }
                 // Assume XML files are TMS repositories
                 else if (value.endsWith(".xml")) {
                     tileSource = new osgearth.TileSource("tms", {
@@ -107,7 +230,7 @@ function addFile(filenames) {
                     });
                 }
 
-                if (tileSource) {            
+                if (tileSource) {
                     file = {};
                     file.name = value;
                     file.minLat = tileSource.minLat;
@@ -184,13 +307,13 @@ function setProperties(file) {
         var output = '<b>' + file.name + '</b>' + '<br><br>' +
                               '<b>Projection:</b> ' + file.projection + '<br><br>' +
                               '<b>Min:</b><br><span class="nowrap">' + file.minLon + ', ' + file.minLat + '</span><br><br>' +
-                              '<b>Max:</b><br><span class="nowrap">' + file.maxLon + ', ' + file.maxLat + '</span><br><br>' + 
+                              '<b>Max:</b><br><span class="nowrap">' + file.maxLon + ', ' + file.maxLat + '</span><br><br>' +
                               '<b>Bands:</b> ' + file.bands + '<br>';
         if (file.size) {
             output += '<b>Size:</b> ' + file.size[0] + ' x ' + file.size[1];
         }
 
-        $('#data_props').html( output );                              
+        $('#data_props').html( output );
     }
 }
 
@@ -353,7 +476,7 @@ function moveFileToTop() {
             activeFiles[finalIndex] = selectedFile;
             activeFiles[finalIndex].id = finalIndex;
             activePolygons[finalIndex] = selectedPoly;
-            
+
             updateFiles(finalIndex);
         }
     }
@@ -377,7 +500,7 @@ function moveFileToBottom() {
             activeFiles[finalIndex] = selectedFile;
             activeFiles[finalIndex].id = finalIndex;
             activePolygons[finalIndex] = selectedPoly;
-            
+
             updateFiles(finalIndex);
         }
     }
@@ -522,7 +645,7 @@ function doPackage(path) {
                 "url": file
             });
         }
-        
+
         /*
         // Example of packaging ReadyMap from a TMS source.
         var tileSource = new osgearth.TileSource("tms", {
@@ -610,7 +733,7 @@ function doPackage(path) {
 }
 
 function onPackageCanceled(){
-    if (packager) { 
+    if (packager) {
         osgearth.cancelPackage(packager);
     }
 }
@@ -719,7 +842,7 @@ function updateEstimate() {
         min_level: zoom.minLevel,
         max_level: zoom.maxLevel,
         extents: [extents.minLon, extents.minLat, extents.maxLon, extents.maxLat]
-    });          
+    });
 
     var message = "Package estimate: ~" + est.tiles + " tiles in " + prettyPrintTime(est.seconds / cores) + " and use " + prettyFileSize(est.size * 1000000);
     */
@@ -762,27 +885,43 @@ function setSelectedRow(thisrow) {
 }
 
 $(function() {
-    var crs = new L.Proj.CRS('EPSG:4326', 
+    var crs = new L.Proj.CRS('EPSG:4326',
         "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
-        { 
-                resolutions: [ 
-                    0.7031250000000000000000000, 
-                    0.3515625000000000000000000, 
-                    0.1757812500000000000000000, 
-                    0.0878906250000000000000000, 
-                    0.0439453125000000000000000, 
-                    0.0219726562500000000000000, 
-                    0.0109863281250000000000000, 
-                    0.0054931640625000000000000, 
-                    0.0027465820312500000000000, 
-                    0.0013732910156250000000000, 
-                    0.0006866455078125000000000         
+        {
+                resolutions: [
+                    0.7031250000000000000000000,
+                    0.3515625000000000000000000,
+                    0.1757812500000000000000000,
+                    0.0878906250000000000000000,
+                    0.0439453125000000000000000,
+                    0.0219726562500000000000000,
+                    0.0109863281250000000000000,
+                    0.0054931640625000000000000,
+                    0.0027465820312500000000000,
+                    0.0013732910156250000000000,
+                    0.0006866455078125000000000
                 ],
                 origin: [-180.0, 90.0],
                 bounds: L.bounds([-180.0, -90.0], [180.0, 90.0])
         });
 
     map = L.map('map',  { crs: crs, attributionControl: false, zoom: 1, center: [0.0, 0.0] });
+    map.on("drawextentend", function(e) {
+        var minLon = e.bounds.getWest();
+        var minLat = e.bounds.getSouth();
+        var maxLon = e.bounds.getEast();
+        var maxLat = e.bounds.getNorth();
+
+        $('#output_minLat').val(minLat);
+        $('#output_minLon').val(minLon);
+        $('#output_maxLat').val(maxLat);
+        $('#output_maxLon').val(maxLon);
+
+        updateExtents();
+    });
+
+    // Don't ask me why, but we have to disable dragging and then re-enable it at the end of this function to make it so the DrawExtent handler can disable and enable dragging properly.
+    map.dragging.disable();
 
     /*L.tileLayer('http://readymap.org/readymap/tiles/1.0.0/7/{z}/{x}/{y}.png', {
       continuousWorld: false,
@@ -815,7 +954,7 @@ $(function() {
 
     extentPoly.bringToFront();
 
-    // set up event bindings 
+    // set up event bindings
     $('#load_button').click(onLoadClick);
 
     $('#filedown_button').click(function() {
@@ -832,7 +971,7 @@ $(function() {
 
     $('#filebottom_button').click(function() {
         moveFileToBottom();
-    });    
+    });
 
     $('#zoom_button').click(function() {
         updateZoomLevels();
@@ -883,6 +1022,8 @@ $(function() {
         event.stopPropagation();
         removeFile($(this).parent().data("fileid"));
     });
+
+    map.dragging.enable();
 });
 
 
@@ -978,7 +1119,7 @@ $(function() {
                         <div class="table">
                             <div class="table-row">
                                 <div class="table-cell">
-                                    Min 
+                                    Min
                                 </div>
                                 <div class="table-cell">
                                     <input id="output_minLon" class="extent-input" type="text" value="-180.0"/>
@@ -1023,7 +1164,7 @@ $(function() {
         </div>
     </div>
     <div id="footer">Add data sources to get started</div>
-    
+
     <div id="logo_div"><img src="./img/pelican.png" title="Pelican Mapping"></div>
 
 </body>
