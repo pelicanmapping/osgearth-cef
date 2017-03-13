@@ -691,6 +691,8 @@ function doPackage(path) {
     $(".action-button").addClass("disabledbutton");
 
     startTime = new Date();
+    var jpeg_quality = parseInt($("#compression").val());
+    alert(jpeg_quality);
     packager = osgearth.package({
         //filenames: filenames,
         tilesources: tileSources,
@@ -702,6 +704,7 @@ function doPackage(path) {
         min_level: zoom.minLevel,
         max_level: zoom.maxLevel,
         cores: cores,
+        jpeg_quality: jpeg_quality,
         extents: [extents.minLon, extents.minLat, extents.maxLon, extents.maxLat],
         progress: function( current, total, currentStage, totalStages, msg) {
             var message = "Completed " + current + " tiles...";
@@ -1024,6 +1027,10 @@ $(function() {
         removeFile($(this).parent().data("fileid"));
     });
 
+    $("#compression").on("change input", function() {
+        $("#compression-text").html($("#compression").val() + "%");
+    });
+
     map.dragging.enable();
 });
 
@@ -1094,7 +1101,6 @@ $(function() {
                         <input type="radio" name="profile" value="global-geodetic" checked="checked">Global Geodetic<br>
                         <input type="radio" name="profile" value="spherical-mercator">Spherical Mercator<br>
                     </div>
-
                 </div>
                 <div class="table-row">
                     <div class="table-cell">
@@ -1107,6 +1113,10 @@ $(function() {
                     <div class="table-cell">
                     </div>
                 </div>
+                <div class="table-row">
+                    Compression<input type="range" id="compression" value="75"><span id="compression-text">75%</span>
+                </div>
+
             </div>
 
             <div id="output_left" class="table">

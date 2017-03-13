@@ -164,7 +164,19 @@ public:
         }
 
         // Setup the write options so that it will compress elevation using lzw
-        osg::ref_ptr< osgDB::Options > options = new osgDB::Options("tiff_compression=lzw");
+        int jpegQuality = 75;
+        if (opt->HasValue("jpeg_quality"))
+        {
+            jpegQuality = opt->GetValue("jpeg_quality")->GetIntValue();
+        }
+
+        if (jpegQuality <= 0) jpegQuality = 1;
+
+        std::stringstream buf;
+        buf << "tiff_compression=lzw JPEG_QUALITY=" << jpegQuality;
+        std::string optString = buf.str();        
+
+        osg::ref_ptr< osgDB::Options > options = new osgDB::Options(optString);
         packager.setWriteOptions( options.get() );
 
         bool elevation = false;
