@@ -252,7 +252,7 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
             return new ReturnVal("Map error: id not found.", -1);
 
         osgEarth::ImageLayerVector layers;
-        mapNode->getMap()->getImageLayers(layers);
+        mapNode->getMap()->getLayers<ImageLayer>(layers);
 
         std::stringstream output;
         output << "{\"layers\": [";
@@ -278,7 +278,7 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
             return new ReturnVal("Map error: id not found.", -1);
 
         osgEarth::ElevationLayerVector layers;
-        mapNode->getMap()->getElevationLayers(layers);
+        mapNode->getMap()->getLayers<ElevationLayer>(layers);
 
         std::stringstream output;
         output << "{\"layers\": [";
@@ -304,7 +304,7 @@ ExecuteCallback::ReturnVal* MapExecuteCallback::execute( int64 query_id, const s
             return new ReturnVal("Map error: id not found.", -1);
 
         osgEarth::ModelLayerVector layers;
-        mapNode->getMap()->getModelLayers(layers);
+        mapNode->getMap()->getLayers<ModelLayer>(layers);
 
         std::stringstream output;
         output << "{\"layers\": [";
@@ -349,60 +349,76 @@ void MapExecuteCallback::MapQueryCallback::onMapModelChanged( const osgEarth::Ma
 
     switch( change.getAction() )
     {
-    case osgEarth::MapModelChange::ADD_ELEVATION_LAYER: 
-        eventName = "elevationlayeradded";
-        eventData["id"] = change.getLayer()->getUID();
-        eventData["index"] = change.getFirstIndex();
+    case osgEarth::MapModelChange::ADD_LAYER: 
+        if (change.getElevationLayer())
+        {
+            eventName = "elevationlayeradded";
+            eventData["id"] = change.getElevationLayer()->getUID();
+            eventData["index"] = change.getFirstIndex();
+        }
+        else if (change.getImageLayer())
+        {
+            eventName = "imagelayeradded";
+            eventData["id"] = change.getImageLayer()->getUID();
+            eventData["index"] = change.getFirstIndex();
+        }
+        else if (change.getMaskLayer())
+        {
+            eventName = "masklayeradded";
+            eventData["id"] = change.getMaskLayer()->getUID();
+        }
+        else if (change.getModelLayer())
+        {
+            eventName = "modellayeradded";
+            eventData["id"] = change.getModelLayer()->getUID();
+        }          
         break;
-    case osgEarth::MapModelChange::ADD_IMAGE_LAYER:
-        eventName = "imagelayeradded";
-        eventData["id"] = change.getLayer()->getUID();
-        eventData["index"] = change.getFirstIndex();
+    case osgEarth::MapModelChange::REMOVE_LAYER:
+        if (change.getElevationLayer())
+        {
+            eventName = "elevationlayerremoved";
+            eventData["id"] = change.getLayer()->getUID();
+            eventData["index"] = change.getFirstIndex();
+        }
+        else if (change.getImageLayer())
+        {
+            eventName = "imagelayerremoved";
+            eventData["id"] = change.getLayer()->getUID();
+            eventData["index"] = change.getFirstIndex();
+        }
+        else if (change.getMaskLayer())
+        {
+            eventName = "masklayerremoved";
+            eventData["id"] = change.getMaskLayer()->getUID();
+        }
+        else if (change.getModelLayer())
+        {
+            eventName = "modellayerremoved";
+            eventData["id"] = change.getModelLayer()->getUID();
+        }
         break;
-    case osgEarth::MapModelChange::ADD_MASK_LAYER:
-        eventName = "masklayeradded";
-        eventData["id"] = change.getMaskLayer()->getUID();
-    case osgEarth::MapModelChange::ADD_MODEL_LAYER:
-        eventName = "modellayeradded";
-        eventData["id"] = change.getModelLayer()->getUID();
-        break;
-    case osgEarth::MapModelChange::REMOVE_ELEVATION_LAYER:
-        eventName = "elevationlayerremoved";
-        eventData["id"] = change.getLayer()->getUID();
-        eventData["index"] = change.getFirstIndex();
-        break;
-    case osgEarth::MapModelChange::REMOVE_IMAGE_LAYER:
-        eventName = "imagelayerremoved";
-        eventData["id"] = change.getLayer()->getUID();
-        eventData["index"] = change.getFirstIndex();
-        break;
-    case osgEarth::MapModelChange::REMOVE_MASK_LAYER:
-        eventName = "masklayerremoved";
-        eventData["id"] = change.getMaskLayer()->getUID();
-        break;
-    case osgEarth::MapModelChange::REMOVE_MODEL_LAYER:
-        eventName = "modellayerremoved";
-        eventData["id"] = change.getModelLayer()->getUID();
-        break;
-        onModelLayerRemoved( change.getModelLayer() ); break;
-    case osgEarth::MapModelChange::MOVE_ELEVATION_LAYER:
-        eventName = "elevationlayermoved";
-        eventData["id"] = change.getLayer()->getUID();
-        eventData["old_index"] = change.getFirstIndex();
-        eventData["new_index"] = change.getSecondIndex();
-        break;
-    case osgEarth::MapModelChange::MOVE_IMAGE_LAYER:
-        eventName = "imagelayermoved";
-        eventData["id"] = change.getLayer()->getUID();
-        eventData["old_index"] = change.getFirstIndex();
-        eventData["new_index"] = change.getSecondIndex();
-        break;
-    case osgEarth::MapModelChange::MOVE_MODEL_LAYER:
-        eventName = "modellayermoved";
-        eventData["id"] = change.getModelLayer()->getUID();
-        eventData["old_index"] = change.getFirstIndex();
-        eventData["new_index"] = change.getSecondIndex();
-        break;
+    case osgEarth::MapModelChange::MOVE_LAYER:
+        if (change.getElevationLayer())
+        {
+            eventName = "elevationlayermoved";
+            eventData["id"] = change.getLayer()->getUID();
+            eventData["old_index"] = change.getFirstIndex();
+            eventData["new_index"] = change.getSecondIndex();
+        }
+        else if (change.getImageLayer())
+        {
+            eventName = "imagelayermoved";
+            eventData["id"] = change.getLayer()->getUID();
+            eventData["old_index"] = change.getFirstIndex();
+            eventData["new_index"] = change.getSecondIndex();
+        }
+        else if (change.getModelLayer())
+        {
+            eventName = "modellayermoved";
+            eventData["id"] = change.getModelLayer()->getUID();
+            eventData["old_index"] = change.getFirstIndex();
+            eventData["new_index"] = change.getSecondIndex();
+        }
     }
 
     if (eventName.length() > 0)
